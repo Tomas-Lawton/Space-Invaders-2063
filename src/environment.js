@@ -9,11 +9,12 @@ export const environment = (() => {
 
     create() {
       if (this.scene) {
-        this.createWorld();
+        // this.createWorld();
+        this.addGround();
         this.createRings();
-        this.createRunway();
-        this.addLights();
-        this.addParticles();
+        // this.createRunway();
+        // this.addLights();
+        // this.addParticles();
       }
     }
 
@@ -31,7 +32,8 @@ export const environment = (() => {
       ];
       const cubeMap = cubeTextureLoader.load(textureUrls);
       this.scene.background = cubeMap;
-
+    }
+    addGround () {
       const groundGeometry = new THREE.PlaneGeometry(35, 35, 35, 35);
       groundGeometry.rotateX(-Math.PI / 2);
       const groundMaterial = new THREE.MeshStandardMaterial({

@@ -6,7 +6,7 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
 import { GUI } from "dat.gui";
-import { ThirdPersonCamera } from './third-person-view.js'
+import { third_person_camera } from './camera.js'
 import { player_input } from './player-input.js'
 import { entity } from './entity.js'
 import { environment } from './environment.js'
@@ -24,7 +24,7 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
-  50, 
+  40, 
   window.innerWidth / window.innerHeight,
   1,
   1000
@@ -139,58 +139,44 @@ playerEntity.AddComponent(playerInputComponent);
 playerEntity.InitEntity();
 
 
-
-// function createOutline(mesh) {
-//   const edges = new THREE.EdgesGeometry(mesh.geometry);
-//   const outline = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x00ff00 }));
-//   mesh.add(outline);
-// }
-
-
-
 // SHIPPP
-
 const loader = new GLTFLoader().setPath("public/spaceship_-_cb1/");
-
-// Load model
 let mesh;
 let thirdPersonCamera;
-let rotationWrapper = new THREE.Group();
-
 loader.load(
   "scene.gltf",
   (gltf) => {
-    // Create a temporary object to hold the imported model
-    let tempObject = gltf.scene.clone();
+    let rotationWrapper = new THREE.Group();
 
+    let tempObject = gltf.scene.clone();
     tempObject.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
       }
     });
-
     tempObject.rotation.y = 1.5 * Math.PI ;
     tempObject.position.z += 20;
     mesh = rotationWrapper;
     updateSpaceshipPosition();
     rotationWrapper.add(tempObject);
+    scene.add(mesh); 
+    document.getElementById("progress-container").style.display = "none";
 
-    scene.add(mesh); // Add the wrapper to the scene
+    // dependents 
 
     const pointLight = new THREE.PointLight(0xff6600, 2, 5);
-    pointLight.position.copy(tempObject.position);
+    pointLight.position.copy(mesh.position);
     pointLight.position.x -= 2;
     
     scene.add(pointLight);
-
-
-    thirdPersonCamera = new ThirdPersonCamera({
+    
+    thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
       camera: camera,
       target: mesh,
     });
-  
-    document.getElementById("progress-container").style.display = "none";
+    
+
   },
   (xhr) => {
     document.getElementById("progress").innerHTML = `LOADING ${Math.max(
@@ -203,49 +189,52 @@ loader.load(
 
 
 
-
 const maxVelocity = 3;
+let previousTime = 0;
 
-function animate() {
+function animate(currentTime) {
   requestAnimationFrame(animate);
 
+  const timeElapsed = (currentTime - previousTime) / 1000;
+  previousTime = currentTime;
+
   if (playerEntity && playerEntity.GetComponent('PlayerInput')) {
-    playerEntity.Update(); 
-
+    playerEntity.Update();
     const input = playerEntity.Attributes.InputCurrent;
-    const speed = 0.1;
-    const acceleration = 0.03; 
-    const deceleration = 0.02; 
 
-    if (input.forwardAcceleration > 0) {
-      input.forwardVelocity = Math.min(input.forwardVelocity + input.forwardAcceleration * acceleration, maxVelocity);
-    } else if (input.forwardAcceleration < 0) {
-      input.forwardVelocity = Math.max(input.forwardVelocity + input.forwardAcceleration * deceleration, 0);
-    }
+    if (input && typeof input.axis1Side !== 'undefined' && mesh && thirdPersonCamera) {
+      const rotationAngle = -input.axis1Side * 0.05;
+      mesh.rotation.y += rotationAngle;
 
-    if (mesh && thirdPersonCamera) {
+      const speed = 0.1;
+      const acceleration = 0.03;
+      const deceleration = 0.02;
+
+      if (input.forwardAcceleration > 0) {
+        input.forwardVelocity = Math.min(
+          input.forwardVelocity + input.forwardAcceleration * acceleration,
+          maxVelocity
+        );
+      } else if (input.forwardAcceleration < 0) {
+        input.forwardVelocity = Math.max(
+          input.forwardVelocity + input.forwardAcceleration * deceleration,
+          0
+        );
+      }
+
       const moveVector = new THREE.Vector3(
         Math.sin(mesh.rotation.y) * input.forwardVelocity * speed,
         0,
         Math.cos(mesh.rotation.y) * input.forwardVelocity * speed
       );
 
-      const newPosition = mesh.position.clone().add(moveVector);
-      mesh.position.set(newPosition.x, newPosition.y, newPosition.z);
+      mesh.position.add(moveVector);
 
-      const rotationAngle = -input.axis1Side * 0.05; 
-      mesh.rotation.y += rotationAngle;
-
-      // console.log(mesh.position)
-      controls.update();
-      thirdPersonCamera.update();
+      thirdPersonCamera.Update(timeElapsed);
     }
   }
 
   composer.render();
 }
-
-
-
 
 animate();
