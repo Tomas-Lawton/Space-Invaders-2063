@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Space Invaders 2063</title>
+
+		<link rel="stylesheet" href="public/index.css">
+
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@v0.153.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@v0.153.0/examples/jsm/",
+					"dat.gui": "https://unpkg.com/dat.gui@0.7.7/build/dat.gui.module.js"
+        }
+      }
+    </script>
+	</head>
+	<body>
+    <div id="heading">
+      <!-- <h1>My Spaceship</h1> -->
+      <!-- <div class="border"></div> -->
+    </div>
+    <div id="progress-container">
+      <div id="progress">LOADING 0/100</div>
+    </div>
+    <script type="module" src="./src/entity.js"></script>
+    <script type="module" src="./src/player-input.js"></script>
+    <script type="module" src="./src/gradient.js"></script>
+		<script type="module" src="./src/main.js"></script>
+	</body>
+</html>
