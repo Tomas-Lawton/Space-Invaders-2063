@@ -10,9 +10,9 @@ import { third_person_camera } from './camera.js'
 import { player_input } from './player-input.js'
 import { entity } from './entity.js'
 import { environment } from './environment.js'
+import { mapValue } from './utils.js'
 
 // Setup
-
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -30,7 +30,7 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 camera.position.set(0, 5, 5); 
-const renderScene = new RenderPass(scene, camera);
+
 const bloomPass = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
   1.8,
@@ -38,9 +38,7 @@ const bloomPass = new UnrealBloomPass(
   1
 );
 
-
-
-
+const renderScene = new RenderPass(scene, camera);
 const composer = new EffectComposer(renderer);
 composer.addPass(renderScene);
 composer.addPass(bloomPass);
@@ -139,13 +137,7 @@ function updateSpaceshipPosition() {
 
 
 
-const playerInputComponent = new player_input.PlayerInput();
-const playerEntity = new entity.Entity();
-playerEntity.AddComponent(playerInputComponent);
-playerEntity.InitEntity();
 
-
-// SHIPPP
 const loader = new GLTFLoader().setPath("public/spaceship_-_cb1/");
 let mesh;
 let thirdPersonCamera;
@@ -172,7 +164,6 @@ loader.load(
     meshWrapper.add(ambientLight);
     
     scene.add(mesh);
-    document.getElementById("progress-container").style.display = "none";
     // dependents 
 
     const pointLight = new THREE.PointLight(0xff6600, 2, 5);
@@ -185,8 +176,8 @@ loader.load(
       camera: camera,
       target: mesh,
     });
-    
 
+    document.getElementById("progress-container").style.display = "none";
   },
   (xhr) => {
     document.getElementById("progress").innerHTML = `LOADING ${Math.max(
@@ -196,24 +187,16 @@ loader.load(
   }
 );
 
-
-function mapValue(value, fromMin, fromMax, toMin, toMax) {
-  if (value < fromMin) {
-    value = fromMin;
-  } else if (value > fromMax) {
-    value = fromMax;
-  }
-  const percentage = (value - fromMin) / (fromMax - fromMin);
-  const mappedValue = toMin + percentage * (toMax - toMin);
-  return mappedValue;
-}
-
-
-const maxVelocity = 5;
+const maxVelocity = 6;
 let previousTime = 0;
 let mouseX = 0;
 let mouseY = 0;
 let continuousRotation = 0;
+
+const playerInputComponent = new player_input.PlayerInput();
+const playerEntity = new entity.Entity();
+playerEntity.AddComponent(playerInputComponent);
+playerEntity.InitEntity();
 
 function handleMouseMove(event) {
   const centerX = window.innerWidth / 2;
@@ -223,8 +206,6 @@ function handleMouseMove(event) {
   mouseY = event.clientY - centerY;
 }
 
-
-// maybe left and right should change some YAW
 function animate(currentTime) {
   requestAnimationFrame(animate);
 

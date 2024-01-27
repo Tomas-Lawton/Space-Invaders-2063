@@ -15,6 +15,7 @@ export const environment = (() => {
         this.createRunway();
         this.addLights();
         this.addParticles();
+        this.createStar();
       }
     }
 
@@ -72,6 +73,55 @@ export const environment = (() => {
         generateRingPoints(i * r, i * 10, i);
       }
     }
+    createStar() {
+      const posZ = 0;
+      const posY = 350;
+
+
+      const sphereRadius = 13;
+      const sphereSegments = 32;
+      const transparentMaterial = new THREE.MeshStandardMaterial({
+        color: 0xff6600,
+        metalness: 0.8,
+        emissive: 0xff6600, 
+        emissiveIntensity: 50,
+
+        roughness: 0.5,
+        opacity: 0.5,
+        transparent: true,
+        side: THREE.BackSide,  // Render the outside of the sphere
+      });
+      const sphereGeometry = new THREE.SphereGeometry(sphereRadius, sphereSegments, sphereSegments);
+      const sphereMesh = new THREE.Mesh(sphereGeometry, transparentMaterial);
+    
+      sphereMesh.rotation.x = -Math.PI / 2;
+      sphereMesh.position.z = posY;
+      this.scene.add(sphereMesh);
+
+      const glowGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+      const glowMaterial = new THREE.MeshStandardMaterial({
+        emissive: 0xff6600, 
+        emissiveIntensity: 3,
+        color: 0x777777,
+      });
+    
+      const generateRingPoints = (radius, pointCount, h) => {
+        for (let i = 0; i < pointCount; i++) {
+          const angle = (Math.PI * 2 * i) / pointCount;
+          const x = radius * Math.cos(angle);
+          const y = radius * Math.sin(angle);
+          const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
+          glowPoint.position.set(x, 0, y+posY);
+          this.scene.add(glowPoint);
+        }
+      };
+    
+      let numRings = 6;
+      let r = 10; //4
+      for (let i = 0; i < numRings; i++) {
+        generateRingPoints(i * r, i * 30, i);
+      }
+    }
     createRunway() {
       const glowGeometry2 = new THREE.BoxGeometry(.3, .3, .3);
       const glowMaterial2 = new THREE.MeshStandardMaterial({
@@ -93,7 +143,7 @@ export const environment = (() => {
         this.scene.add(...glowMeshArray);
       };
     
-      let numSquares = 100;
+      let numSquares = 40;
       for (let i = 0; i < numSquares; i++) {
         runwayLights(i * 8);
       }
