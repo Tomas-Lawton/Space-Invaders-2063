@@ -19,7 +19,7 @@ export const environment = (() => {
     }
 
     createWorld() {
-      // this.scene.fog = new THREE.FogExp2(0x111111, 0.08);
+      this.scene.fog = new THREE.FogExp2(0x111111, 0.005);
 
       const cubeTextureLoader = new THREE.CubeTextureLoader();
       const textureUrls = [

@@ -30,7 +30,6 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 camera.position.set(0, 5, 5); 
-
 const renderScene = new RenderPass(scene, camera);
 const bloomPass = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
@@ -39,9 +38,14 @@ const bloomPass = new UnrealBloomPass(
   1
 );
 
+
+
+
 const composer = new EffectComposer(renderer);
 composer.addPass(renderScene);
 composer.addPass(bloomPass);
+
+
 
 // Environment
 const world = new environment.World({ scene: scene });
@@ -111,6 +115,8 @@ function updateBloomParameters() {
   bloomPass.radius = bloomFolder.__controllers[2].object.radius;
 }
 
+updateBloomParameters();
+
 function updateSpaceshipPosition() {
   if (mesh) {
     mesh.position.set(
@@ -159,15 +165,14 @@ loader.load(
     tempObject.position.z += 20;
     mesh = meshWrapper;
     updateSpaceshipPosition();
-    const ambientLight = new THREE.SpotLight(0x333333, 0.8);
-    ambientLight.position.copy(mesh.position)
-
+    const ambientLightColor = 0x660099; // Dystopian red color, you can change it to your preferred color
+    const ambientLight = new THREE.PointLight(ambientLightColor, 1, 50);
+    ambientLight.position.set(mesh.position.x, mesh.position.y + 5, mesh.position.z);
     meshWrapper.add(tempObject);
     meshWrapper.add(ambientLight);
-
-    scene.add(mesh); 
+    
+    scene.add(mesh);
     document.getElementById("progress-container").style.display = "none";
-
     // dependents 
 
     const pointLight = new THREE.PointLight(0xff6600, 2, 5);
@@ -234,24 +239,20 @@ function animate(currentTime) {
       const rotationAngle = -input.axis1Side * 0.05;
       mesh.rotation.y += rotationAngle;
       mesh.rotation.y = ((mesh.rotation.y + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
-
+      
       const speed = 0.1;
       const acceleration = 0.03;
       const deceleration = 0.02;
       const verticalAcceleration = 0.0005;
-
-      // Reverse direction and make continuous speed smaller
-      continuousRotation = -(mouseX * 0.001) * 0.1;
-
-      const targetY = mesh.rotation.y + continuousRotation;
-      mesh.rotation.y = targetY;
-
+      
+      continuousRotation = -(mouseX * 0.001) * 0.08;
+      let rotateTarget = mesh.rotation.y + continuousRotation;
+      mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, rotateTarget, 0.5); // Use Three.js lerp function for rotation.y
+      
       const targetX = mesh.rotation.x + (mouseY * 0.0001);
-      mesh.rotation.x = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.94, Math.PI * 0.94);
-
-      // Wrap rotation.x within the range [-Math.PI, Math.PI]
-      mesh.rotation.x = ((mesh.rotation.x + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
-
+      const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.94, Math.PI * 0.94);
+      mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, mappedTargetX, 0.5); // Use Three.js lerp function for rotation.x
+      
       if (input.upwardAcceleration > 0) {
         input.upwardVelocity = Math.min(
           input.upwardVelocity + input.upwardAcceleration * verticalAcceleration,
@@ -280,9 +281,10 @@ function animate(currentTime) {
         );
       }
 
+
       const moveVector = new THREE.Vector3(
         Math.sin(mesh.rotation.y) * Math.cos(mesh.rotation.x) * input.forwardVelocity * speed,
-        -Math.sin(mesh.rotation.x) * input.forwardVelocity * speed,
+       (-Math.sin(mesh.rotation.x) * input.forwardVelocity * speed) + input.upwardVelocity,
         Math.cos(mesh.rotation.y) * Math.cos(mesh.rotation.x) * input.forwardVelocity * speed
       );
       mesh.position.add(moveVector);
