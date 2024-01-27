@@ -9,17 +9,17 @@ export const environment = (() => {
 
     create() {
       if (this.scene) {
-        // this.createWorld();
+        this.createWorld();
         this.addGround();
         this.createRings();
-        // this.createRunway();
-        // this.addLights();
-        // this.addParticles();
+        this.createRunway();
+        this.addLights();
+        this.addParticles();
       }
     }
 
     createWorld() {
-      this.scene.fog = new THREE.FogExp2(0x111111, 0.08);
+      // this.scene.fog = new THREE.FogExp2(0x111111, 0.08);
 
       const cubeTextureLoader = new THREE.CubeTextureLoader();
       const textureUrls = [
@@ -51,7 +51,7 @@ export const environment = (() => {
       const glowGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
       const glowMaterial = new THREE.MeshStandardMaterial({
         emissive: 0xff6600, 
-        emissiveIntensity: 5,
+        emissiveIntensity: 3,
         color: 0x777777,
       });
     
@@ -76,7 +76,7 @@ export const environment = (() => {
       const glowGeometry2 = new THREE.BoxGeometry(.3, .3, .3);
       const glowMaterial2 = new THREE.MeshStandardMaterial({
         emissive: 0xffffff,
-        emissiveIntensity: 3,
+        emissiveIntensity: .35,
         color: 0x111111,
       });
     
@@ -98,18 +98,20 @@ export const environment = (() => {
         runwayLights(i * 8);
       }
     }
-    
     addLights() {
-      const ambientLight = new THREE.AmbientLight(0x777777, 0.8);
+      // Adjust the ambient light color and intensity
+      const ambientLight = new THREE.AmbientLight(0x333333, 0.5);
       this.scene.add(ambientLight);
-
-      const spotLight = new THREE.SpotLight(0xff6600, 2, 30, 1, 1);
+    
+      // Adjust the first spot light color, position, and intensity
+      const spotLight = new THREE.SpotLight(0xff3300, 1, 20, 0.8, 0.5);
       spotLight.position.set(0, 15, 0);
       spotLight.castShadow = true;
       spotLight.shadow.bias = -0.0001;
       this.scene.add(spotLight);
-
-      const spotLight2 = new THREE.SpotLight(0x00aaff, 2, 30, 1, 1);
+    
+      // Adjust the second spot light color, position, and intensity
+      const spotLight2 = new THREE.SpotLight(0x0055aa, 1, 20, 0.8, 0.5);
       spotLight2.position.set(0, 15, -15);
       spotLight2.castShadow = true;
       spotLight2.shadow.bias = -0.0001;
