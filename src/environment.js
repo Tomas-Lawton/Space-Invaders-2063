@@ -93,7 +93,7 @@ export const environment = (() => {
         this.scene.add(...glowMeshArray);
       };
     
-      let numSquares = 5;
+      let numSquares = 100;
       for (let i = 0; i < numSquares; i++) {
         runwayLights(i * 8);
       }

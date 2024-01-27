@@ -10,6 +10,7 @@ export const third_person_camera = (() => {
       this._camera = params.camera;
       this._currentPosition = new THREE.Vector3();
       this._currentLookat = new THREE.Vector3();
+      this._lerpFactor = 0.1; // Adjust the lerp factor for the desired easing effect
     }
 
     _CalculateIdealOffset() {
@@ -30,8 +31,10 @@ export const third_person_camera = (() => {
       const idealOffset = this._CalculateIdealOffset();
       const idealLookat = this._CalculateIdealLookat();
 
-      this._currentPosition.copy(idealOffset);
-      this._currentLookat.copy(idealLookat);
+      // Use lerp for smoothing the transition
+      this._currentPosition.lerp(idealOffset, this._lerpFactor);
+      this._currentLookat.lerp(idealLookat, this._lerpFactor);
+
       this._camera.position.copy(this._currentPosition);
       this._camera.lookAt(this._currentLookat);
     }

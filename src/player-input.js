@@ -1,4 +1,4 @@
-import {entity} from "./entity.js";
+import { entity } from "./entity.js";
 
 export const player_input = (() => {
 
@@ -7,22 +7,18 @@ export const player_input = (() => {
       super();
       this.params_ = params;
     }
-      
+
     InitEntity() {
       console.log("Initializing PlayerInput");
-      
+
       this.Parent.Attributes.InputCurrent = {
-        // axis1Forward: 0.0,
         forwardVelocity: 0.0,
         forwardAcceleration: 0.0,
         axis1Side: 0.0,
-        // axis2Forward: 0.0,
-        axis2Side: 0.0,
-        pageUp: false,
-        pageDown: false,
         space: false,
         shift: false,
-        backspace: false,
+        upwardVelocity: 0.0,
+        upwardAcceleration: 0.0,
       };
 
       this.Parent.Attributes.InputPrevious = { ...this.Parent.Attributes.InputCurrent };
@@ -30,12 +26,12 @@ export const player_input = (() => {
       document.addEventListener('keydown', (e) => this.OnKeyDown_(e), false);
       document.addEventListener('keyup', (e) => this.OnKeyUp_(e), false);
     }
-  
+
     OnKeyDown_(event) {
       if (event.currentTarget.activeElement != document.body) {
         return;
       }
-      console.log(event.keyCode)
+      console.log(event.keyCode);
       switch (event.keyCode) {
         case 65: // a
           this.Parent.Attributes.InputCurrent.axis1Side = -1.0;
@@ -50,29 +46,22 @@ export const player_input = (() => {
           this.Parent.Attributes.InputCurrent.forwardAcceleration = -1.0;
           break;
         case 32: // SPACE
-          this.Parent.Attributes.InputCurrent.heightChange = 1.0;
+          this.Parent.Attributes.InputCurrent.upwardAcceleration = 1.0; 
           break;
         case 16: // SHIFT
-          this.Parent.Attributes.InputCurrent.heightChange = -1.0;
-          break;
-        case 8: // BACKSPACE
-          this.Parent.Attributes.InputCurrent.backspace = true;
+          this.Parent.Attributes.InputCurrent.upwardAcceleration = -1.0; 
           break;
       }
     }
-  
+    
     OnKeyUp_(event) {
       if (event.currentTarget.activeElement != document.body) {
         return;
       }
-      switch(event.keyCode) {
-        // case 87: // W
-        // case 83: // S
-        //   this.Parent.Attributes.InputCurrent.forwardVelocity = 0.0;
-        //   break;
+      switch (event.keyCode) {
         case 32: // SPACE
         case 16: // SHIFT
-          this.Parent.Attributes.InputCurrent.heightChange = 0.0;
+          this.Parent.Attributes.InputCurrent.upwardAcceleration = 0.0; 
           break;
         case 65: // a
           this.Parent.Attributes.InputCurrent.axis1Side = 0.0;
@@ -80,21 +69,13 @@ export const player_input = (() => {
         case 68: // d
           this.Parent.Attributes.InputCurrent.axis1Side = 0.0;
           break;
-        case 33: // PG_UP
-          this.Parent.Attributes.InputCurrent.pageUp = false;
-          break;
-        case 34: // PG_DOWN
-          this.Parent.Attributes.InputCurrent.pageDown = false;
-          break;
-        case 8: // BACKSPACE
-          this.Parent.Attributes.InputCurrent.backspace = false;
-          break;
       }
     }
 
     Update(_) {
       this.Parent.Attributes.InputPrevious = {
-          ...this.Parent.Attributes.InputCurrent};
+        ...this.Parent.Attributes.InputCurrent
+      };
     }
   };
 

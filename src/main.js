@@ -188,8 +188,7 @@ loader.load(
 
 
 
-
-const maxVelocity = 3;
+const maxVelocity = 5;
 let previousTime = 0;
 
 function animate(currentTime) {
@@ -209,6 +208,24 @@ function animate(currentTime) {
       const speed = 0.1;
       const acceleration = 0.03;
       const deceleration = 0.02;
+      const verticalAcceleration = 0.0005;
+
+      if (input.upwardAcceleration > 0) {  
+        input.upwardVelocity = Math.min(
+          input.upwardVelocity + input.upwardAcceleration * verticalAcceleration,
+          maxVelocity
+        );
+      } else if (input.upwardAcceleration < 0) {
+        input.upwardVelocity = Math.max(
+          input.upwardVelocity + input.upwardAcceleration * verticalAcceleration,
+          -maxVelocity
+        );
+      } else {
+        // Gradually decrease upwardVelocity towards 0
+        input.upwardVelocity = Math.abs(input.upwardVelocity) <= 0.03 * timeElapsed
+          ? 0
+          : input.upwardVelocity - Math.sign(input.upwardVelocity) * 0.03 * timeElapsed;
+      }
 
       if (input.forwardAcceleration > 0) {
         input.forwardVelocity = Math.min(
@@ -224,7 +241,7 @@ function animate(currentTime) {
 
       const moveVector = new THREE.Vector3(
         Math.sin(mesh.rotation.y) * input.forwardVelocity * speed,
-        0,
+        input.upwardVelocity,
         Math.cos(mesh.rotation.y) * input.forwardVelocity * speed
       );
 
