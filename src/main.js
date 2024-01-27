@@ -171,7 +171,7 @@ loader.load(
     });
 
     tempObject.rotation.y = 1.5 * Math.PI ;
-    // tempObject.position.z += tempObject.scale.z / 2;
+    tempObject.position.z += 20;
     mesh = rotationWrapper;
     updateSpaceshipPosition();
     rotationWrapper.add(tempObject);
