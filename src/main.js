@@ -146,7 +146,7 @@ let thirdPersonCamera;
 loader.load(
   "scene.gltf",
   (gltf) => {
-    let rotationWrapper = new THREE.Group();
+    let meshWrapper = new THREE.Group();
 
     let tempObject = gltf.scene.clone();
     tempObject.traverse((child) => {
@@ -157,9 +157,14 @@ loader.load(
     });
     tempObject.rotation.y = 1.5 * Math.PI ;
     tempObject.position.z += 20;
-    mesh = rotationWrapper;
+    mesh = meshWrapper;
     updateSpaceshipPosition();
-    rotationWrapper.add(tempObject);
+    const ambientLight = new THREE.SpotLight(0x333333, 0.8);
+    ambientLight.position.copy(mesh.position)
+
+    meshWrapper.add(tempObject);
+    meshWrapper.add(ambientLight);
+
     scene.add(mesh); 
     document.getElementById("progress-container").style.display = "none";
 
@@ -187,10 +192,34 @@ loader.load(
 );
 
 
+function mapValue(value, fromMin, fromMax, toMin, toMax) {
+  if (value < fromMin) {
+    value = fromMin;
+  } else if (value > fromMax) {
+    value = fromMax;
+  }
+  const percentage = (value - fromMin) / (fromMax - fromMin);
+  const mappedValue = toMin + percentage * (toMax - toMin);
+  return mappedValue;
+}
+
 
 const maxVelocity = 5;
 let previousTime = 0;
+let mouseX = 0;
+let mouseY = 0;
+let continuousRotation = 0;
 
+function handleMouseMove(event) {
+  const centerX = window.innerWidth / 2;
+  mouseX = event.clientX - centerX;
+
+  const centerY = window.innerHeight / 2;
+  mouseY = event.clientY - centerY;
+}
+
+
+// maybe left and right should change some YAW
 function animate(currentTime) {
   requestAnimationFrame(animate);
 
@@ -204,13 +233,26 @@ function animate(currentTime) {
     if (input && typeof input.axis1Side !== 'undefined' && mesh && thirdPersonCamera) {
       const rotationAngle = -input.axis1Side * 0.05;
       mesh.rotation.y += rotationAngle;
+      mesh.rotation.y = ((mesh.rotation.y + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
 
       const speed = 0.1;
       const acceleration = 0.03;
       const deceleration = 0.02;
       const verticalAcceleration = 0.0005;
 
-      if (input.upwardAcceleration > 0) {  
+      // Reverse direction and make continuous speed smaller
+      continuousRotation = -(mouseX * 0.001) * 0.1;
+
+      const targetY = mesh.rotation.y + continuousRotation;
+      mesh.rotation.y = targetY;
+
+      const targetX = mesh.rotation.x + (mouseY * 0.0001);
+      mesh.rotation.x = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.94, Math.PI * 0.94);
+
+      // Wrap rotation.x within the range [-Math.PI, Math.PI]
+      mesh.rotation.x = ((mesh.rotation.x + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+
+      if (input.upwardAcceleration > 0) {
         input.upwardVelocity = Math.min(
           input.upwardVelocity + input.upwardAcceleration * verticalAcceleration,
           maxVelocity
@@ -239,11 +281,10 @@ function animate(currentTime) {
       }
 
       const moveVector = new THREE.Vector3(
-        Math.sin(mesh.rotation.y) * input.forwardVelocity * speed,
-        input.upwardVelocity,
-        Math.cos(mesh.rotation.y) * input.forwardVelocity * speed
+        Math.sin(mesh.rotation.y) * Math.cos(mesh.rotation.x) * input.forwardVelocity * speed,
+        -Math.sin(mesh.rotation.x) * input.forwardVelocity * speed,
+        Math.cos(mesh.rotation.y) * Math.cos(mesh.rotation.x) * input.forwardVelocity * speed
       );
-
       mesh.position.add(moveVector);
 
       thirdPersonCamera.Update(timeElapsed);
@@ -252,5 +293,7 @@ function animate(currentTime) {
 
   composer.render();
 }
+
+window.addEventListener('mousemove', handleMouseMove);
 
 animate();
