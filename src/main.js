@@ -221,10 +221,9 @@ function animate(currentTime) {
           -maxVelocity
         );
       } else {
-        // Gradually decrease upwardVelocity towards 0
         input.upwardVelocity = Math.abs(input.upwardVelocity) <= 0.03 * timeElapsed
           ? 0
-          : input.upwardVelocity - Math.sign(input.upwardVelocity) * 0.03 * timeElapsed;
+          : input.upwardVelocity - Math.sign(input.upwardVelocity) * 0.01 * timeElapsed;
       }
 
       if (input.forwardAcceleration > 0) {
