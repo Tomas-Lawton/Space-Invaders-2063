@@ -33,12 +33,12 @@ export const player_input = (() => {
       }
       console.log(event.keyCode);
       switch (event.keyCode) {
-        case 65: // a
-          this.Parent.Attributes.InputCurrent.axis1Side = -1.0;
-          break;
-        case 68: // d
-          this.Parent.Attributes.InputCurrent.axis1Side = 1.0;
-          break;
+        // case 65: // a
+        //   this.Parent.Attributes.InputCurrent.axis1Side = -1.0;
+        //   break;
+        // case 68: // d
+        //   this.Parent.Attributes.InputCurrent.axis1Side = 1.0;
+        //   break;
         case 87: // W
           this.Parent.Attributes.InputCurrent.forwardAcceleration = 1.0;
           break;
@@ -63,12 +63,12 @@ export const player_input = (() => {
         case 16: // SHIFT
           this.Parent.Attributes.InputCurrent.upwardAcceleration = 0.0; 
           break;
-        case 65: // a
-          this.Parent.Attributes.InputCurrent.axis1Side = 0.0;
-          break;
-        case 68: // d
-          this.Parent.Attributes.InputCurrent.axis1Side = 0.0;
-          break;
+        // case 65: // a
+        //   this.Parent.Attributes.InputCurrent.axis1Side = 0.0;
+        //   break;
+        // case 68: // d
+        //   this.Parent.Attributes.InputCurrent.axis1Side = 0.0;
+        //   break;
       }
     }
 

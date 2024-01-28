@@ -130,22 +130,21 @@ function updateSpaceshipPosition() {
   }
 }
 
+function centerAndHideCursor() {
+  mouseX = window.innerWidth / 2;
+  mouseY = window.innerHeight / 2;
+  document.body.style.cursor = "none";
+}
+
 let showCursor = false;
-document.body.style.cursor = "none";
-// Add a button to show or hide the mouse cursor
 const cursorController = gui.add({ showCursor: false }, "showCursor").name("Show Cursor");
 cursorController.onChange(updateCursorState);
 
-// Function to update cursor state
 function updateCursorState() {
   showCursor = !showCursor;
 document.body.style.cursor = showCursor ?  "auto" : "none"
 }
 
-
-
-
-// scene.add(pointLight);
 
 
 const loader = new GLTFLoader().setPath("public/spaceship_-_cb1/");
@@ -155,13 +154,15 @@ let thirdPersonCamera;
 loader.load(
   "scene.gltf",
   (gltf) => {
+    centerAndHideCursor();
+
     mesh = new THREE.Group();
 
     const tempObjectGroup = new THREE.Group();
     const loadedModel = gltf.scene;
     loadedModel.traverse(child => child.isMesh && (child.castShadow = child.receiveShadow = true));
     loadedModel.rotation.y = 1.5 * Math.PI;
-    loadedModel.position.z += 15;
+    loadedModel.position.z += 22;
     tempObjectGroup.add(loadedModel);
 
     const ambientLightColor = 0x660099;
@@ -169,16 +170,14 @@ loader.load(
     ambientLight.position.set(tempObjectGroup.position.x, tempObjectGroup.position.y + 5, tempObjectGroup.position.z);
     tempObjectGroup.add(ambientLight);
 
-
-    const pointLight = new THREE.PointLight(0xff6600, 2, 5);
-    pointLight.position.copy(mesh.position);
-    pointLight.position.x -= 2;
-    tempObjectGroup.add(pointLight);
+    const spotLight = new THREE.SpotLight(0xff6600, 3, 5, Math.PI * 1.1, 0.2);
+    spotLight.position.copy(mesh.position);
+    tempObjectGroup.add(spotLight);
+    
 
     mesh.add(tempObjectGroup);
     scene.add(mesh);
     updateSpaceshipPosition();
-
     thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
       camera: camera,
       target: mesh,
@@ -194,7 +193,7 @@ loader.load(
   }
 );
 
-const maxVelocity = 4;
+const maxVelocity = 8;
 let previousTime = 0;
 let mouseX = 0;
 let mouseY = 0;
@@ -205,12 +204,15 @@ const playerEntity = new entity.Entity();
 playerEntity.AddComponent(playerInputComponent);
 playerEntity.InitEntity();
 
+const cursorLight = document.getElementById("cursorLight")
 function handleMouseMove(event) {
   const centerX = window.innerWidth / 2;
   mouseX = event.clientX - centerX;
 
   const centerY = window.innerHeight / 2;
   mouseY = event.clientY - centerY;
+
+  cursorLight.style.transform = `translate(${mouseX - 10}px, ${mouseY - 10}px)`;
 }
 
 function animate(currentTime) {
@@ -219,18 +221,21 @@ function animate(currentTime) {
   const timeElapsed = (currentTime - previousTime) / 1000;
   previousTime = currentTime;
 
+
+  // player
   if (playerEntity && playerEntity.GetComponent('PlayerInput')) {
     playerEntity.Update();
     const input = playerEntity.Attributes.InputCurrent;
 
     if (input && typeof input.axis1Side !== 'undefined' && mesh && thirdPersonCamera) {
+
       const rotationAngle = -input.axis1Side * 0.05;
       mesh.rotation.y += rotationAngle;
       mesh.rotation.y = ((mesh.rotation.y + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
       
       const speed = 0.1;
       const acceleration = 0.03;
-      const deceleration = 0.02;
+      const deceleration = 0.05;
       const verticalAcceleration = 0.0005;
       let meshChild = mesh.children[0]
 
@@ -241,14 +246,13 @@ function animate(currentTime) {
       
       // pitch
       const targetX = meshChild.rotation.x + (mouseY * 0.0001);
-      const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.94, Math.PI * 0.94);
+      const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.88, Math.PI * 0.88);
       meshChild.rotation.x = THREE.MathUtils.lerp(meshChild.rotation.x, mappedTargetX, 0.8); 
       
       // yaw
       const targetYaw = mesh.rotation.z + (mouseX * 0.001);
       const mappedTargetYaw = mapValue(targetYaw, -Math.PI, Math.PI, -Math.PI/2, Math.PI/2);
       mesh.rotation.z = THREE.MathUtils.lerp(mesh.rotation.z, mappedTargetYaw, 0.8);
-      
       
       if (input.upwardAcceleration > 0) {
         input.upwardVelocity = Math.min(
