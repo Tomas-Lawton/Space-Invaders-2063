@@ -232,15 +232,22 @@ function animate(currentTime) {
       const acceleration = 0.03;
       const deceleration = 0.02;
       const verticalAcceleration = 0.0005;
-      
+      let meshChild = mesh.children[0]
+
+      // absolute left right
       continuousRotation = -(mouseX * 0.001) * 0.08;
       let rotateTarget = mesh.rotation.y + continuousRotation;
       mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, rotateTarget, 0.5); 
       
-      let meshChild = mesh.children[0]
+      // pitch
       const targetX = meshChild.rotation.x + (mouseY * 0.0001);
       const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.94, Math.PI * 0.94);
       meshChild.rotation.x = THREE.MathUtils.lerp(meshChild.rotation.x, mappedTargetX, 0.8); 
+      
+      // yaw
+      const targetYaw = mesh.rotation.z + (mouseX * 0.001);
+      const mappedTargetYaw = mapValue(targetYaw, -Math.PI, Math.PI, -Math.PI/2, Math.PI/2);
+      mesh.rotation.z = THREE.MathUtils.lerp(mesh.rotation.z, mappedTargetYaw, 0.8);
       
       
       if (input.upwardAcceleration > 0) {
