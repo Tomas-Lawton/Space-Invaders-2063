@@ -7,6 +7,9 @@ export class Audio_Manager {
     this.audioContext.resume().then(() => {
       console.log('AudioContext is now unlocked and ready to play audio');
     });
+
+    this.lastSoundPlayTime = 0;
+    this.soundCooldown = 500;
   }
 
   loadSounds(path) {
@@ -50,7 +53,6 @@ export class Audio_Manager {
   playSoundAtIndex(index) {
     const selectedSound = this.sounds[index];
   
-    // If soundSource already exists, disconnect it before creating a new one
     if (this.soundSource) {
       this.soundSource.disconnect();
     }

@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
@@ -13,7 +12,7 @@ import { entity } from './entity.js'
 import { environment } from './environment.js'
 import { mapValue } from './utils.js'
 import { Audio_Manager } from './audio.js'
-
+import { setupGUI } from './gui.js';
 
 // Setup
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -27,7 +26,7 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
-  50, 
+  60, 
   window.innerWidth / window.innerHeight,
   1,
   1000
@@ -47,76 +46,14 @@ composer.addPass(renderScene);
 composer.addPass(bloomPass);
 
 
+document.body.style.cursor = "none";
+
 
 // Environment
 const world = new environment.World({ scene: scene });
 world.create()
 
 
-// GUI
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.enablePan = false;
-controls.minDistance = 5;
-controls.maxDistance = 20;
-controls.minPolarAngle = 0.5;
-controls.maxPolarAngle = 1.5;
-controls.autoRotate = false;
-controls.target = new THREE.Vector3(0, 1, 0);
-controls.update();
-
-const spaceshipParams = {
-  positionX: 0,
-  positionY: 0.7, //.7 ground
-  positionZ: 0,
-  scale: 0.08,
-};
-
-const gui = new GUI();
-const spaceshipFolder = gui.addFolder("Spaceship Position");
-spaceshipFolder
-  .add(spaceshipParams, "positionX", -10, 10)
-  .onChange(updateSpaceshipPosition);
-spaceshipFolder
-  .add(spaceshipParams, "positionY", -10, 10)
-  .onChange(updateSpaceshipPosition);
-spaceshipFolder
-  .add(spaceshipParams, "positionZ", -10, 10)
-  .onChange(updateSpaceshipPosition);
-spaceshipFolder
-  .add(spaceshipParams, "scale", 0.01, 2)
-  .onChange(updateSpaceshipPosition);
-// spaceshipFolder.open();
-
-const bloomFolder = gui.addFolder("Bloom Effect");
-const defaultBloomStrength = 3;
-const defaultBloomThreshold = 0.3;
-const defaultBloomRadius = 0.7;
-const strengthController = bloomFolder
-  .add(bloomPass, "strength", 0.1, 3)
-  .name("Intensity")
-  .onChange(updateBloomParameters);
-const thresholdController = bloomFolder
-  .add(bloomPass, "threshold", 0, 1)
-  .name("Threshold")
-  .onChange(updateBloomParameters);
-const radiusController = bloomFolder
-  .add(bloomPass, "radius", 0, 1)
-  .name("Radius")
-  .onChange(updateBloomParameters);
-
-strengthController.setValue(defaultBloomStrength);
-thresholdController.setValue(defaultBloomThreshold);
-radiusController.setValue(defaultBloomRadius);
-// bloomFolder.open();
-
-function updateBloomParameters() {
-  bloomPass.strength = bloomFolder.__controllers[0].object.strength;
-  bloomPass.threshold = bloomFolder.__controllers[1].object.threshold;
-  bloomPass.radius = bloomFolder.__controllers[2].object.radius;
-}
-
-updateBloomParameters();
 
 function updateSpaceshipPosition() {
   if (mesh) {
@@ -133,23 +70,6 @@ function updateSpaceshipPosition() {
   }
 }
 
-function centerAndHideCursor() {
-  mouseX = window.innerWidth / 2;
-  mouseY = window.innerHeight / 2;
-  document.body.style.cursor = "none";
-}
-
-let showCursor = false;
-const cursorController = gui.add({ showCursor: false }, "showCursor").name("Show Cursor");
-cursorController.onChange(updateCursorState);
-
-function updateCursorState() {
-  showCursor = !showCursor;
-document.body.style.cursor = showCursor ?  "auto" : "none"
-}
-
-
-
 const loader = new GLTFLoader().setPath("public/spaceship_-_cb1/");
 let mesh;
 let thirdPersonCamera;
@@ -157,8 +77,6 @@ let thirdPersonCamera;
 loader.load(
   "scene.gltf",
   (gltf) => {
-    centerAndHideCursor();
-
     mesh = new THREE.Group();
 
     const tempObjectGroup = new THREE.Group();
@@ -204,19 +122,29 @@ async function loadAndPlayAudio() {
   await audioManager.loadSoundtrack('./public/audio/soundtrack.wav');
 }
 
+
 try {
   loadAndPlayAudio().then(() => {
-  audioManager.playSoundtrack();
-  })
+    playButton.addEventListener("click", () => {
+      audioManager.playSoundtrack();
+    });
+  });
 } catch {
-  console.warn("No Audio")
+  console.warn("No Audio");
 }
 
 
+const spaceshipParams = {
+  positionX: 0,
+  positionY: 0.7,
+  positionZ: 0,
+  scale: 0.08,
+};
+
+setupGUI({ camera, renderer, bloomPass, spaceshipParams, updateSpaceshipPosition });
 
 
-
-const maxVelocity = 9;
+const maxVelocity = 9.5;
 let previousTime = 0;
 let mouseX = 0;
 let mouseY = 0;
@@ -253,7 +181,7 @@ function animate(currentTime) {
       mesh.rotation.y = ((mesh.rotation.y + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
       
       const speed = 0.1;
-      const acceleration = 0.008;
+      const acceleration = 0.006;
       const deceleration = 0.05;
       const verticalAcceleration = 0.0005;
       let meshChild = mesh.children[0]
@@ -284,9 +212,9 @@ function animate(currentTime) {
           -maxVelocity
         );
       } else {
-        input.upwardVelocity = Math.abs(input.upwardVelocity) <= 0.03 * timeElapsed
+        input.upwardVelocity = Math.abs(input.upwardVelocity) <= 0.3 * timeElapsed
           ? 0
-          : input.upwardVelocity - Math.sign(input.upwardVelocity) * 0.01 * timeElapsed;
+          : input.upwardVelocity - Math.sign(input.upwardVelocity) * 0.1 * timeElapsed;
       }
 
       if (input.forwardAcceleration > 0) {

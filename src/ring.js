@@ -20,7 +20,7 @@ export class Ring {
 
     const glowMaterial = new THREE.MeshStandardMaterial({
       emissive: materialColor,
-      emissiveIntensity: 10, // Reduced emissive intensity
+      emissiveIntensity: 50, 
       color: materialColor,
       roughness: 0.5,
       metalness: 0.5,
