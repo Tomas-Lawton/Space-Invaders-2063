@@ -16,6 +16,7 @@ export const environment = (() => {
         this.addLights();
         this.addParticles();
         this.createStar();
+        // this.createLoops();
       }
     }
 
@@ -33,6 +34,39 @@ export const environment = (() => {
       ];
       const cubeMap = cubeTextureLoader.load(textureUrls);
       this.scene.background = cubeMap;
+    }
+    createLoops () {
+
+      const glowGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+      const glowMaterial = new THREE.MeshStandardMaterial({
+        emissive: 0x777777, 
+        emissiveIntensity: 20,
+        color: 0x777777,
+      });
+    
+      const generateRingPoints = (radius, pointCount, xOff, yOff, zOff) => {
+        for (let i = 0; i < pointCount; i++) {
+          const angle = (Math.PI * 2 * i) / pointCount;
+          const x = radius * Math.cos(angle);
+          const y = radius * Math.sin(angle);
+          const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
+          glowPoint.position.set(x+xOff, y+yOff,0+zOff);
+          this.scene.add(glowPoint);
+        }
+      };
+    
+const maxLoops = 10;
+      for (let j=0; j<maxLoops; j ++) {
+        const xOff = Math.floor(Math.random() * (500));
+        const yOff =Math.floor(Math.random() * (100));
+        const zOff = Math.floor(Math.random() * (500));
+        const numRings = 3;
+        const r = 10; //4
+        for (let i = 0; i < numRings; i++) {
+          generateRingPoints(i * r, i * 30, xOff, yOff, zOff);
+        }
+      }
+   
     }
     addGround () {
       const groundRadius = 54 / 2;

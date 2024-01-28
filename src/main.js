@@ -204,15 +204,11 @@ const playerEntity = new entity.Entity();
 playerEntity.AddComponent(playerInputComponent);
 playerEntity.InitEntity();
 
-const cursorLight = document.getElementById("cursorLight")
 function handleMouseMove(event) {
   const centerX = window.innerWidth / 2;
-  mouseX = event.clientX - centerX;
-
+  mouseX = event.clientX - centerX; 
   const centerY = window.innerHeight / 2;
   mouseY = event.clientY - centerY;
-
-  cursorLight.style.transform = `translate(${mouseX - 10}px, ${mouseY - 10}px)`;
 }
 
 function animate(currentTime) {
