@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -11,6 +12,8 @@ import { player_input } from './player-input.js'
 import { entity } from './entity.js'
 import { environment } from './environment.js'
 import { mapValue } from './utils.js'
+import { Audio_Manager } from './audio.js'
+
 
 // Setup
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -24,7 +27,7 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
-  40, 
+  50, 
   window.innerWidth / window.innerHeight,
   1,
   1000
@@ -83,7 +86,7 @@ spaceshipFolder
 spaceshipFolder
   .add(spaceshipParams, "scale", 0.01, 2)
   .onChange(updateSpaceshipPosition);
-spaceshipFolder.open();
+// spaceshipFolder.open();
 
 const bloomFolder = gui.addFolder("Bloom Effect");
 const defaultBloomStrength = 3;
@@ -193,7 +196,27 @@ loader.load(
   }
 );
 
-const maxVelocity = 8;
+const audioContext = new AudioContext();
+const audioManager = new Audio_Manager(audioContext);
+
+async function loadAndPlayAudio() {
+  await audioManager.loadSounds('./public/audio/sounds');
+  await audioManager.loadSoundtrack('./public/audio/soundtrack.wav');
+}
+
+try {
+  loadAndPlayAudio().then(() => {
+  audioManager.playSoundtrack();
+  })
+} catch {
+  console.warn("No Audio")
+}
+
+
+
+
+
+const maxVelocity = 9;
 let previousTime = 0;
 let mouseX = 0;
 let mouseY = 0;
@@ -230,7 +253,7 @@ function animate(currentTime) {
       mesh.rotation.y = ((mesh.rotation.y + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
       
       const speed = 0.1;
-      const acceleration = 0.03;
+      const acceleration = 0.008;
       const deceleration = 0.05;
       const verticalAcceleration = 0.0005;
       let meshChild = mesh.children[0]
@@ -288,6 +311,13 @@ function animate(currentTime) {
       thirdPersonCamera.Update(timeElapsed);
     }
   }
+
+  world.rings.forEach(ring => {
+    if(ring.checkCollisionWithRing(mesh)
+    ) {
+      audioManager.playNextSound();
+    }
+  })
 
   composer.render();
 }

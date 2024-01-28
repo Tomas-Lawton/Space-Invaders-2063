@@ -4,7 +4,7 @@ export class ThirdPersonCamera {
   constructor(params) {
     this.camera = params.camera;
     this.target = params.target;
-    this.cameraDistance = 15;
+    this.cameraDistance = 30;
 
     this.cameraOffset = new THREE.Vector3(0, 5, -this.cameraDistance);
 

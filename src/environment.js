@@ -1,10 +1,14 @@
 import * as THREE from "three";
-import { generateRadialGradient } from "./gradient.js";
+import { Particle } from "./Particle.js";
+import { Ring } from "./Ring.js";
 
 export const environment = (() => {
   class World {
     constructor(params) {
       this.scene = params.scene;
+      this.rings = [];
+      this.particles = [];
+
     }
 
     create() {
@@ -14,9 +18,9 @@ export const environment = (() => {
         this.createRings();
         this.createRunway();
         this.addLights();
-        this.addParticles();
         this.createStar();
-        // this.createLoops();
+        this.addParticles();
+        this.createLoops();
       }
     }
 
@@ -35,39 +39,8 @@ export const environment = (() => {
       const cubeMap = cubeTextureLoader.load(textureUrls);
       this.scene.background = cubeMap;
     }
-    createLoops () {
-
-      const glowGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-      const glowMaterial = new THREE.MeshStandardMaterial({
-        emissive: 0x777777, 
-        emissiveIntensity: 20,
-        color: 0x777777,
-      });
-    
-      const generateRingPoints = (radius, pointCount, xOff, yOff, zOff) => {
-        for (let i = 0; i < pointCount; i++) {
-          const angle = (Math.PI * 2 * i) / pointCount;
-          const x = radius * Math.cos(angle);
-          const y = radius * Math.sin(angle);
-          const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
-          glowPoint.position.set(x+xOff, y+yOff,0+zOff);
-          this.scene.add(glowPoint);
-        }
-      };
-    
-const maxLoops = 10;
-      for (let j=0; j<maxLoops; j ++) {
-        const xOff = Math.floor(Math.random() * (500));
-        const yOff =Math.floor(Math.random() * (100));
-        const zOff = Math.floor(Math.random() * (500));
-        const numRings = 3;
-        const r = 10; //4
-        for (let i = 0; i < numRings; i++) {
-          generateRingPoints(i * r, i * 30, xOff, yOff, zOff);
-        }
-      }
    
-    }
+    
     addGround () {
       const groundRadius = 54 / 2;
       const groundSegments = 64; // You can adjust the number of segments for a smoother circle
@@ -188,18 +161,15 @@ const maxLoops = 10;
       }
     }
     addLights() {
-      // Adjust the ambient light color and intensity
       const ambientLight = new THREE.AmbientLight(0x333333, 0.5);
       this.scene.add(ambientLight);
     
-      // Adjust the first spot light color, position, and intensity
       const spotLight = new THREE.SpotLight(0xff3300, 1, 20, 0.8, 0.5);
       spotLight.position.set(0, 15, 0);
       spotLight.castShadow = true;
       spotLight.shadow.bias = -0.0001;
       this.scene.add(spotLight);
     
-      // Adjust the second spot light color, position, and intensity
       const spotLight2 = new THREE.SpotLight(0x0055aa, 1, 20, 0.8, 0.5);
       spotLight2.position.set(0, 15, -15);
       spotLight2.castShadow = true;
@@ -207,62 +177,32 @@ const maxLoops = 10;
       this.scene.add(spotLight2);
     }
 
+    createLoops() {
+      const numRings = 20 
+      for (let i = 0; i < numRings; i++) {
+        const ring = new Ring(this.scene);
+        this.rings.push(ring);
+      }
+      const animateAll = () => {
+        for (const ring of this.rings) {
+          ring.animate();
+        }
+        requestAnimationFrame(animateAll);
+      };
+      animateAll();
+    }
+
     addParticles() {
       const particleCount = 120;
-      this.particles = new THREE.Group();
-      this.scene.add(this.particles);
-      const particleGeometry = new THREE.SphereGeometry(0.03, 6, 6);
-
-      const particleMaterial = new THREE.MeshBasicMaterial({
-        color: 0x00aaff,
-        emissive: 0x00aaff,
-        emissiveIntensity: 0.8,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.2,
-      });
-
       for (let i = 0; i < particleCount; i++) {
-        const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-        particle.position.set(
+        const position = new THREE.Vector3(
           Math.random() * 20 - 10,
           Math.random() * 10,
           Math.random() * 20 - 10
         );
-        this.particles.add(particle);
-
-        this.animateParticle(particle);
+        const particle = new Particle(this.scene, position);
+        this.particles.push(particle);
       }
-    }
-
-    animateParticle(particle) {
-      const animationSpeed = 0.0006;
-      const initialPosition = particle.position.clone();
-      particle.userData.animationOffset = Math.random() * Math.PI * 2;
-      particle.onBeforeRender = () => {
-        const time =
-          performance.now() * animationSpeed + particle.userData.animationOffset;
-        particle.position.x = initialPosition.x + Math.sin(time) * 1;
-        particle.position.y = initialPosition.y + Math.sin(time * 2) * 0.5;
-        particle.position.z = initialPosition.z + Math.sin(time * 3) * 1;
-      };
-      this.animateFlicker(particle.material);
-    }
-
-    animateFlicker(material) {
-      const animationSpeed = 0.002;
-      let time = 0;
-
-      function animate() {
-        time += animationSpeed;
-
-        if (material.emissive) {
-          material.emissive.setScalar(Math.abs(Math.sin(time)));
-        }
-
-        requestAnimationFrame(animate);
-      }
-      animate();
     }
   }
 
