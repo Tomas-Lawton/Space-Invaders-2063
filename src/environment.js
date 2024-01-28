@@ -35,7 +35,10 @@ export const environment = (() => {
       this.scene.background = cubeMap;
     }
     addGround () {
-      const groundGeometry = new THREE.PlaneGeometry(35, 35, 35, 35);
+      const groundRadius = 54 / 2;
+      const groundSegments = 64; // You can adjust the number of segments for a smoother circle
+      
+      const groundGeometry = new THREE.CircleGeometry(groundRadius, groundSegments);
       groundGeometry.rotateX(-Math.PI / 2);
       const groundMaterial = new THREE.MeshStandardMaterial({
         color: 0x111111,
@@ -43,9 +46,11 @@ export const environment = (() => {
         roughness: 0.5,
         side: THREE.DoubleSide,
       });
+      
       const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
       groundMesh.castShadow = false;
       groundMesh.receiveShadow = true;
+      
       this.scene.add(groundMesh);
     }
     createRings() {

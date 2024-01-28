@@ -130,48 +130,55 @@ function updateSpaceshipPosition() {
   }
 }
 
+let showCursor = false;
+document.body.style.cursor = "none";
+// Add a button to show or hide the mouse cursor
+const cursorController = gui.add({ showCursor: false }, "showCursor").name("Show Cursor");
+cursorController.onChange(updateCursorState);
+
+// Function to update cursor state
+function updateCursorState() {
+  showCursor = !showCursor;
+document.body.style.cursor = showCursor ?  "auto" : "none"
+}
 
 
 
 
-
-
+// scene.add(pointLight);
 
 
 const loader = new GLTFLoader().setPath("public/spaceship_-_cb1/");
 let mesh;
 let thirdPersonCamera;
+
 loader.load(
   "scene.gltf",
   (gltf) => {
-    let meshWrapper = new THREE.Group();
+    mesh = new THREE.Group();
 
-    let tempObject = gltf.scene.clone();
-    tempObject.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
-    });
-    tempObject.rotation.y = 1.5 * Math.PI ;
-    tempObject.position.z += 20;
-    mesh = meshWrapper;
-    updateSpaceshipPosition();
-    const ambientLightColor = 0x660099; // Dystopian red color, you can change it to your preferred color
+    const tempObjectGroup = new THREE.Group();
+    const loadedModel = gltf.scene;
+    loadedModel.traverse(child => child.isMesh && (child.castShadow = child.receiveShadow = true));
+    loadedModel.rotation.y = 1.5 * Math.PI;
+    loadedModel.position.z += 15;
+    tempObjectGroup.add(loadedModel);
+
+    const ambientLightColor = 0x660099;
     const ambientLight = new THREE.PointLight(ambientLightColor, 1, 50);
-    ambientLight.position.set(mesh.position.x, mesh.position.y + 5, mesh.position.z);
-    meshWrapper.add(tempObject);
-    meshWrapper.add(ambientLight);
-    
-    scene.add(mesh);
-    // dependents 
+    ambientLight.position.set(tempObjectGroup.position.x, tempObjectGroup.position.y + 5, tempObjectGroup.position.z);
+    tempObjectGroup.add(ambientLight);
+
 
     const pointLight = new THREE.PointLight(0xff6600, 2, 5);
     pointLight.position.copy(mesh.position);
     pointLight.position.x -= 2;
-    
-    scene.add(pointLight);
-    
+    tempObjectGroup.add(pointLight);
+
+    mesh.add(tempObjectGroup);
+    scene.add(mesh);
+    updateSpaceshipPosition();
+
     thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
       camera: camera,
       target: mesh,
@@ -187,7 +194,7 @@ loader.load(
   }
 );
 
-const maxVelocity = 6;
+const maxVelocity = 4;
 let previousTime = 0;
 let mouseX = 0;
 let mouseY = 0;
@@ -228,11 +235,13 @@ function animate(currentTime) {
       
       continuousRotation = -(mouseX * 0.001) * 0.08;
       let rotateTarget = mesh.rotation.y + continuousRotation;
-      mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, rotateTarget, 0.5); // Use Three.js lerp function for rotation.y
+      mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, rotateTarget, 0.5); 
       
-      const targetX = mesh.rotation.x + (mouseY * 0.0001);
+      let meshChild = mesh.children[0]
+      const targetX = meshChild.rotation.x + (mouseY * 0.0001);
       const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.94, Math.PI * 0.94);
-      mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, mappedTargetX, 0.5); // Use Three.js lerp function for rotation.x
+      meshChild.rotation.x = THREE.MathUtils.lerp(meshChild.rotation.x, mappedTargetX, 0.8); 
+      
       
       if (input.upwardAcceleration > 0) {
         input.upwardVelocity = Math.min(
@@ -262,10 +271,9 @@ function animate(currentTime) {
         );
       }
 
-
       const moveVector = new THREE.Vector3(
         Math.sin(mesh.rotation.y) * Math.cos(mesh.rotation.x) * input.forwardVelocity * speed,
-       (-Math.sin(mesh.rotation.x) * input.forwardVelocity * speed) + input.upwardVelocity,
+       (-Math.sin(meshChild.rotation.x) * input.forwardVelocity * speed) + input.upwardVelocity,
         Math.cos(mesh.rotation.y) * Math.cos(mesh.rotation.x) * input.forwardVelocity * speed
       );
       mesh.position.add(moveVector);
