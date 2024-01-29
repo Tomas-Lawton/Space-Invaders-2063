@@ -3,13 +3,22 @@ import * as THREE from "three";
 export class Ring {
   constructor(scene) {
     this.scene = scene;
-    this.radius = Math.random() * 50 + 10; // Set the radius property
+    this.radius = Math.random() * 50 + 10;
     this.ring = this.createRing();
+    this.speed = {};
     this.speed = this.generateRandomSpeed();
     this.isColliding = false;
 
     this.invisibleMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
     this.invisibleCircle = this.createInvisibleCircle();
+
+    this.clock = new THREE.Clock();
+    this.elapsedTime = 0;
+    this.transitionDuration = 1;
+
+    // Bind methods to the instance
+    this.animate = this.animate.bind(this);
+    this.update = this.update.bind(this);
   }
 
   createRing() {
@@ -20,7 +29,7 @@ export class Ring {
 
     const glowMaterial = new THREE.MeshStandardMaterial({
       emissive: materialColor,
-      emissiveIntensity: 50, 
+      emissiveIntensity: 50,
       color: materialColor,
       roughness: 0.5,
       metalness: 0.5,
@@ -29,12 +38,7 @@ export class Ring {
     const ringGeometry = new THREE.TorusGeometry(this.radius, tubeRadius, radialSegments, tubularSegments);
     const ring = new THREE.Mesh(ringGeometry, glowMaterial);
 
-    ring.position.set(
-      // Math.random() * 500 - 250,
-      0,
-      Math.random() * 50 - 25,
-      Math.random() * 500 + 100
-    );
+    ring.position.set(0, Math.random() * 100, Math.random() * 2000 + 100);
 
     this.scene.add(ring);
     return ring;
@@ -57,40 +61,69 @@ export class Ring {
   }
 
   animate() {
-    // this.ring.rotation.x += this.speed.x;
-    // this.ring.rotation.y += this.speed.y;
     this.ring.rotation.z += this.speed.z;
+
+    this.ring.rotation.y += this.speed.y;
+
   }
 
-  checkCollisionWithRing(object) {
-    if (object && object.position) {
-      const objectPosition = object.position.clone();
-      const ringWorldMatrix = this.ring.matrixWorld.clone();
-      const ringInverseMatrix = new THREE.Matrix4();
-      ringInverseMatrix.copy(ringWorldMatrix).invert();
-      objectPosition.applyMatrix4(ringInverseMatrix);
-  
-      // Apply rotation to align with the ring's rotation
-      const rotationMatrix = new THREE.Matrix4();
-      rotationMatrix.makeRotationFromEuler(this.ring.rotation);
-      objectPosition.applyMatrix4(rotationMatrix);
-  
-      objectPosition.y = 0;
-      const distanceToCenter = new THREE.Vector2(objectPosition.x, objectPosition.z).length();
-  
-      if (distanceToCenter < this.radius && !this.isColliding) {
-        this.isColliding = true;
-        this.invisibleMaterial.opacity = .3; 
-        return true
-      }
-      //  else if (distanceToCenter >= this.radius && this.isColliding) {
-      //   this.isColliding = false;
-      //   this.invisibleMaterial.opacity = 0;
-      //   return true
-      // }
-      return false
+  setRingColor() {
+    const targetColor = this.isColliding ? new THREE.Color(0x00ff00) : new THREE.Color(Math.random() * 0xffffff);
+    
+    // Calculate a smooth transition using the elapsedTime
+    const smoothProgress = Math.min(this.elapsedTime / this.transitionDuration, 1);
+    const smoothStep = smoothProgress * smoothProgress * (3 - 2 * smoothProgress);
+    const currentColor = new THREE.Color().lerpColors(this.ring.material.color, targetColor, smoothStep);
+    
+    if (!this.ring.material.emissive.equals(currentColor)) {
+      this.ring.material.emissive.copy(currentColor);
+      this.ring.material.color.copy(currentColor);
     }
   }
 
+  handleCollision() {
+    this.isColliding = true;
+    this.invisibleMaterial.opacity = 0.3;
+    this.setRingColor();
+    this.elapsedTime = 0; // Reset elapsed time after collision
+  }
+  
+  handleNonCollision() {
+    // this.isColliding = false;
+    this.invisibleMaterial.opacity = 0;
+    this.setRingColor();
+    this.elapsedTime = 0; // Reset elapsed time after non-collision
+  }
 
+  checkCollisionWithRing(object = {}) {
+    if (object.position) {
+      const objectPosition = object.position.clone();
+      const ringPosition = this.ring.position.clone();
+
+      const ringInverseMatrix = new THREE.Matrix4().copy(this.ring.matrixWorld).invert();
+      objectPosition.applyMatrix4(ringInverseMatrix);
+
+      const rotationMatrix = new THREE.Matrix4().makeRotationFromEuler(this.ring.rotation);
+      objectPosition.applyMatrix4(rotationMatrix);
+
+      objectPosition.y = 0;
+      const distanceToCenter = new THREE.Vector2(objectPosition.x, objectPosition.z).length();
+
+      if (distanceToCenter < this.radius && !this.isColliding) {
+        this.handleCollision();
+        return true;
+      }
+
+      if (distanceToCenter >= this.radius && this.isColliding) {
+        this.handleNonCollision();
+      }
+
+      return false;
+    }
+  }
+
+  update() {
+    this.elapsedTime += this.clock.getDelta();
+    this.animate();
+  }
 }

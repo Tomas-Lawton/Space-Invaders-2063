@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { entity } from './entity.js';
-
+import { mapValue } from "./utils.js";
 export const third_person_camera = (() => {
   
   class ThirdPersonCamera extends entity.Component {
@@ -10,7 +10,7 @@ export const third_person_camera = (() => {
       this._camera = params.camera;
       this._currentPosition = new THREE.Vector3();
       this._currentLookat = new THREE.Vector3();
-      this._lerpFactor = 0.1; // Adjust the lerp factor for the desired easing effect
+      this._lerpFactor = 0.1; 
     }
 
     _CalculateIdealOffset() {
@@ -31,12 +31,16 @@ export const third_person_camera = (() => {
       const idealOffset = this._CalculateIdealOffset();
       const idealLookat = this._CalculateIdealLookat();
 
-      // Use lerp for smoothing the transition
       this._currentPosition.lerp(idealOffset, this._lerpFactor);
       this._currentLookat.lerp(idealLookat, this._lerpFactor);
 
+      this._currentPosition.y += mapValue(this._params.target.children[0].rotation.x, -Math.PI, Math.PI, -3, 3)
+
+
       this._camera.position.copy(this._currentPosition);
       this._camera.lookAt(this._currentLookat);
+      this._camera.rotation.x += mapValue(this._params.target.children[0].rotation.x, -Math.PI, Math.PI, -.5, .5)
+
     }
   }
 

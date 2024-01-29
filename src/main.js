@@ -238,13 +238,12 @@ function animate(currentTime) {
   }
 
   world.rings.forEach(ring => {
-    if(ring.checkCollisionWithRing(mesh)
-    ) {
-  console.log('play')
+    ring.update();  // Make sure to call update first
+    if (ring.checkCollisionWithRing(mesh)) {
+      console.log('play');
       audioManager.playNextSound();
     }
-  })
-
+  });
   composer.render();
 }
 

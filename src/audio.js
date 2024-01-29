@@ -68,18 +68,19 @@ export class Audio_Manager {
   }
   
   playSoundAtIndex(index) {
-    console.log('play sound')
+    console.log('play sound');
     const selectedSound = new Audio(this.sounds[index].src);
     const currentTime = Date.now();
 
     if (currentTime - this.lastSoundPlayTime < this.soundCooldown) return;
 
-    if (this.soundSource) this.soundSource.disconnect();
+    const soundSource = this.audioContext.createMediaElementSource(selectedSound);
+    soundSource.connect(this.audioContext.destination);
 
-    this.soundSource = this.audioContext.createMediaElementSource(selectedSound);
-    this.soundSource.connect(this.audioContext.destination);
-
-    selectedSound.addEventListener('ended', () => this.lastSoundPlayTime = Date.now());
+    selectedSound.addEventListener('ended', () => {
+        this.lastSoundPlayTime = Date.now();
+        soundSource.disconnect();
+    });
 
     selectedSound.play().catch(error => console.error("Error playing sound:", error));
 }
