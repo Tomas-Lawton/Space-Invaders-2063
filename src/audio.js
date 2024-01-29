@@ -1,9 +1,10 @@
 export class Audio_Manager {
   constructor(audioContext) {
-    this.sounds = [];
     this.audioContext = audioContext;
+    this.sounds = [];
     this.currentIndex = 0;
     this.soundtrack = null;
+    this.soundtrackSource = null;
     this.lastSoundPlayTime = 0;
     this.soundCooldown = 100;
   }
@@ -18,56 +19,57 @@ export class Audio_Manager {
   }
 
   loadSoundtrack(path) {
-    this.soundtrack = new Audio();
-    this.soundtrack.src = path;
+    this.soundtrack = new Audio(path);
+    this.soundtrack.loop = true;
   }
 
-  playRandomSound() {
+  async playRandomSound() {
     const randomIndex = Math.floor(Math.random() * this.sounds.length);
-    this.playSoundAtIndex(randomIndex);
+    await this.playSoundAtIndex(randomIndex);
   }
 
-  playNextSound() {
+  async playNextSound() {
     this.currentIndex = (this.currentIndex + 1) % this.sounds.length;
-    this.playSoundAtIndex(this.currentIndex);
+    await this.playSoundAtIndex(this.currentIndex);
   }
 
-  playSoundtrack() {
-    if (this.soundtrack) {
-      this.audioContext.resume().then(() => {
-        console.log('AudioContext is now unlocked and ready to play audio');
-      });
-
-      if (!this.soundtrack.paused) {
-        this.soundtrack.pause();
-        return; 
+  async playSoundtrack() {
+    console.log('Playing...');
+    if (!this.soundtrack) {
+      console.warn('Soundtrack is not loaded');
+      return;
+    }
+  
+    try {
+      await this.audioContext.resume();
+      console.log('AudioContext is now unlocked and ready to play audio');
+  
+      if (!this.soundtrackSource) {
+        this.soundtrackSource = this.audioContext.createMediaElementSource(this.soundtrack);
+        this.soundtrackSource.connect(this.audioContext.destination);
       }
   
-      if (this.soundtrackSource) {
-        this.soundtrack.play();
-        return; 
+      if (!this.soundtrack.paused) {
+        this.soundtrack.pause();
+        console.log('Paused Soundtrack');
+        return;
       }
   
       const randomStartTime = Math.random() * this.soundtrack.duration;
-      if (isFinite(randomStartTime)) {
-        this.soundtrack.currentTime = randomStartTime;
-      } else {
-        this.soundtrack.currentTime = 0;
-      }
-  
-      if (this.soundtrackSource) {
-        this.soundtrackSource.disconnect();
-      }
-  
-      this.soundtrackSource = this.audioContext.createMediaElementSource(this.soundtrack);
-      this.soundtrackSource.connect(this.audioContext.destination);
-  
+      this.soundtrack.currentTime = isFinite(randomStartTime) ? randomStartTime : 0;
       this.soundtrack.play();
-      console.log("Started Soundtrack")
+      console.log('Started Soundtrack');
+    } catch (error) {
+      console.error('Failed to initialize AudioContext:', error);
     }
   }
-  
-  playSoundAtIndex(index) {
+  pauseSoundtrack() {
+    if (this.soundtrack && !this.soundtrack.paused) {
+      this.soundtrack.pause();
+      console.log('Paused Soundtrack');
+    }
+  }
+  async playSoundAtIndex(index) {
     console.log('play sound');
     const selectedSound = new Audio(this.sounds[index].src);
     const currentTime = Date.now();
@@ -78,11 +80,10 @@ export class Audio_Manager {
     soundSource.connect(this.audioContext.destination);
 
     selectedSound.addEventListener('ended', () => {
-        this.lastSoundPlayTime = Date.now();
-        soundSource.disconnect();
+      this.lastSoundPlayTime = Date.now();
+      soundSource.disconnect();
     });
 
-    selectedSound.play().catch(error => console.error("Error playing sound:", error));
-}
-
+    await selectedSound.play().catch(error => console.error("Error playing sound:", error));
+  }
 }

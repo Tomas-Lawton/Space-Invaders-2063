@@ -11,6 +11,8 @@ import { mapValue } from './utils.js'
 import { Audio_Manager } from './audio.js'
 import { setupGUI } from './gui.js';
 
+
+
 // Setup
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.outputEncoding = THREE.sRGBEncoding;
@@ -39,6 +41,18 @@ const bloomPass = new UnrealBloomPass(
 
 const renderScene = new RenderPass(scene, camera);
 const composer = new EffectComposer(renderer);
+
+
+
+
+const renderTargetParameters = {
+	minFilter: THREE.LinearFilter,
+	magFilter: THREE.LinearFilter,
+	stencilBuffer: false
+};
+
+
+
 composer.addPass(renderScene);
 composer.addPass(bloomPass);
 
@@ -49,6 +63,7 @@ document.body.style.cursor = "none";
 // Environment
 const world = new environment.World({ scene: scene });
 world.create()
+
 
 
 
@@ -111,26 +126,6 @@ loader.load(
   }
 );
 
-const audioContext = new AudioContext();
-const audioManager = new Audio_Manager(audioContext);
-
-async function loadAndPlayAudio() {
-  await audioManager.loadSounds('./public/audio/sounds');
-  await audioManager.loadSoundtrack('./public/audio/soundtrack.wav');
-}
-
-
-try {
-  loadAndPlayAudio().then(() => {
-    playButton.addEventListener("click", () => {
-      audioManager.playSoundtrack();
-    });
-  });
-} catch {
-  console.warn("No Audio");
-}
-
-
 const spaceshipParams = {
   positionX: 0,
   positionY: 0.7,
@@ -138,7 +133,25 @@ const spaceshipParams = {
   scale: 0.08,
 };
 
-setupGUI({ camera, renderer, bloomPass, spaceshipParams, updateSpaceshipPosition });
+
+let audioManager;
+
+async function startAudioContext() {
+  try {
+    const audioContext = new AudioContext();
+    audioManager = new Audio_Manager(audioContext);
+    await audioManager.loadSounds('./public/audio/sounds');
+    await audioManager.loadSoundtrack('./public/audio/soundtrack.wav');
+  } catch (error) {
+    console.error('Failed to initialize AudioContext:', error);
+  }
+}
+
+startAudioContext();
+
+
+setupGUI({ camera, renderer, bloomPass, spaceshipParams, updateSpaceshipPosition, audioManager });
+
 
 
 const maxVelocity = 9.5;
@@ -190,7 +203,7 @@ function animate(currentTime) {
       
       // pitch
       const targetX = meshChild.rotation.x + (mouseY * 0.0001);
-      const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.88, Math.PI * 0.88);
+      const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.93, Math.PI * 0.93);
       meshChild.rotation.x = THREE.MathUtils.lerp(meshChild.rotation.x, mappedTargetX, 0.8); 
       
       // yaw
