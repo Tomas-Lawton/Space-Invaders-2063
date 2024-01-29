@@ -9,7 +9,7 @@ export class Ring {
     this.speed = this.generateRandomSpeed();
     this.isColliding = false;
 
-    this.invisibleMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, side: THREE.DoubleSide });
+    this.invisibleMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.1, side: THREE.DoubleSide });
     this.invisibleCircle = this.createInvisibleCircle();
 
     this.clock = new THREE.Clock();
@@ -63,7 +63,7 @@ export class Ring {
   animate() {
     this.ring.rotation.z += this.speed.z;
     this.ring.rotation.y += this.speed.y;
-    this.ring.rotation.z += this.speed.z;
+    this.ring.rotation.x += this.speed.x;
     this.invisibleCircle.rotation.copy(this.ring.rotation);
   }
 
@@ -83,7 +83,7 @@ export class Ring {
 
   handleCollision() {
     this.isColliding = true;
-    this.invisibleMaterial.opacity = 0.3;
+    this.invisibleMaterial.opacity = 0;
     this.setRingColor();
     this.elapsedTime = 0; // Reset elapsed time after collision
   }
