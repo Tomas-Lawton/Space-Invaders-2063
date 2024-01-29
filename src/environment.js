@@ -178,7 +178,7 @@ export const environment = (() => {
     }
 
     createLoops() {
-      const numRings = 20 
+      const numRings = 3 
       for (let i = 0; i < numRings; i++) {
         const ring = new Ring(this.scene);
         this.rings.push(ring);

@@ -4,12 +4,8 @@ export class Audio_Manager {
     this.audioContext = audioContext;
     this.currentIndex = 0;
     this.soundtrack = null;
-    this.audioContext.resume().then(() => {
-      console.log('AudioContext is now unlocked and ready to play audio');
-    });
-
     this.lastSoundPlayTime = 0;
-    this.soundCooldown = 500;
+    this.soundCooldown = 100;
   }
 
   loadSounds(path) {
@@ -38,6 +34,20 @@ export class Audio_Manager {
 
   playSoundtrack() {
     if (this.soundtrack) {
+      this.audioContext.resume().then(() => {
+        console.log('AudioContext is now unlocked and ready to play audio');
+      });
+
+      if (!this.soundtrack.paused) {
+        this.soundtrack.pause();
+        return; 
+      }
+  
+      if (this.soundtrackSource) {
+        this.soundtrack.play();
+        return; 
+      }
+  
       const randomStartTime = Math.random() * this.soundtrack.duration;
       if (isFinite(randomStartTime)) {
         this.soundtrack.currentTime = randomStartTime;
@@ -45,20 +55,33 @@ export class Audio_Manager {
         this.soundtrack.currentTime = 0;
       }
   
-      const soundtrackSource = this.audioContext.createMediaElementSource(this.soundtrack);
-      soundtrackSource.connect(this.audioContext.destination);
+      if (this.soundtrackSource) {
+        this.soundtrackSource.disconnect();
+      }
+  
+      this.soundtrackSource = this.audioContext.createMediaElementSource(this.soundtrack);
+      this.soundtrackSource.connect(this.audioContext.destination);
+  
       this.soundtrack.play();
+      console.log("Started Soundtrack")
     }
   }
+  
   playSoundAtIndex(index) {
-    const selectedSound = this.sounds[index];
-  
-    if (this.soundSource) {
-      this.soundSource.disconnect();
-    }
-  
+    console.log('play sound')
+    const selectedSound = new Audio(this.sounds[index].src);
+    const currentTime = Date.now();
+
+    if (currentTime - this.lastSoundPlayTime < this.soundCooldown) return;
+
+    if (this.soundSource) this.soundSource.disconnect();
+
     this.soundSource = this.audioContext.createMediaElementSource(selectedSound);
     this.soundSource.connect(this.audioContext.destination);
-    selectedSound.play();
-  }
+
+    selectedSound.addEventListener('ended', () => this.lastSoundPlayTime = Date.now());
+
+    selectedSound.play().catch(error => console.error("Error playing sound:", error));
+}
+
 }

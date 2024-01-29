@@ -30,9 +30,10 @@ export class Ring {
     const ring = new THREE.Mesh(ringGeometry, glowMaterial);
 
     ring.position.set(
-      Math.random() * 500 - 250,
-      Math.random() * 500 - 250,
-      Math.random() * 500 - 250
+      // Math.random() * 500 - 250,
+      0,
+      Math.random() * 50 - 25,
+      Math.random() * 500 + 100
     );
 
     this.scene.add(ring);
@@ -56,9 +57,9 @@ export class Ring {
   }
 
   animate() {
-    this.ring.rotation.x += this.speed.x;
+    // this.ring.rotation.x += this.speed.x;
     // this.ring.rotation.y += this.speed.y;
-    // this.ring.rotation.z += this.speed.z;
+    this.ring.rotation.z += this.speed.z;
   }
 
   checkCollisionWithRing(object) {
@@ -79,13 +80,14 @@ export class Ring {
   
       if (distanceToCenter < this.radius && !this.isColliding) {
         this.isColliding = true;
-        this.invisibleMaterial.opacity = .5; 
-        return false
-      } else if (distanceToCenter >= this.radius && this.isColliding) {
-        this.isColliding = false;
-        this.invisibleMaterial.opacity = 0;
+        this.invisibleMaterial.opacity = .3; 
         return true
       }
+      //  else if (distanceToCenter >= this.radius && this.isColliding) {
+      //   this.isColliding = false;
+      //   this.invisibleMaterial.opacity = 0;
+      //   return true
+      // }
       return false
     }
   }
