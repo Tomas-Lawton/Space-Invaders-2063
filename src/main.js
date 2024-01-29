@@ -30,7 +30,6 @@ const camera = new THREE.PerspectiveCamera(
   1,
   1000
 );
-camera.position.set(0, 5, 5); 
 
 const bloomPass = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),

@@ -10,7 +10,7 @@ export class Audio_Manager {
   }
 
   loadSounds(path) {
-    const soundCount = 11;
+    const soundCount = 3;
     for (let i = 1; i <= soundCount; i++) {
       const sound = new Audio();
       sound.src = `${path}/${i}.wav`;
