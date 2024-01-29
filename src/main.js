@@ -16,7 +16,6 @@ import { setupGUI } from './gui.js';
 
 // Setup
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x000000);
 renderer.setPixelRatio(window.devicePixelRatio);

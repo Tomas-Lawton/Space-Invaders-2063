@@ -10,7 +10,7 @@ export class Particle {
   createParticle(position) {
     const particleGeometry = new THREE.SphereGeometry(0.03, 6, 6);
 
-    const particleMaterial = new THREE.MeshBasicMaterial({
+    const particleMaterial = new THREE.MeshStandardMaterial({
       color: 0x00aaff,
       emissive: 0x00aaff,
       emissiveIntensity: 0.8,

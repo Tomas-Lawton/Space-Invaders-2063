@@ -9,7 +9,7 @@ export class Ring {
     this.speed = this.generateRandomSpeed();
     this.isColliding = false;
 
-    this.invisibleMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
+    this.invisibleMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, side: THREE.DoubleSide });
     this.invisibleCircle = this.createInvisibleCircle();
 
     this.clock = new THREE.Clock();
@@ -29,7 +29,7 @@ export class Ring {
 
     const glowMaterial = new THREE.MeshStandardMaterial({
       emissive: materialColor,
-      emissiveIntensity: 50,
+      emissiveIntensity: 60,
       color: materialColor,
       roughness: 0.5,
       metalness: 0.5,
@@ -62,9 +62,9 @@ export class Ring {
 
   animate() {
     this.ring.rotation.z += this.speed.z;
-
     this.ring.rotation.y += this.speed.y;
-
+    this.ring.rotation.z += this.speed.z;
+    this.invisibleCircle.rotation.copy(this.ring.rotation);
   }
 
   setRingColor() {
@@ -114,9 +114,9 @@ export class Ring {
         return true;
       }
 
-      if (distanceToCenter >= this.radius && this.isColliding) {
-        this.handleNonCollision();
-      }
+      // if (distanceToCenter >= this.radius && this.isColliding) {
+      //   this.handleNonCollision();
+      // }
 
       return false;
     }
