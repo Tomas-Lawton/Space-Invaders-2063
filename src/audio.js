@@ -7,9 +7,13 @@ export class Audio_Manager {
     this.soundtrackSource = null;
     this.lastSoundPlayTime = 0;
     this.soundCooldown = 100;
+    this.shipVolume = 0;
+
+    this.spaceshipSound = null;
+    this.spaceshipSource = null;
   }
 
-  loadSounds(path) {
+  async loadSounds(path) {
     const soundCount = 3;
     for (let i = 1; i <= soundCount; i++) {
       const sound = new Audio();
@@ -18,9 +22,44 @@ export class Audio_Manager {
     }
   }
 
-  loadSoundtrack(path) {
+  async loadSoundtrack(path) {
     this.soundtrack = new Audio(path);
     this.soundtrack.loop = true;
+  }
+
+  async loadSpaceshipSound(path) {
+    this.spaceshipSound = new Audio(path);
+    this.spaceshipSound.loop = true;
+  }
+
+  async playSpaceshipSound() {
+    if (!this.spaceshipSound) {
+      console.warn('Spaceship sound is not loaded');
+      return;
+    }
+    await this.audioContext.resume();
+    if (!this.spaceshipSource) {
+      this.spaceshipSource = this.audioContext.createMediaElementSource(this.spaceshipSound);
+      this.spaceshipSource.connect(this.audioContext.destination);
+    }
+  
+    this.spaceshipSound.addEventListener('ended', () => {
+      this.spaceshipSound.currentTime = 0;
+    });
+    this.setSpaceshipVolume(0)
+    this.spaceshipSound.play();
+    }
+  setSpaceshipVolume(newVolume) {
+    if (newVolume >= 0 && newVolume <= 1.0) {
+      this.shipVolume = newVolume;
+      console.log(`Spaceship volume set to: ${newVolume}`);
+      
+      if (this.spaceshipSound) {
+        this.spaceshipSound.volume = newVolume;
+      }
+    } else {
+      console.error('Invalid volume value. Please provide a value between 0 and 1.0');
+    }
   }
 
   async playRandomSound() {
@@ -47,12 +86,6 @@ export class Audio_Manager {
       if (!this.soundtrackSource) {
         this.soundtrackSource = this.audioContext.createMediaElementSource(this.soundtrack);
         this.soundtrackSource.connect(this.audioContext.destination);
-      }
-  
-      if (!this.soundtrack.paused) {
-        this.soundtrack.pause();
-        console.log('Paused Soundtrack');
-        return;
       }
   
       const randomStartTime = Math.random() * this.soundtrack.duration;

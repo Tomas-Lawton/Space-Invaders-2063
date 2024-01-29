@@ -141,8 +141,11 @@ async function startAudioContext() {
     audioManager = new Audio_Manager(audioContext);
     await audioManager.loadSounds('./public/audio/sounds');
     await audioManager.loadSoundtrack('./public/audio/soundtrack.wav');
+    await audioManager.loadSpaceshipSound('./public/audio/ship.wav');
+    audioManager.playSpaceshipSound();
+
   } catch (error) {
-    console.error('Failed to initialize AudioContext:', error);
+    console.error('Failed to initialize sounds or audio context:', error);
   }
 }
 
@@ -150,7 +153,6 @@ startAudioContext();
 
 
 setupGUI({ camera, renderer, bloomPass, spaceshipParams, updateSpaceshipPosition, audioManager });
-
 
 
 const maxVelocity = 9.5;
@@ -237,6 +239,10 @@ function animate(currentTime) {
           0
         );
       }
+
+      // set audio based on forward velocity
+      console.log(input.forwardVelocity)
+      audioManager.setSpaceshipVolume(mapValue(input.forwardVelocity, 0, 10, 0.2, 1))
 
       const moveVector = new THREE.Vector3(
         Math.sin(mesh.rotation.y) * Math.cos(mesh.rotation.x) * input.forwardVelocity * speed,
