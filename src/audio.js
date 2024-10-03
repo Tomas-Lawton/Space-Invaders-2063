@@ -90,7 +90,9 @@ export class Audio_Manager {
   
       const randomStartTime = Math.random() * this.soundtrack.duration;
       this.soundtrack.currentTime = isFinite(randomStartTime) ? randomStartTime : 0;
-      this.soundtrack.play();
+      
+      // TURN ON SOUNDTRACK HERE
+      // this.soundtrack.play();
       console.log('Started Soundtrack');
     } catch (error) {
       console.error('Failed to initialize AudioContext:', error);

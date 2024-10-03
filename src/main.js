@@ -171,7 +171,7 @@ async function startAudioContext() {
     audioManager = new Audio_Manager(audioContext);
     await audioManager.loadSounds('./public/audio/sounds');
     await audioManager.loadSoundtrack('./public/audio/soundtrack.wav');
-    await audioManager.loadSpaceshipSound('./public/audio/ship.wav');
+    await audioManager.loadSpaceshipSound('./public/audio/ship_rumble.wav');
     audioManager.playSpaceshipSound();
 
   } catch (error) {
@@ -234,6 +234,7 @@ function createAndShootLight() {
 
   if (lightSound) {
     lightSound.currentTime = 0; // Reset to the start
+    lightSound.volume = 0.25; // Set volume to 50% (adjust this value as needed)
     lightSound.play(); // Play the sound
   }
 
@@ -347,7 +348,7 @@ function animate(currentTime) {
 
       // set audio based on forward velocity
       // console.log(input.forwardVelocity)
-      let spaceshipvolumelevel = mapValue(input.forwardVelocity, 0, maxVelocity, 0, .7);
+      let spaceshipvolumelevel = mapValue(input.forwardVelocity, 0, maxVelocity, 0, 1);
       // console.log(spaceshipvolumelevel)
       audioManager.setSpaceshipVolume(spaceshipvolumelevel)
       updateVelocityBars(input.forwardVelocity, maxVelocity)
