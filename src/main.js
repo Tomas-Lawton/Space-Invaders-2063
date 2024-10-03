@@ -1,8 +1,12 @@
 import * as THREE from "three";
+
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+
+//post processing
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
 import { third_person_camera } from './camera.js'
 import { player_input } from './player-input.js'
@@ -12,7 +16,7 @@ import { mapValue } from './utils.js'
 import { Audio_Manager } from './audio.js'
 import { setupGUI } from './gui.js';
 
-
+const cursor = document.getElementById("custom-cursor")
 
 // Setup
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -24,7 +28,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(
+const camera = new THREE.PerspectiveCamera( // default position
   60, 
   window.innerWidth / window.innerHeight,
   1,
@@ -38,17 +42,24 @@ const bloomPass = new UnrealBloomPass(
   1
 );
 
+
 const renderScene = new RenderPass(scene, camera);
 const composer = new EffectComposer(renderer);
 
 
+const velocityred = document.getElementById("velocity-gui-duplicate");
+function updateVelocityBars(currentVelocity, maxVelocity) {
+    let h = mapValue(currentVelocity, 0, maxVelocity, 0, 300)
+    velocityred.style.height = `${h}px`; // Adjust based on your design
+}
 
+// Example usage
 
-const renderTargetParameters = {
-	minFilter: THREE.LinearFilter,
-	magFilter: THREE.LinearFilter,
-	stencilBuffer: false
-};
+// const renderTargetParameters = {
+// 	minFilter: THREE.LinearFilter,
+// 	magFilter: THREE.LinearFilter,
+// 	stencilBuffer: false
+// };
 
 
 
@@ -85,11 +96,26 @@ const loader = new GLTFLoader().setPath("public/spaceship_-_cb1/");
 let mesh;
 let thirdPersonCamera;
 
+
+
+const geometry = new THREE.BoxGeometry(3, 3, 3); // Create a rectangle geometry with larger size (5 units long and 0.5 units wide)
+const material = new THREE.MeshStandardMaterial({ 
+  emissive: 0xc87dff, // Color for the emissive glow (light purple)
+  emissiveIntensity: 3, // Brightness of the glow
+  color: 0x9400ff, // Darker purple color for the rectangle
+  side: THREE.DoubleSide 
+});
+
+// Create a rectangle
+let velocityRectangle = new THREE.Mesh(geometry, material);
+
+
 loader.load(
   "scene.gltf",
   (gltf) => {
-    mesh = new THREE.Group();
 
+    // PLAYER (it's a mesh in a mesh)
+    mesh = new THREE.Group();
     const tempObjectGroup = new THREE.Group();
     const loadedModel = gltf.scene;
     loadedModel.traverse(child => child.isMesh && (child.castShadow = child.receiveShadow = true));
@@ -106,6 +132,10 @@ loader.load(
     spotLight.position.copy(mesh.position);
     tempObjectGroup.add(spotLight);
     
+    //booster
+    velocityRectangle.position.copy(mesh.position);
+    tempObjectGroup.add(velocityRectangle);
+
 
     mesh.add(tempObjectGroup);
     scene.add(mesh);
@@ -155,11 +185,14 @@ startAudioContext();
 setupGUI({ camera, renderer, bloomPass, spaceshipParams, updateSpaceshipPosition, audioManager });
 
 
-const maxVelocity = 9.5;
+const maxVelocity = 4.5;
 let previousTime = 0;
 let mouseX = 0;
 let mouseY = 0;
 let continuousRotation = 0;
+
+const centerX = window.innerWidth / 2;
+const centerY = window.innerHeight / 2;
 
 const playerInputComponent = new player_input.PlayerInput();
 const playerEntity = new entity.Entity();
@@ -167,11 +200,77 @@ playerEntity.AddComponent(playerInputComponent);
 playerEntity.InitEntity();
 
 function handleMouseMove(event) {
-  const centerX = window.innerWidth / 2;
   mouseX = event.clientX - centerX; 
-  const centerY = window.innerHeight / 2;
   mouseY = event.clientY - centerY;
+  cursor.style.left = event.pageX + 'px';
+  cursor.style.top = event.pageY + 'px';
 }
+
+function handleMouseClick(event) {
+  // console.log("clicked", playerEntity.Attributes.InputCurrent)
+  createAndShootLight();
+}
+
+
+
+const glowGeometry2 = new THREE.SphereGeometry(0.2, 16, 16); // Increased segments for smoother sphere
+const glowMaterial2 = new THREE.MeshStandardMaterial({
+  emissive: 0xc87dff, // Orange color for the glow
+  emissiveIntensity: 3,
+  color: 0x9400ff, // Darker color for the sphere
+});
+
+
+const lightSound = new Audio('public/audio/pew.mp3'); // Replace with the path to your sound file
+
+function createAndShootLight() {
+  const light = new THREE.Mesh(glowGeometry2, glowMaterial2);
+  light.position.copy(mesh.position); // Start at the spaceship's position (main mesh)
+  scene.add(light); // Add to the scene
+
+  const direction = new THREE.Vector3();
+  mesh.children[0].getWorldDirection(direction); // Get the forward direction of the child mesh
+  const velocity = direction.multiplyScalar(22); // Set speed higher than the ship
+
+  if (lightSound) {
+    lightSound.currentTime = 0; // Reset to the start
+    lightSound.play(); // Play the sound
+  }
+
+  function updateLight() {
+    light.position.add(velocity.clone().multiplyScalar(0.1)); // Move the light
+    if (light.position.distanceTo(mesh.position) > 50) { // Limit distance for light lifetime
+      scene.remove(light); // Remove the light after it travels a distance
+    } else {
+      requestAnimationFrame(updateLight); // Keep updating the light position
+    }
+  }
+  updateLight(); // Start the update loop for the light
+}
+
+// function updateVelocityRectangle(currentVelocity) {
+//   const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, 19);
+//   velocityRectangle.scale.z = rectangleLength + 0.01;
+//   // velocityRectangle.position.z = mesh.position.z + (rectangleLength / 2); 
+// }
+
+
+function updateVelocityRectangle(currentVelocity) {
+  const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, -150);
+
+  velocityRectangle.geometry.dispose(); // Dispose of the old geometry
+  velocityRectangle.geometry = new THREE.BoxGeometry(3, 3, rectangleLength); // Adjust width and height as needed
+  velocityRectangle.position.z = (rectangleLength / 2); 
+  // velocityRectangle.scale.z = rectangleLength + 0.01;
+  // velocityRectangle.position.z = mesh.position.z + (rectangleLength / 2); 
+}
+
+
+// flight physics
+const speed = 0.1;
+const acceleration = 0.03;
+const deceleration = 0.009;
+const verticalAcceleration = 0.0005;
 
 function animate(currentTime) {
   requestAnimationFrame(animate);
@@ -191,27 +290,33 @@ function animate(currentTime) {
       mesh.rotation.y += rotationAngle;
       mesh.rotation.y = ((mesh.rotation.y + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
       
-      const speed = 0.1;
-      const acceleration = 0.006;
-      const deceleration = 0.05;
-      const verticalAcceleration = 0.0005;
       let meshChild = mesh.children[0]
 
+
+      // only apply player rotation while moving
+
       // absolute left right
-      continuousRotation = -(mouseX * 0.001) * 0.08;
+      // continuousRotation = -(mouseX * 0.001) * 0.08;
+      continuousRotation = -(mouseX * 0.0001);
+      // continuousRotation = 0
       let rotateTarget = mesh.rotation.y + continuousRotation;
-      mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, rotateTarget, 0.5); 
       
       // pitch
       const targetX = meshChild.rotation.x + (mouseY * 0.0001);
       const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.93, Math.PI * 0.93);
-      meshChild.rotation.x = THREE.MathUtils.lerp(meshChild.rotation.x, mappedTargetX, 0.8); 
       
       // yaw
       const targetYaw = mesh.rotation.z + (mouseX * 0.001);
       const mappedTargetYaw = mapValue(targetYaw, -Math.PI, Math.PI, -Math.PI/2, Math.PI/2);
-      mesh.rotation.z = THREE.MathUtils.lerp(mesh.rotation.z, mappedTargetYaw, 0.8);
       
+      if (input.forwardVelocity > 0) {
+        mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, rotateTarget, 0.5); 
+        meshChild.rotation.x = THREE.MathUtils.lerp(meshChild.rotation.x, mappedTargetX, 0.8); 
+        mesh.rotation.z = THREE.MathUtils.lerp(mesh.rotation.z, mappedTargetYaw, 0.8);  
+      }
+
+
+
       if (input.upwardAcceleration > 0) {
         input.upwardVelocity = Math.min(
           input.upwardVelocity + input.upwardAcceleration * verticalAcceleration,
@@ -241,17 +346,26 @@ function animate(currentTime) {
       }
 
       // set audio based on forward velocity
-      console.log(input.forwardVelocity)
-      audioManager.setSpaceshipVolume(mapValue(input.forwardVelocity, 0, 10, 0.2, 1))
+      // console.log(input.forwardVelocity)
+      let spaceshipvolumelevel = mapValue(input.forwardVelocity, 0, maxVelocity, 0, .7);
+      // console.log(spaceshipvolumelevel)
+      audioManager.setSpaceshipVolume(spaceshipvolumelevel)
+      updateVelocityBars(input.forwardVelocity, maxVelocity)
+      updateVelocityRectangle(input.forwardVelocity);
+
 
       const moveVector = new THREE.Vector3(
         Math.sin(mesh.rotation.y) * Math.cos(mesh.rotation.x) * input.forwardVelocity * speed,
        (-Math.sin(meshChild.rotation.x) * input.forwardVelocity * speed) + input.upwardVelocity,
         Math.cos(mesh.rotation.y) * Math.cos(mesh.rotation.x) * input.forwardVelocity * speed
       );
+      
+      // only update camera if player is moving
+      // if (moveVector.length() !== 0) {
       mesh.position.add(moveVector);
-
       thirdPersonCamera.Update(timeElapsed);
+      // }
+
     }
   }
 
@@ -266,5 +380,6 @@ function animate(currentTime) {
 }
 
 window.addEventListener('mousemove', handleMouseMove);
+window.addEventListener('mousedown', handleMouseClick);
 
 animate();

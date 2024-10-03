@@ -52,7 +52,7 @@ export class Audio_Manager {
   setSpaceshipVolume(newVolume) {
     if (newVolume >= 0 && newVolume <= 1.0) {
       this.shipVolume = newVolume;
-      console.log(`Spaceship volume set to: ${newVolume}`);
+      // console.log(`Spaceship volume set to: ${newVolume}`);
       
       if (this.spaceshipSound) {
         this.spaceshipSound.volume = newVolume;

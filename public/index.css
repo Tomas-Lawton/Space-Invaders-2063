@@ -30,3 +30,33 @@ h1 {
   font-weight: bold;
   color: white;
 }
+
+#velocity-gui {
+  background: rgba(63, 63, 63, 0.283);
+  position: absolute;
+  left: 30px;
+  bottom: 30px;
+  width: 4px;
+  height: 300px;
+}
+
+#velocity-gui-duplicate {
+  width: 4px; /* Set a width for the duplicate velocity bar */
+  height: 0px; /* Set a height for the duplicate velocity bar */
+  /* background-color: rgba(255, 0, 0, 0.607); */
+  background: #9500ff6d;
+  position: absolute;
+  left: 30px;
+  bottom: 30px;
+}
+
+
+#custom-cursor {
+  width: 35px;
+  height: 35px;
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  background: url('./sprite/target_big.png') no-repeat center center; /* Use absolute URL */
+  background-size: contain; /* Ensures the image fits within the element */
+}

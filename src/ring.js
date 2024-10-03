@@ -54,16 +54,16 @@ export class Ring {
 
   generateRandomSpeed() {
     return {
-      x: Math.random() * 0.02 - 0.01,
-      y: Math.random() * 0.02 - 0.01,
-      z: Math.random() * 0.02 - 0.01,
+      x: Math.random() * 0.005,
+      y: Math.random() * 0.005,
+      z: Math.random() * 0.005,
     };
   }
 
   animate() {
     this.ring.rotation.z += this.speed.z;
     this.ring.rotation.y += this.speed.y;
-    this.ring.rotation.x += this.speed.x;
+    // this.ring.rotation.x += this.speed.x;
     this.invisibleCircle.rotation.copy(this.ring.rotation);
   }
 

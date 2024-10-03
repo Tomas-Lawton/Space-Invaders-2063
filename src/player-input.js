@@ -63,12 +63,18 @@ export const player_input = (() => {
         case 16: // SHIFT
           this.Parent.Attributes.InputCurrent.upwardAcceleration = 0.0; 
           break;
-        // case 65: // a
-        //   this.Parent.Attributes.InputCurrent.axis1Side = 0.0;
-        //   break;
-        // case 68: // d
-        //   this.Parent.Attributes.InputCurrent.axis1Side = 0.0;
-        //   break;
+        case 87: // W
+          this.Parent.Attributes.InputCurrent.forwardAcceleration = 0;
+          break;
+        case 83: // S
+          this.Parent.Attributes.InputCurrent.forwardAcceleration =  0;
+          break;
+        case 32: // SPACE
+          this.Parent.Attributes.InputCurrent.upwardAcceleration = 0; 
+          break;
+        case 16: // SHIFT
+          this.Parent.Attributes.InputCurrent.upwardAcceleration =  0; 
+          break;
       }
     }
 

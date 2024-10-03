@@ -14,7 +14,9 @@ export const third_person_camera = (() => {
     }
 
     _CalculateIdealOffset() {
-      const idealOffset = new THREE.Vector3(0, 3, -12);
+      // const d = -12
+      const d = -8
+      const idealOffset = new THREE.Vector3(0, 2.5, d);
       idealOffset.applyQuaternion(this._params.target.quaternion);
       idealOffset.add(this._params.target.position);
       return idealOffset;
@@ -33,7 +35,7 @@ export const third_person_camera = (() => {
 
       this._currentPosition.lerp(idealOffset, this._lerpFactor);
       this._currentLookat.lerp(idealLookat, this._lerpFactor);
-
+idealOffset
       this._currentPosition.y += mapValue(this._params.target.children[0].rotation.x, -Math.PI, Math.PI, -3, 3)
 
 

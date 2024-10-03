@@ -39,7 +39,7 @@ export function setupGUI({
   updateSpaceshipPosition();
 
   const bloomFolder = gui.addFolder("Bloom Effect");
-  const defaultBloomStrength = 3;
+  const defaultBloomStrength = 1.6;
   const defaultBloomThreshold = 0.3;
   const defaultBloomRadius = 0.7;
   const strengthController = bloomFolder
@@ -83,7 +83,7 @@ export function setupGUI({
   const audioFolder = gui.addFolder("Audio");
   const playSoundtrackController = audioFolder
     .add({ playSoundtrack }, "playSoundtrack")
-    .name("Toggle Play/Pause Soundtrack");
+    .name("Sound");
   audioFolder.open();
   playSoundtrackController.onChange(playSoundtrack);
 

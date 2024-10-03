@@ -14,9 +14,11 @@ export const environment = (() => {
     create() {
       if (this.scene) {
         this.createWorld();
+        this.createStarfield();
+        this.createRunway();
+       
         this.addGround();
         this.createRings();
-        this.createRunway();
         this.addLights();
         this.createStar();
         this.addParticles();
@@ -25,38 +27,127 @@ export const environment = (() => {
     }
 
     createWorld() {
-      this.scene.fog = new THREE.Fog(0x111111, 0.005);
+      // this.scene.fog = new THREE.Fog(0x111111, 0.005);
+      this.scene.fog = new THREE.Fog(0x8090F, 0.5);
+
+
+      // this.scene.fog = new THREE.FogExp2(0xffffff, 0.001); // Change color and density as needed
+      // const textureLoader = new THREE.TextureLoader();
+      // const cloudTexture = textureLoader.load('./sprite/cloudy.jpg');
+      // const geometry = new THREE.PlaneGeometry(100, 100); // Size of the plane
+      // const material = new THREE.MeshBasicMaterial({
+      //     map: cloudTexture,
+      //     transparent: true,
+      //     opacity: 0.5 // Adjust opacity for desired effect
+      // });
+      // const cloudPlane = new THREE.Mesh(geometry, material);
+      // cloudPlane.rotation.x = -Math.PI / 2; // Rotate to lie flat
+      // this.scene.add(cloudPlane);
 
       const cubeTextureLoader = new THREE.CubeTextureLoader();
       const textureUrls = [
-        'public/blue/bkg1_left.png',
-        'public/blue/bkg1_right.png',
-        'public/blue/bkg1_top.png',
-        'public/blue/bkg1_bot.png',
-        'public/blue/bkg1_front.png',
-        'public/blue/bkg1_back.png'
+        'public/blue/bkg1_right.png',  // right
+        'public/blue/bkg1_left.png',   // left
+        'public/blue/bkg1_top.png',    // top
+        'public/blue/bkg1_bot.png',    // bottom
+        'public/blue/bkg1_front.png',  // front
+        'public/blue/bkg1_back.png'    // back
       ];
       const cubeMap = cubeTextureLoader.load(textureUrls);
       this.scene.background = cubeMap;
+      // this.scene.background = new THREE.Color( 0x08090F );
+
     }
-   
+    createStarfield() {
+      const starCount = 6000;
+      const starPositions = new Float32Array(starCount * 3); // 3 coordinates for each star (x, y, z)
+      const velocities = new Float32Array(starCount * 3); // 3 velocities for each star (vx, vy, vz)
+      const accelerations = new Float32Array(starCount * 3); // 3 accelerations for each star (ax, ay, az)
     
-    addGround () {
-      const groundRadius = 54 / 2;
-      const groundSegments = 64; // You can adjust the number of segments for a smoother circle
-      
-      const groundGeometry = new THREE.CircleGeometry(groundRadius, groundSegments);
-      groundGeometry.rotateX(-Math.PI / 2);
-      const groundMaterial = new THREE.MeshStandardMaterial({
-        color: 0x111111,
-        metalness: 0.8,
-        roughness: 0.5,
-        side: THREE.DoubleSide,
+      // Initialize star positions, velocities, and accelerations
+      for (let i = 0; i < starCount; i++) {
+        starPositions[i * 3] = Math.random() * 600 - 300; // x
+        starPositions[i * 3 + 1] = Math.random() * 600 - 300; // y
+        starPositions[i * 3 + 2] = Math.random() * 600 - 300; // z
+    
+        // Set random initial velocities for each star (can be adjusted)
+        velocities[i * 3] = (Math.random() - 0.5) * 0.02; // vx
+        velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.02; // vy
+        velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.02; // vz
+    
+        // Set a small constant acceleration for each axis (can be adjusted)
+        accelerations[i * 3] = 0.0001; // ax
+        accelerations[i * 3 + 1] = 0.0001; // ay
+        accelerations[i * 3 + 2] = 0.0001; // az
+      }
+    
+      const starGeo = new THREE.BufferGeometry();
+      starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load('public/sprite/star.png', (texture) => {
+        const starMaterial = new THREE.PointsMaterial({
+          color: 0xaaaaaa,
+          size: 0.7,
+          map: texture,
+          transparent: true,
+          depthWrite: false,
+        });
+    
+        const stars = new THREE.Points(starGeo, starMaterial);
+        this.scene.add(stars);
+    
+        const animateStars = () => {
+          for (let i = 0; i < starCount; i++) {
+            // Update velocities with acceleration
+            velocities[i * 3] += accelerations[i * 3]; // vx
+            velocities[i * 3 + 1] += accelerations[i * 3 + 1]; // vy
+            velocities[i * 3 + 2] += accelerations[i * 3 + 2]; // vz
+    
+            // Update positions based on velocities
+            starPositions[i * 3] += velocities[i * 3]; // Update x
+            starPositions[i * 3 + 1] += velocities[i * 3 + 1]; // Update y
+            starPositions[i * 3 + 2] += velocities[i * 3 + 2]; // Update z
+    
+            // Reset position if star goes out of bounds
+            if (starPositions[i * 3 + 1] < -200) {
+              starPositions[i * 3 + 1] = 200;
+              velocities[i * 3 + 1] = 0; // Reset vertical velocity
+            }
+          }
+    
+          starGeo.attributes.position.needsUpdate = true;
+          // stars.rotation.z += 0.0000001;
+    
+          requestAnimationFrame(animateStars);
+        };
+    
+        animateStars();
       });
+    }
+
+    addGround () {
+
       
-      const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
-      groundMesh.castShadow = false;
-      groundMesh.receiveShadow = true;
+    const r = 20;
+    const segments = 64; // You can adjust the number of segments for a smoother circle
+    const groundMesh = new THREE.Mesh( new THREE.CircleGeometry( r, segments ), new THREE.MeshPhongMaterial( { color: 0xcbcbcb, depthWrite: false } ) );
+    groundMesh.rotation.x = - Math.PI / 2;
+    groundMesh.receiveShadow = true;
+    this.scene.add( groundMesh );
+
+      // const groundGeometry = new THREE.CircleGeometry(groundRadius, groundSegments);
+      // groundGeometry.rotateX(-Math.PI / 2);
+      // const groundMaterial = new THREE.MeshStandardMaterial({
+      //   color: 0x111111,
+      //   metalness: 0.8,
+      //   roughness: 0.5,
+      //   side: THREE.DoubleSide,
+      // });
+      
+      // const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+      // groundMesh.castShadow = false;
+      // groundMesh.receiveShadow = true;
       
       this.scene.add(groundMesh);
     }
@@ -137,9 +228,9 @@ export const environment = (() => {
     createRunway() {
       const glowGeometry2 = new THREE.BoxGeometry(.3, .3, .3);
       const glowMaterial2 = new THREE.MeshStandardMaterial({
-        emissive: 0xffffff,
-        emissiveIntensity: .35,
-        color: 0x111111,
+        emissive: 0xee7d11,
+        emissiveIntensity: .8,
+        color: 0xff6200,
       });
     
       const runwayLights = (yOff) => {
