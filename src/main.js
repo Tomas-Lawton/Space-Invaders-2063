@@ -74,7 +74,41 @@ document.body.style.cursor = "none";
 const world = new environment.World({ scene: scene });
 world.create()
 
+const loader_asteroids = new GLTFLoader().setPath("public/asteroids/");
+let asteroidGroup;
 
+loader_asteroids.load("scene.gltf", (gltf) => {
+  const loadedModel = gltf.scene;
+  asteroidGroup = new THREE.Group();
+  const numberOfAsteroids = 50;
+
+  // Create a single PointLight for the entire asteroid group
+  const pointLight = new THREE.PointLight(0xffa500, 2, 50); // Set intensity and distance
+  scene.add(pointLight); // Add the light to the scene
+
+  for (let i = 0; i < numberOfAsteroids; i++) {
+      const asteroidClone = loadedModel.clone();
+      asteroidClone.position.set(
+          (Math.random() - 0.5) * 100,
+          (Math.random() - 0.5) * 100,
+          (Math.random() - 0.5) * 100
+      );
+      asteroidClone.rotation.set(
+          Math.random() * Math.PI,
+          Math.random() * Math.PI,
+          Math.random() * Math.PI
+      );
+      asteroidClone.velocity = new THREE.Vector3(
+          (Math.random() - 0.5) * 0.02,
+          (Math.random() - 0.5) * 0.02,
+          (Math.random() - 0.5) * 0.02
+      );
+
+      asteroidGroup.add(asteroidClone);
+  }
+  pointLight.position.set(0, 0, 0); 
+  scene.add(asteroidGroup);
+});
 
 
 function updateSpaceshipPosition() {
@@ -92,11 +126,10 @@ function updateSpaceshipPosition() {
   }
 }
 
+
 const loader = new GLTFLoader().setPath("public/spaceship_-_cb1/");
 let mesh;
 let thirdPersonCamera;
-
-
 
 const geometry = new THREE.BoxGeometry(3, 3, 3); // Create a rectangle geometry with larger size (5 units long and 0.5 units wide)
 const material = new THREE.MeshStandardMaterial({ 
@@ -154,6 +187,10 @@ loader.load(
     )}/100`;
   }
 );
+
+
+
+
 
 const spaceshipParams = {
   positionX: 0,
@@ -369,6 +406,16 @@ function animate(currentTime) {
 
     }
   }
+
+
+   // Animate the asteroids
+   if (asteroidGroup) {
+    asteroidGroup.children.forEach((asteroid) => {
+        asteroid.position.add(asteroid.velocity); // Apply asteroid's velocity
+    });
+    
+  }
+
 
   world.rings.forEach(ring => {
     ring.update();  // Make sure to call update first
