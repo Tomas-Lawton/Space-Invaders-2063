@@ -262,32 +262,78 @@ const glowMaterial2 = new THREE.MeshStandardMaterial({
 
 
 const lightSound = new Audio('public/audio/pew.mp3'); // Replace with the path to your sound file
+const boom = new Audio('public/audio/boom.mp3'); // Replace with the path to your sound file
 
+const raycaster = new THREE.Raycaster();
+let laserBeam;
 function createAndShootLight() {
-  const light = new THREE.Mesh(glowGeometry2, glowMaterial2);
-  light.position.copy(mesh.position); // Start at the spaceship's position (main mesh)
-  scene.add(light); // Add to the scene
-
   const direction = new THREE.Vector3();
   mesh.children[0].getWorldDirection(direction); // Get the forward direction of the child mesh
+  const laserPosition = mesh.position.clone(); // Start at the spaceship's position
+
+  laserBeam = new THREE.Mesh(glowGeometry2, glowMaterial2);
+  laserBeam.position.copy(laserPosition); // Start position
+  laserBeam.lookAt(laserPosition.clone().add(direction)); // Make the laser beam face the direction
+  scene.add(laserBeam); // Add laser beam to the scene
+
   const velocity = direction.multiplyScalar(22); // Set speed higher than the ship
 
   if (lightSound) {
-    lightSound.currentTime = 0; // Reset to the start
-    lightSound.volume = 0.25; // Set volume to 50% (adjust this value as needed)
-    lightSound.play(); // Play the sound
+      lightSound.currentTime = 0; // Reset to the start
+      lightSound.volume = 0.25; // Set volume to 25%
+      lightSound.play(); // Play the sound
   }
 
-  function updateLight() {
-    light.position.add(velocity.clone().multiplyScalar(0.1)); // Move the light
-    if (light.position.distanceTo(mesh.position) > 50) { // Limit distance for light lifetime
-      scene.remove(light); // Remove the light after it travels a distance
-    } else {
-      requestAnimationFrame(updateLight); // Keep updating the light position
-    }
+  function updateLaser() {
+      laserBeam.position.add(velocity.clone().multiplyScalar(0.1)); // Move the laser beam
+      checkLaserCollision(laserBeam.position, direction); // Perform collision detection without any effect on the laser
+      if (laserBeam.position.distanceTo(mesh.position) > 50) {
+          scene.remove(laserBeam); // Remove the laser after a limit
+      } else {
+          requestAnimationFrame(updateLaser); // Keep updating the laser position
+      }
   }
-  updateLight(); // Start the update loop for the light
+
+  updateLaser(); // Start the update loop for the laser
 }
+
+function checkLaserCollision(laserPosition, laserDirection) {
+  raycaster.set(laserPosition, laserDirection.clone().normalize());
+  const intersects = raycaster.intersectObjects(asteroidGroup.children);
+  if (intersects.length > 0) {
+      console.log('Laser hit an asteroid');
+      
+      // Loop through each intersected object and remove it from the scene
+      for (const intersect of intersects) {
+          // If the intersected object has a parent, remove it directly from the parent
+          if (intersect.object.parent) {
+              intersect.object.parent.remove(intersect.object);
+
+              if (boom) {
+                boom.currentTime = 0; // Reset to the start
+                boom.volume = 0.5; // Set volume to 25%
+                boom.play(); // Play the sound
+              }
+          }
+      }
+      return true; // Collision detected
+  }
+  return false; // No collision detected
+}
+
+// function checkLaserCollision(laserPosition, laserDirection) {
+//   raycaster.set(laserPosition, laserDirection.clone().normalize());
+//   const intersects = raycaster.intersectObjects(asteroidGroup.children);
+//   if (intersects.length > 0) {
+//       console.log('Laser hit an asteroid');
+//       for (const intersect of intersects) {
+//           asteroidGroup.remove(intersect.object); // Remove the asteroid on hit
+//           scene.remove(intersect.object); // Remove the asteroid on hit
+//       }
+//       return true; // Collision detected
+//     }
+//     return false; // No collision detected
+//   }
 
 // function updateVelocityRectangle(currentVelocity) {
 //   const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, 19);
