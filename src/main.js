@@ -104,12 +104,15 @@ loader_asteroids.load("scene.gltf", (gltf) => {
           (Math.random() - 0.5) * 0.02
       );
 
+      // Apply random scaling to the asteroid
+      const scale = Math.random() * 2 + 0.5; // Scale factor between 0.5 and 2.5
+      asteroidClone.scale.set(scale, scale, scale); // Apply uniform scaling
+
       asteroidGroup.add(asteroidClone);
   }
   pointLight.position.set(0, 0, 0); 
   scene.add(asteroidGroup);
 });
-
 
 function updateSpaceshipPosition() {
   if (mesh) {
