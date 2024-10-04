@@ -1,22 +1,21 @@
 import * as THREE from "three";
-
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-
 //post processing
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
-import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+// modules
+import { third_person_camera } from "./camera.js";
+import { player_input } from "./player-input.js";
+import { entity } from "./entity.js";
+import { environment } from "./environment.js";
+import { mapValue } from "./utils.js";
+import { Audio_Manager } from "./audio.js";
+import { setupGUI } from "./gui.js";
+// loaders
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-import { third_person_camera } from './camera.js'
-import { player_input } from './player-input.js'
-import { entity } from './entity.js'
-import { environment } from './environment.js'
-import { mapValue } from './utils.js'
-import { Audio_Manager } from './audio.js'
-import { setupGUI } from './gui.js';
 
-const cursor = document.getElementById("custom-cursor")
+const cursor = document.getElementById("custom-cursor");
 
 // Setup
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -29,7 +28,7 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( // default position
-  60, 
+  60,
   window.innerWidth / window.innerHeight,
   1,
   1000
@@ -42,37 +41,23 @@ const bloomPass = new UnrealBloomPass(
   1
 );
 
-
 const renderScene = new RenderPass(scene, camera);
 const composer = new EffectComposer(renderer);
 
-
 const velocityred = document.getElementById("velocity-gui-duplicate");
 function updateVelocityBars(currentVelocity, maxVelocity) {
-    let h = mapValue(currentVelocity, 0, maxVelocity, 0, 300)
-    velocityred.style.height = `${h}px`; // Adjust based on your design
+  let h = mapValue(currentVelocity, 0, maxVelocity, 0, 300);
+  velocityred.style.height = `${h}px`; // Adjust based on your design
 }
-
-// Example usage
-
-// const renderTargetParameters = {
-// 	minFilter: THREE.LinearFilter,
-// 	magFilter: THREE.LinearFilter,
-// 	stencilBuffer: false
-// };
-
-
 
 composer.addPass(renderScene);
 composer.addPass(bloomPass);
 
-
 document.body.style.cursor = "none";
-
 
 // Environment
 const world = new environment.World({ scene: scene });
-world.create()
+world.create();
 
 const loader_asteroids = new GLTFLoader().setPath("public/asteroids/");
 let asteroidGroup;
@@ -87,30 +72,30 @@ loader_asteroids.load("scene.gltf", (gltf) => {
   scene.add(pointLight); // Add the light to the scene
 
   for (let i = 0; i < numberOfAsteroids; i++) {
-      const asteroidClone = loadedModel.clone();
-      asteroidClone.position.set(
-          (Math.random() - 0.5) * 100,
-          (Math.random() - 0.5) * 100,
-          (Math.random() - 0.5) * 100
-      );
-      asteroidClone.rotation.set(
-          Math.random() * Math.PI,
-          Math.random() * Math.PI,
-          Math.random() * Math.PI
-      );
-      asteroidClone.velocity = new THREE.Vector3(
-          (Math.random() - 0.5) * 0.02,
-          (Math.random() - 0.5) * 0.02,
-          (Math.random() - 0.5) * 0.02
-      );
+    const asteroidClone = loadedModel.clone();
+    asteroidClone.position.set(
+      (Math.random() - 0.5) * 100,
+      (Math.random() - 0.5) * 100,
+      (Math.random() - 0.5) * 100
+    );
+    asteroidClone.rotation.set(
+      Math.random() * Math.PI,
+      Math.random() * Math.PI,
+      Math.random() * Math.PI
+    );
+    asteroidClone.velocity = new THREE.Vector3(
+      (Math.random() - 0.5) * 0.02,
+      (Math.random() - 0.5) * 0.02,
+      (Math.random() - 0.5) * 0.02
+    );
 
-      // Apply random scaling to the asteroid
-      const scale = Math.random() * 2 + 0.5; // Scale factor between 0.5 and 2.5
-      asteroidClone.scale.set(scale, scale, scale); // Apply uniform scaling
+    // Apply random scaling to the asteroid
+    const scale = Math.random() * 2 + 0.5; // Scale factor between 0.5 and 2.5
+    asteroidClone.scale.set(scale, scale, scale); // Apply uniform scaling
 
-      asteroidGroup.add(asteroidClone);
+    asteroidGroup.add(asteroidClone);
   }
-  pointLight.position.set(0, 0, 0); 
+  pointLight.position.set(0, 0, 0);
   scene.add(asteroidGroup);
 });
 
@@ -129,49 +114,51 @@ function updateSpaceshipPosition() {
   }
 }
 
-
 const loader = new GLTFLoader().setPath("public/spaceship_-_cb1/");
 let mesh;
 let thirdPersonCamera;
 
 const geometry = new THREE.BoxGeometry(3, 3, 3); // Create a rectangle geometry with larger size (5 units long and 0.5 units wide)
-const material = new THREE.MeshStandardMaterial({ 
+const material = new THREE.MeshStandardMaterial({
   emissive: 0xc87dff, // Color for the emissive glow (light purple)
   emissiveIntensity: 3, // Brightness of the glow
   color: 0x9400ff, // Darker purple color for the rectangle
-  side: THREE.DoubleSide 
+  side: THREE.DoubleSide,
 });
 
 // Create a rectangle
 let velocityRectangle = new THREE.Mesh(geometry, material);
 
-
 loader.load(
   "scene.gltf",
   (gltf) => {
-
     // PLAYER (it's a mesh in a mesh)
     mesh = new THREE.Group();
     const tempObjectGroup = new THREE.Group();
     const loadedModel = gltf.scene;
-    loadedModel.traverse(child => child.isMesh && (child.castShadow = child.receiveShadow = true));
+    loadedModel.traverse(
+      (child) => child.isMesh && (child.castShadow = child.receiveShadow = true)
+    );
     loadedModel.rotation.y = 1.5 * Math.PI;
     loadedModel.position.z += 22;
     tempObjectGroup.add(loadedModel);
 
     const ambientLightColor = 0x660099;
     const ambientLight = new THREE.PointLight(ambientLightColor, 1, 50);
-    ambientLight.position.set(tempObjectGroup.position.x, tempObjectGroup.position.y + 5, tempObjectGroup.position.z);
+    ambientLight.position.set(
+      tempObjectGroup.position.x,
+      tempObjectGroup.position.y + 5,
+      tempObjectGroup.position.z
+    );
     tempObjectGroup.add(ambientLight);
 
     const spotLight = new THREE.SpotLight(0xff6600, 3, 5, Math.PI * 1.1, 0.2);
     spotLight.position.copy(mesh.position);
     tempObjectGroup.add(spotLight);
-    
+
     //booster
     velocityRectangle.position.copy(mesh.position);
     tempObjectGroup.add(velocityRectangle);
-
 
     mesh.add(tempObjectGroup);
     scene.add(mesh);
@@ -191,10 +178,6 @@ loader.load(
   }
 );
 
-
-
-
-
 const spaceshipParams = {
   positionX: 0,
   positionY: 0.7,
@@ -202,28 +185,31 @@ const spaceshipParams = {
   scale: 0.08,
 };
 
-
 let audioManager;
 
 async function startAudioContext() {
   try {
     const audioContext = new AudioContext();
     audioManager = new Audio_Manager(audioContext);
-    await audioManager.loadSounds('./public/audio/sounds');
-    await audioManager.loadSoundtrack('./public/audio/soundtrack.wav');
-    await audioManager.loadSpaceshipSound('./public/audio/ship_rumble.wav');
+    await audioManager.loadSounds("./public/audio/sounds");
+    await audioManager.loadSoundtrack("./public/audio/soundtrack.wav");
+    await audioManager.loadSpaceshipSound("./public/audio/ship_rumble.wav");
     audioManager.playSpaceshipSound();
-
   } catch (error) {
-    console.error('Failed to initialize sounds or audio context:', error);
+    console.error("Failed to initialize sounds or audio context:", error);
   }
 }
 
 startAudioContext();
 
-
-setupGUI({ camera, renderer, bloomPass, spaceshipParams, updateSpaceshipPosition, audioManager });
-
+setupGUI({
+  camera,
+  renderer,
+  bloomPass,
+  spaceshipParams,
+  updateSpaceshipPosition,
+  audioManager,
+});
 
 const maxVelocity = 4.5;
 let previousTime = 0;
@@ -240,18 +226,16 @@ playerEntity.AddComponent(playerInputComponent);
 playerEntity.InitEntity();
 
 function handleMouseMove(event) {
-  mouseX = event.clientX - centerX; 
+  mouseX = event.clientX - centerX;
   mouseY = event.clientY - centerY;
-  cursor.style.left = event.pageX + 'px';
-  cursor.style.top = event.pageY + 'px';
+  cursor.style.left = event.pageX + "px";
+  cursor.style.top = event.pageY + "px";
 }
 
 function handleMouseClick(event) {
   // console.log("clicked", playerEntity.Attributes.InputCurrent)
   createAndShootLight();
 }
-
-
 
 const glowGeometry2 = new THREE.SphereGeometry(0.2, 16, 16); // Increased segments for smoother sphere
 const glowMaterial2 = new THREE.MeshStandardMaterial({
@@ -260,9 +244,8 @@ const glowMaterial2 = new THREE.MeshStandardMaterial({
   color: 0x9400ff, // Darker color for the sphere
 });
 
-
-const lightSound = new Audio('public/audio/pew.mp3'); // Replace with the path to your sound file
-const boom = new Audio('public/audio/boom.mp3'); // Replace with the path to your sound file
+const lightSound = new Audio("public/audio/pew.mp3"); // Replace with the path to your sound file
+const boom = new Audio("public/audio/boom.mp3"); // Replace with the path to your sound file
 
 const raycaster = new THREE.Raycaster();
 let laserBeam;
@@ -279,19 +262,19 @@ function createAndShootLight() {
   const velocity = direction.multiplyScalar(22); // Set speed higher than the ship
 
   if (lightSound) {
-      lightSound.currentTime = 0; // Reset to the start
-      lightSound.volume = 0.25; // Set volume to 25%
-      lightSound.play(); // Play the sound
+    lightSound.currentTime = 0; // Reset to the start
+    lightSound.volume = 0.25; // Set volume to 25%
+    lightSound.play(); // Play the sound
   }
 
   function updateLaser() {
-      laserBeam.position.add(velocity.clone().multiplyScalar(0.1)); // Move the laser beam
-      checkLaserCollision(laserBeam.position, direction); // Perform collision detection without any effect on the laser
-      if (laserBeam.position.distanceTo(mesh.position) > 50) {
-          scene.remove(laserBeam); // Remove the laser after a limit
-      } else {
-          requestAnimationFrame(updateLaser); // Keep updating the laser position
-      }
+    laserBeam.position.add(velocity.clone().multiplyScalar(0.1)); // Move the laser beam
+    checkLaserCollision(laserBeam.position, direction); // Perform collision detection without any effect on the laser
+    if (laserBeam.position.distanceTo(mesh.position) > 50) {
+      scene.remove(laserBeam); // Remove the laser after a limit
+    } else {
+      requestAnimationFrame(updateLaser); // Keep updating the laser position
+    }
   }
 
   updateLaser(); // Start the update loop for the laser
@@ -301,22 +284,22 @@ function checkLaserCollision(laserPosition, laserDirection) {
   raycaster.set(laserPosition, laserDirection.clone().normalize());
   const intersects = raycaster.intersectObjects(asteroidGroup.children);
   if (intersects.length > 0) {
-      console.log('Laser hit an asteroid');
-      
-      // Loop through each intersected object and remove it from the scene
-      for (const intersect of intersects) {
-          // If the intersected object has a parent, remove it directly from the parent
-          if (intersect.object.parent) {
-              intersect.object.parent.remove(intersect.object);
+    console.log("Laser hit an asteroid");
 
-              if (boom) {
-                boom.currentTime = 0; // Reset to the start
-                boom.volume = 0.5; // Set volume to 25%
-                boom.play(); // Play the sound
-              }
-          }
+    // Loop through each intersected object and remove it from the scene
+    for (const intersect of intersects) {
+      // If the intersected object has a parent, remove it directly from the parent
+      if (intersect.object.parent) {
+        intersect.object.parent.remove(intersect.object);
+
+        if (boom) {
+          boom.currentTime = 0; // Reset to the start
+          boom.volume = 0.5; // Set volume to 25%
+          boom.play(); // Play the sound
+        }
       }
-      return true; // Collision detected
+    }
+    return true; // Collision detected
   }
   return false; // No collision detected
 }
@@ -338,20 +321,18 @@ function checkLaserCollision(laserPosition, laserDirection) {
 // function updateVelocityRectangle(currentVelocity) {
 //   const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, 19);
 //   velocityRectangle.scale.z = rectangleLength + 0.01;
-//   // velocityRectangle.position.z = mesh.position.z + (rectangleLength / 2); 
+//   // velocityRectangle.position.z = mesh.position.z + (rectangleLength / 2);
 // }
-
 
 function updateVelocityRectangle(currentVelocity) {
   const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, -150);
 
   velocityRectangle.geometry.dispose(); // Dispose of the old geometry
   velocityRectangle.geometry = new THREE.BoxGeometry(3, 3, rectangleLength); // Adjust width and height as needed
-  velocityRectangle.position.z = (rectangleLength / 2); 
+  velocityRectangle.position.z = rectangleLength / 2;
   // velocityRectangle.scale.z = rectangleLength + 0.01;
-  // velocityRectangle.position.z = mesh.position.z + (rectangleLength / 2); 
+  // velocityRectangle.position.z = mesh.position.z + (rectangleLength / 2);
 }
-
 
 // flight physics
 const speed = 0.1;
@@ -365,20 +346,25 @@ function animate(currentTime) {
   const timeElapsed = (currentTime - previousTime) / 1000;
   previousTime = currentTime;
 
-
   // player
-  if (playerEntity && playerEntity.GetComponent('PlayerInput')) {
+  if (playerEntity && playerEntity.GetComponent("PlayerInput")) {
     playerEntity.Update();
     const input = playerEntity.Attributes.InputCurrent;
 
-    if (input && typeof input.axis1Side !== 'undefined' && mesh && thirdPersonCamera) {
-
+    if (
+      input &&
+      typeof input.axis1Side !== "undefined" &&
+      mesh &&
+      thirdPersonCamera
+    ) {
       const rotationAngle = -input.axis1Side * 0.05;
       mesh.rotation.y += rotationAngle;
-      mesh.rotation.y = ((mesh.rotation.y + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
-      
-      let meshChild = mesh.children[0]
+      mesh.rotation.y =
+        ((((mesh.rotation.y + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) %
+          (2 * Math.PI)) -
+        Math.PI;
 
+      let meshChild = mesh.children[0];
 
       // only apply player rotation while moving
 
@@ -387,37 +373,63 @@ function animate(currentTime) {
       continuousRotation = -(mouseX * 0.0001);
       // continuousRotation = 0
       let rotateTarget = mesh.rotation.y + continuousRotation;
-      
+
       // pitch
-      const targetX = meshChild.rotation.x + (mouseY * 0.0001);
-      const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.93, Math.PI * 0.93);
-      
+      const targetX = meshChild.rotation.x + mouseY * 0.0001;
+      const mappedTargetX = mapValue(
+        targetX,
+        -Math.PI,
+        Math.PI,
+        -Math.PI * 0.93,
+        Math.PI * 0.93
+      );
+
       // yaw
-      const targetYaw = mesh.rotation.z + (mouseX * 0.001);
-      const mappedTargetYaw = mapValue(targetYaw, -Math.PI, Math.PI, -Math.PI/2, Math.PI/2);
-      
+      const targetYaw = mesh.rotation.z + mouseX * 0.001;
+      const mappedTargetYaw = mapValue(
+        targetYaw,
+        -Math.PI,
+        Math.PI,
+        -Math.PI / 2,
+        Math.PI / 2
+      );
+
       if (input.forwardVelocity > 0) {
-        mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, rotateTarget, 0.5); 
-        meshChild.rotation.x = THREE.MathUtils.lerp(meshChild.rotation.x, mappedTargetX, 0.8); 
-        mesh.rotation.z = THREE.MathUtils.lerp(mesh.rotation.z, mappedTargetYaw, 0.8);  
+        mesh.rotation.y = THREE.MathUtils.lerp(
+          mesh.rotation.y,
+          rotateTarget,
+          0.5
+        );
+        meshChild.rotation.x = THREE.MathUtils.lerp(
+          meshChild.rotation.x,
+          mappedTargetX,
+          0.8
+        );
+        mesh.rotation.z = THREE.MathUtils.lerp(
+          mesh.rotation.z,
+          mappedTargetYaw,
+          0.8
+        );
       }
-
-
 
       if (input.upwardAcceleration > 0) {
         input.upwardVelocity = Math.min(
-          input.upwardVelocity + input.upwardAcceleration * verticalAcceleration,
+          input.upwardVelocity +
+          input.upwardAcceleration * verticalAcceleration,
           maxVelocity
         );
       } else if (input.upwardAcceleration < 0) {
         input.upwardVelocity = Math.max(
-          input.upwardVelocity + input.upwardAcceleration * verticalAcceleration,
+          input.upwardVelocity +
+          input.upwardAcceleration * verticalAcceleration,
           -maxVelocity
         );
       } else {
-        input.upwardVelocity = Math.abs(input.upwardVelocity) <= 0.3 * timeElapsed
-          ? 0
-          : input.upwardVelocity - Math.sign(input.upwardVelocity) * 0.1 * timeElapsed;
+        input.upwardVelocity =
+          Math.abs(input.upwardVelocity) <= 0.3 * timeElapsed
+            ? 0
+            : input.upwardVelocity -
+            Math.sign(input.upwardVelocity) * 0.1 * timeElapsed;
       }
 
       if (input.forwardAcceleration > 0) {
@@ -434,49 +446,57 @@ function animate(currentTime) {
 
       // set audio based on forward velocity
       // console.log(input.forwardVelocity)
-      let spaceshipvolumelevel = mapValue(input.forwardVelocity, 0, maxVelocity, 0, 1);
+      let spaceshipvolumelevel = mapValue(
+        input.forwardVelocity,
+        0,
+        maxVelocity,
+        0,
+        1
+      );
       // console.log(spaceshipvolumelevel)
-      audioManager.setSpaceshipVolume(spaceshipvolumelevel)
-      updateVelocityBars(input.forwardVelocity, maxVelocity)
+      audioManager.setSpaceshipVolume(spaceshipvolumelevel);
+      updateVelocityBars(input.forwardVelocity, maxVelocity);
       updateVelocityRectangle(input.forwardVelocity);
 
-
       const moveVector = new THREE.Vector3(
-        Math.sin(mesh.rotation.y) * Math.cos(mesh.rotation.x) * input.forwardVelocity * speed,
-       (-Math.sin(meshChild.rotation.x) * input.forwardVelocity * speed) + input.upwardVelocity,
-        Math.cos(mesh.rotation.y) * Math.cos(mesh.rotation.x) * input.forwardVelocity * speed
+        Math.sin(mesh.rotation.y) *
+        Math.cos(mesh.rotation.x) *
+        input.forwardVelocity *
+        speed,
+        -Math.sin(meshChild.rotation.x) * input.forwardVelocity * speed +
+        input.upwardVelocity,
+        Math.cos(mesh.rotation.y) *
+        Math.cos(mesh.rotation.x) *
+        input.forwardVelocity *
+        speed
       );
-      
+
       // only update camera if player is moving
       // if (moveVector.length() !== 0) {
       mesh.position.add(moveVector);
       thirdPersonCamera.Update(timeElapsed);
       // }
-
     }
   }
 
-
-   // Animate the asteroids
-   if (asteroidGroup) {
+  // Animate the asteroids
+  if (asteroidGroup) {
     asteroidGroup.children.forEach((asteroid) => {
-        asteroid.position.add(asteroid.velocity); // Apply asteroid's velocity
+      asteroid.position.add(asteroid.velocity); // Apply asteroid's velocity
     });
-    
   }
 
-
-  world.rings.forEach(ring => {
-    ring.update();  // Make sure to call update first
+  world.rings.forEach((ring) => {
+    ring.update(); // Make sure to call update first
     if (ring.checkCollisionWithRing(mesh)) {
-      console.log('play');
+      console.log("play");
       audioManager.playNextSound();
     }
   });
   composer.render();
 }
 
-window.addEventListener('mousemove', handleMouseMove);
-window.addEventListener('mousedown', handleMouseClick);
+window.addEventListener("mousemove", handleMouseMove);
+window.addEventListener("mousedown", handleMouseClick);
 
 animate();
