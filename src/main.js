@@ -1,8 +1,6 @@
 import * as THREE from "three";
 //post processing
-import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+
 // modules
 import { third_person_camera } from "./camera.js";
 import { player_input } from "./player-input.js";
@@ -11,38 +9,13 @@ import { environment } from "./environment.js";
 import { mapValue } from "./utils.js";
 import { Audio_Manager } from "./audio.js";
 import { setupGUI } from "./gui.js";
+import { initRenderer, initComposer } from "./renderer.js"
 // loaders
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-
+// DOM Elements
 const cursor = document.getElementById("custom-cursor");
-
-// Setup
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000000);
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( // default position
-  60,
-  window.innerWidth / window.innerHeight,
-  1,
-  1000
-);
-
-const bloomPass = new UnrealBloomPass(
-  new THREE.Vector2(window.innerWidth, window.innerHeight),
-  1.8,
-  1,
-  1
-);
-
-const renderScene = new RenderPass(scene, camera);
-const composer = new EffectComposer(renderer);
+document.body.style.cursor = "none";
 
 const velocityred = document.getElementById("velocity-gui-duplicate");
 function updateVelocityBars(currentVelocity, maxVelocity) {
@@ -50,10 +23,20 @@ function updateVelocityBars(currentVelocity, maxVelocity) {
   velocityred.style.height = `${h}px`; // Adjust based on your design
 }
 
-composer.addPass(renderScene);
-composer.addPass(bloomPass);
 
-document.body.style.cursor = "none";
+// Setup
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+const renderer = initRenderer()
+const composer = initComposer(renderer, scene, camera)
+
+
+
+
+
+
+
+
 
 // Environment
 const world = new environment.World({ scene: scene });
@@ -205,7 +188,6 @@ startAudioContext();
 setupGUI({
   camera,
   renderer,
-  bloomPass,
   spaceshipParams,
   updateSpaceshipPosition,
   audioManager,

@@ -4,7 +4,6 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 export function setupGUI({
   camera,
   renderer,
-  bloomPass,
   spaceshipParams,
   updateSpaceshipPosition,
   audioManager,
@@ -38,32 +37,32 @@ export function setupGUI({
 
   updateSpaceshipPosition();
 
-  const bloomFolder = gui.addFolder("Bloom Effect");
-  const defaultBloomStrength = 1.6;
-  const defaultBloomThreshold = 0.3;
-  const defaultBloomRadius = 0.7;
-  const strengthController = bloomFolder
-    .add(bloomPass, "strength", 0.1, 3)
-    .name("Intensity")
-    .onChange(updateBloomParameters);
-  const thresholdController = bloomFolder
-    .add(bloomPass, "threshold", 0, 1)
-    .name("Threshold")
-    .onChange(updateBloomParameters);
-  const radiusController = bloomFolder
-    .add(bloomPass, "radius", 0, 1)
-    .name("Radius")
-    .onChange(updateBloomParameters);
+  // const bloomFolder = gui.addFolder("Bloom Effect");
+  // const defaultBloomStrength = 1.6;
+  // const defaultBloomThreshold = 0.3;
+  // const defaultBloomRadius = 0.7;
+  // const strengthController = bloomFolder
+  //   .add(bloomPass, "strength", 0.1, 3)
+  //   .name("Intensity")
+  //   .onChange(updateBloomParameters);
+  // const thresholdController = bloomFolder
+  //   .add(bloomPass, "threshold", 0, 1)
+  //   .name("Threshold")
+  //   .onChange(updateBloomParameters);
+  // const radiusController = bloomFolder
+  //   .add(bloomPass, "radius", 0, 1)
+  //   .name("Radius")
+  //   .onChange(updateBloomParameters);
 
-  strengthController.setValue(defaultBloomStrength);
-  thresholdController.setValue(defaultBloomThreshold);
-  radiusController.setValue(defaultBloomRadius);
+  // strengthController.setValue(defaultBloomStrength);
+  // thresholdController.setValue(defaultBloomThreshold);
+  // radiusController.setValue(defaultBloomRadius);
 
-  function updateBloomParameters() {
-    bloomPass.strength = strengthController.getValue();
-    bloomPass.threshold = thresholdController.getValue();
-    bloomPass.radius = radiusController.getValue();
-  }
+  // function updateBloomParameters() {
+  //   bloomPass.strength = strengthController.getValue();
+  //   bloomPass.threshold = thresholdController.getValue();
+  //   bloomPass.radius = radiusController.getValue();
+  // }
 
   let isPlaying = false;
 
@@ -87,7 +86,7 @@ export function setupGUI({
   audioFolder.open();
   playSoundtrackController.onChange(playSoundtrack);
 
-  updateBloomParameters();
+  // updateBloomParameters();
   updateSpaceshipPosition();
 
   return gui;
