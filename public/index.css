@@ -31,7 +31,7 @@ h1 {
   color: white;
 }
 
-#velocity-gui {
+#velocity-bar-background {
   background: rgba(63, 63, 63, 0.283);
   position: absolute;
   left: 30px;
@@ -40,7 +40,7 @@ h1 {
   height: 300px;
 }
 
-#velocity-gui-duplicate {
+#velocity-bar {
   width: 4px; /* Set a width for the duplicate velocity bar */
   height: 0px; /* Set a height for the duplicate velocity bar */
   /* background-color: rgba(255, 0, 0, 0.607); */

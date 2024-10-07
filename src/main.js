@@ -10,18 +10,12 @@ import { mapValue } from "./utils.js";
 import { Audio_Manager } from "./audio.js";
 import { setupGUI } from "./gui.js";
 import { initRenderer, initComposer } from "./renderer.js"
+import { loadAsteroids, animateAsteroids } from "./ateroids.js"
+import { updateVelocityBars, cursor, progressContainer, progressText } from "./dom.js"
 // loaders
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-// DOM Elements
-const cursor = document.getElementById("custom-cursor");
-document.body.style.cursor = "none";
 
-const velocityred = document.getElementById("velocity-gui-duplicate");
-function updateVelocityBars(currentVelocity, maxVelocity) {
-  let h = mapValue(currentVelocity, 0, maxVelocity, 0, 300);
-  velocityred.style.height = `${h}px`; // Adjust based on your design
-}
 
 
 // Setup
@@ -42,45 +36,8 @@ const composer = initComposer(renderer, scene, camera)
 const world = new environment.World({ scene: scene });
 world.create();
 
-const loader_asteroids = new GLTFLoader().setPath("public/asteroids/");
-let asteroidGroup;
+let asteroidGroup = await loadAsteroids(scene);
 
-loader_asteroids.load("scene.gltf", (gltf) => {
-  const loadedModel = gltf.scene;
-  asteroidGroup = new THREE.Group();
-  const numberOfAsteroids = 50;
-
-  // Create a single PointLight for the entire asteroid group
-  const pointLight = new THREE.PointLight(0xffa500, 2, 50); // Set intensity and distance
-  scene.add(pointLight); // Add the light to the scene
-
-  for (let i = 0; i < numberOfAsteroids; i++) {
-    const asteroidClone = loadedModel.clone();
-    asteroidClone.position.set(
-      (Math.random() - 0.5) * 100,
-      (Math.random() - 0.5) * 100,
-      (Math.random() - 0.5) * 100
-    );
-    asteroidClone.rotation.set(
-      Math.random() * Math.PI,
-      Math.random() * Math.PI,
-      Math.random() * Math.PI
-    );
-    asteroidClone.velocity = new THREE.Vector3(
-      (Math.random() - 0.5) * 0.02,
-      (Math.random() - 0.5) * 0.02,
-      (Math.random() - 0.5) * 0.02
-    );
-
-    // Apply random scaling to the asteroid
-    const scale = Math.random() * 2 + 0.5; // Scale factor between 0.5 and 2.5
-    asteroidClone.scale.set(scale, scale, scale); // Apply uniform scaling
-
-    asteroidGroup.add(asteroidClone);
-  }
-  pointLight.position.set(0, 0, 0);
-  scene.add(asteroidGroup);
-});
 
 function updateSpaceshipPosition() {
   if (mesh) {
@@ -151,10 +108,10 @@ loader.load(
       target: mesh,
     });
 
-    document.getElementById("progress-container").style.display = "none";
+  progressContainer.style.display = "none";
   },
   (xhr) => {
-    document.getElementById("progress").innerHTML = `LOADING ${Math.max(
+    progressText.innerHTML = `LOADING ${Math.max(
       (xhr.loaded / xhr.total) * 100,
       1
     )}/100`;
@@ -286,25 +243,6 @@ function checkLaserCollision(laserPosition, laserDirection) {
   return false; // No collision detected
 }
 
-// function checkLaserCollision(laserPosition, laserDirection) {
-//   raycaster.set(laserPosition, laserDirection.clone().normalize());
-//   const intersects = raycaster.intersectObjects(asteroidGroup.children);
-//   if (intersects.length > 0) {
-//       console.log('Laser hit an asteroid');
-//       for (const intersect of intersects) {
-//           asteroidGroup.remove(intersect.object); // Remove the asteroid on hit
-//           scene.remove(intersect.object); // Remove the asteroid on hit
-//       }
-//       return true; // Collision detected
-//     }
-//     return false; // No collision detected
-//   }
-
-// function updateVelocityRectangle(currentVelocity) {
-//   const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, 19);
-//   velocityRectangle.scale.z = rectangleLength + 0.01;
-//   // velocityRectangle.position.z = mesh.position.z + (rectangleLength / 2);
-// }
 
 function updateVelocityRectangle(currentVelocity) {
   const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, -150);
@@ -463,10 +401,10 @@ function animate(currentTime) {
 
   // Animate the asteroids
   if (asteroidGroup) {
-    asteroidGroup.children.forEach((asteroid) => {
-      asteroid.position.add(asteroid.velocity); // Apply asteroid's velocity
-    });
+    animateAsteroids(asteroidGroup)
   }
+
+  
 
   world.rings.forEach((ring) => {
     ring.update(); // Make sure to call update first
