@@ -208,7 +208,7 @@ export const spaceship = (() => {
     }
 
     calculateRotation() {
-      if (this.forwardVelocity > 0) {
+      if (this.forwardVelocity > 0 || this.upwardVelocity > 0) {
         const continuousRotation = -(mouseX * 0.0001);
         this.mesh.rotation.y += continuousRotation;
         const targetX = this.mesh.children[0].rotation.x + mouseY * 0.0001; // Assuming meshChild is the first child
@@ -223,20 +223,17 @@ export const spaceship = (() => {
     }
   
     updateUpwardVelocity(upwardAcceleration, timeElapsed) {
-        if (upwardAcceleration > 0) {
-            this.upwardVelocity += this.upwardVelocity * PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
-            this.upwardVelocity = Math.min(this.upwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
-        } else if (upwardAcceleration < 0) {
-            this.upwardVelocity += this.upwardVelocity * PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
-            this.upwardVelocity = Math.max(this.upwardVelocity, -PHYSICS_CONSTANTS.maxVelocity);
-        } 
-        
-        // else {
-        //     this.upwardVelocity = (Math.abs(this.upwardVelocity) <= 0.3 * timeElapsed)
-        //         ? 0
-        //         : this.upwardVelocity - Math.sign(this.upwardVelocity) * 0.1 * timeElapsed;
-        // }
+      if (upwardAcceleration > 0) {
+        this.upwardVelocity += PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
+        this.upwardVelocity = Math.min(this.upwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
+    } else if (upwardAcceleration < 0) {
+        this.upwardVelocity -= PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
+        this.upwardVelocity = Math.max(this.upwardVelocity, -PHYSICS_CONSTANTS.maxVelocity);
+    } else {
+        const easingFactor = 0.05; // Increase this value to make the easing more noticeable
+        this.upwardVelocity -= Math.sign(this.upwardVelocity) * easingFactor * timeElapsed; // Ease towards zero
     }
+  }
     
     updateForwardVelocity(forwardAcceleration, timeElapsed) {
         if (forwardAcceleration > 0) {

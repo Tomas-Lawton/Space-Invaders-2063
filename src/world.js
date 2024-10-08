@@ -32,8 +32,8 @@ export const gameworld = (() => {
       if (this.scene) {
         this.createWorld();
         // this.createStarfield();
-        // this.createRunway();       
-        // this.addGround();
+        this.createRunway();       
+        this.addGround();
         // this.createRings();
         // this.addLights();
         // this.createStar();
@@ -44,10 +44,22 @@ export const gameworld = (() => {
     }
 
     async createAsteroids() {
-      let loader = new asteroids.AsteroidLoader(this.scene, 'public/asteroids/')
-      let group = await loader.loadAsteroids()
-      this.asteroidSystem.push(group)
-    }
+      const systems = 1;
+      const asteroidPaths = [
+        // 'public/asteroid_models/asteroids/',
+        'public/asteroid_models/plane/',
+        'public/asteroid_models/iron/',
+        'public/asteroid_models/gold/',
+        'public/asteroid_models/crystal/',
+      ];
+  
+      for (let i = 0; i < systems; i++) {
+          const loader = new asteroids.AsteroidLoader(this.scene, asteroidPaths);
+          await loader.initialiseSystem(); // Wait for models to initialize
+          const group = await loader.loadAsteroids(); // Wait for asteroids to load
+          this.asteroidSystem.push(group); // Push the loaded group into the asteroid system
+      }
+  }
 
     createWorld() {
       this.scene.fog = new THREE.Fog(0x8090F, 0.5);
