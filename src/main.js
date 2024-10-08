@@ -7,7 +7,7 @@ import { spaceship } from "./spaceship.js";
 import { setupGUI } from "./gui.js";
 import { entity } from "./entity.js";
 import { initRenderer, initComposer } from "./renderer.js";
-import { updateVelocityBars } from "./dom.js";
+import { updateVelocityBar, updateHealthBar } from "./dom.js";
 import { player_input } from "./player-input.js";
 import { PHYSICS_CONSTANTS } from "./constants.js"
 
@@ -29,7 +29,7 @@ class Game {
   initEntities() {
     this.world = new gameworld.World({ scene: this.scene });
     this.playerEntity = new entity.Entity();
-    this.playerShip = new spaceship.Spaceship(this.scene, this.camera);
+    this.playerShip = new spaceship.Spaceship(this.scene, this.camera, 100);
   }
 
   async initialize() {
@@ -78,9 +78,10 @@ class Game {
         if (this.playerShip && this.world && this.audioManager){
           // THREE
           this.playerShip.Update(input.forwardAcceleration, input.upwardAcceleration, timeElapsed, this.audioManager, this.world.asteroidSystem);
-          this.world.Update(this.playerShip, this.audioManager); // depends on user and sound
+          this.world.Update(timeElapsed, this.playerShip, this.audioManager); // depends on user and sound
           // HUD
-          updateVelocityBars(this.playerShip, PHYSICS_CONSTANTS.maxVelocity);
+          updateVelocityBar(this.playerShip.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
+          updateHealthBar(this.playerShip.health, this.playerShip.maxHealth)
         }
 
       }

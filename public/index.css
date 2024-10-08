@@ -34,7 +34,7 @@ h1 {
 #velocity-bar-background {
   background: rgba(63, 63, 63, 0.283);
   position: absolute;
-  left: 30px;
+  left: 25px;
   bottom: 25px;
   width: 4px;
   height: calc(100% - 50px);
@@ -45,10 +45,32 @@ h1 {
   height: 0px; 
   background: #9500ff6d;
   position: absolute;
-  left: 30px;
+  left: 25px;
   bottom: 25px; /* Start filling from the bottom */
   width: 4px;
 }
+
+#health-bar-background {
+  background: rgba(63, 63, 63, 0.283);
+  position: absolute;
+  left: 21px;
+  bottom: 25px;
+  width: 4px;
+  height: calc(100% - 50px);
+}
+
+
+#health-bar {
+  background: rgba(0, 255, 42, 0.695);
+  position: absolute;
+  left: 21px;
+  bottom: 25px;
+  width: 4px;
+  height: calc(100% - 50px);
+  transition: height 0.3s ease;
+}
+
+
 
 
 #custom-cursor {

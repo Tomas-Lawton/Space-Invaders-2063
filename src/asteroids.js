@@ -69,7 +69,7 @@ export const asteroids = (() => {
             (Math.random() - 0.5) * 0.02
           );
 
-          const scale = Math.random() * 2 + .5; // Scale factor between 0.5 and 2.5
+          const scale = Math.random() * 4 + 1; // Scale factor between 0.5 and 2.5
           asteroidClone.scale.set(scale, scale, scale); // Apply uniform scaling
 
           this.asteroidGroup.add(asteroidClone);

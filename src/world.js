@@ -1,7 +1,11 @@
 import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
 import { Particle } from "./Particle.js";
 import { Ring } from "./Ring.js";
 import { asteroids } from "./asteroids.js"
+
+// import FogEffect from "./fog.js"
 
 export const gameworld = (() => {
   class World {
@@ -12,11 +16,22 @@ export const gameworld = (() => {
       this.asteroidSystem = []
     }
 
-    Update(playerShip, audioManager) {
+    Update(timeElapsed, playerShip, audioManager) {
+
+      if ( this.fogEffect){
+        this.fogEffect.updateFog(timeElapsed); // Update fog time
+      }
+
+
       if (this.asteroidSystem) {
         this.asteroidSystem.forEach((asteroidSystem) => {
           asteroidSystem.animateAsteroidGroup();
         });
+      }
+
+      if (this.planet) {
+        this.planet.rotation.y += 0.001; // Rotate the planet around its Y-axis
+
       }
 
       // this.rings.forEach((ring) => {
@@ -30,19 +45,98 @@ export const gameworld = (() => {
 
     addElements() {
       if (this.scene) {
+         // Create and apply the fog effect
+        //  this.fogEffect = new FogEffect(this.scene, new THREE.Color(0xDFE9F3), .00005);
+
         this.createWorld();
-        // this.createStarfield();
+        this.createStarfield();
         this.createRunway();       
         this.addGround();
-        // this.createRings();
-        // this.addLights();
-        // this.createStar();
-        // this.addParticles();
-        // this.createLoops();
+        this.createRings();
+        this.addLights();
+        this.createStar();
+        this.addParticles();
+        this.createLoops();
         this.createAsteroids();
+        this.loadPlanet();
+
+
+
       }
     }
-
+    async loadPlanet() {
+      const planetLoader = new GLTFLoader();
+      const gltf = await planetLoader.setPath('public/planet/').loadAsync("scene.gltf");
+      if (!gltf || !gltf.scene) {
+          throw new Error(`Failed to load model from path: ${path}`);
+      }
+      
+      const model = gltf.scene.clone();
+      
+      model.position.set(
+          (Math.random() - 0.5) * 1000,
+          (Math.random() - 0.5) * 1000,
+          (Math.random() - 0.5) * 1000
+      );
+  
+      const scale = 40; // Increased scale for a larger planet
+      model.scale.set(scale, scale, scale);
+      
+      model.traverse((node) => {
+          if (node.isMesh) {
+              node.material.side = THREE.DoubleSide;
+  
+              const fogGeometry = new THREE.SphereGeometry(scale * 1.5, 32, 32); // Larger sphere for fog
+              const fogMaterial = new THREE.MeshStandardMaterial({
+                  color: 0xff4500, // Color of the fog (OrangeRed)
+                  opacity: 1, // Higher opacity for thicker fog
+                  transparent: true,
+                  depthWrite: false,
+                  blending: THREE.AdditiveBlending // Use additive blending for a glowing fog effect
+              });
+          
+              // Create a foggy sphere around the planet
+              const fogSphere = new THREE.Mesh(fogGeometry, fogMaterial);
+              fogSphere.position.copy(model.position);
+              this.scene.add(fogSphere);
+          }
+      });
+  
+      // Create multiple diffused lights around the planet using reds and oranges
+      const lightPositions = [
+          { x: 30, y: 30, z: 30 },
+          { x: -30, y: 30, z: -30 },
+          { x: 30, y: -30, z: -30 },
+          { x: -30, y: -30, z: 30 },
+          { x: 0, y: 50, z: 0 },
+          { x: 0, y: -50, z: 0 },
+          { x: 50, y: 0, z: 0 },
+          { x: -50, y: 0, z: 0 },
+      ];
+  
+      const lightColors = [
+          0xff4500, // OrangeRed
+          0xff6347, // Tomato
+          0xff8c00, // DarkOrange
+          0xffff00, // Yellow (optional for more brightness)
+          0xffa500, // Orange
+      ];
+  
+      lightPositions.forEach((pos, index) => {
+          const light = new THREE.PointLight(lightColors[index % lightColors.length], 3, 200); // Increased distance for diffusion
+          light.position.set(
+              model.position.x + pos.x,
+              model.position.y + pos.y,
+              model.position.z + pos.z
+          );
+          this.scene.add(light);
+      });
+  
+      this.scene.add(model);
+      this.planet = model;
+  
+  
+  }
     async createAsteroids() {
       const systems = 1;
       const asteroidPaths = [

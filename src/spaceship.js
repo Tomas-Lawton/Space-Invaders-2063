@@ -10,7 +10,7 @@ import { cursor } from "./dom.js";
 
 export const spaceship = (() => {
   class Spaceship {
-    constructor(scene, camera) {
+    constructor(scene, camera, health=100) {
       this.scene = scene;
       this.camera = camera;
       this.spaceshipParams = {
@@ -39,7 +39,24 @@ export const spaceship = (() => {
 
       this.activeLasers = [];
 
+      this.setHealth(health, true)
+
       return this
+    }
+
+    damageShip(damage) {
+      this.health -= damage;
+      
+      if (this.health <= 0) {
+        alert('Dead')
+      }
+    }
+
+    setHealth(health, init=false) {
+      this.health = health
+      if (init) {
+        this.maxHealth = health
+      }
     }
 
     loadSpaceship() {
@@ -150,7 +167,7 @@ export const spaceship = (() => {
       this.velocityRectangle.position.z = rectangleLength / 2;
     }
     
-    checkLaserCollision(laserBeam, asteroid) {
+    checkCollision(laserBeam, asteroid) {
       const laserBox = new THREE.Box3().setFromObject(laserBeam);
       const asteroidBox = new THREE.Box3().setFromObject(asteroid);
     
@@ -179,7 +196,7 @@ export const spaceship = (() => {
             // console.log(asteroidSystem)
             for (const system of asteroidSystem) {
               system.asteroidGroup.children.forEach(asteroid => {
-                if (this.checkLaserCollision(laserBeam, asteroid)) {
+                if (this.checkCollision(laserBeam, asteroid)) {
                   console.log('HIT');
                   this.scene.remove(laserBeam);
                   this.activeLasers.splice(index, 1);
@@ -195,14 +212,30 @@ export const spaceship = (() => {
         });
       }
     }
-    
 
+    checkAsteroidCollisions(asteroidSystem){
+      if (asteroidSystem) {
+        // console.log(asteroidSystem)
+        for (const system of asteroidSystem) {
+          system.asteroidGroup.children.forEach(asteroid => {
+            if (this.checkCollision(this.mesh, asteroid)) {
+              console.log('HIT');
+              this.damageShip(10)
+              document.getElementById("health-bar")
+              return; // Exit the loops after removing the laser
+            }
+          }) 
+        }
+      }
+    }
+    
     Update(forwardAcceleration, upwardAcceleration, timeElapsed, audioManager, asteroidGroups) {
       this.calculateRotation();
       this.calculateVelocity(forwardAcceleration, upwardAcceleration, timeElapsed);
       this.moveSpaceship();
       this.handleLaserMovement(asteroidGroups);
       this.updateVelocityRectangle(this.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
+      this.checkAsteroidCollisions(asteroidGroups)
       this.thirdPersonCamera.Update(timeElapsed);
       audioManager.updateSpaceshipVolume(this.forwardVelocity)
     }
@@ -211,7 +244,7 @@ export const spaceship = (() => {
       if (this.forwardVelocity > 0 || this.upwardVelocity > 0) {
         const continuousRotation = -(mouseX * 0.0001);
         this.mesh.rotation.y += continuousRotation;
-        const targetX = this.mesh.children[0].rotation.x + mouseY * 0.0001; // Assuming meshChild is the first child
+        const targetX = this.mesh.children[0].rotation.x + mouseY * 0.0002; // Assuming meshChild is the first child
         const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.93, Math.PI * 0.93);
         this.mesh.children[0].rotation.x = THREE.MathUtils.lerp(this.mesh.children[0].rotation.x, mappedTargetX, 0.8);
       }
