@@ -12,11 +12,7 @@ export const player_input = (() => {
       console.log("Initializing PlayerInput");
 
       this.Parent.Attributes.InputCurrent = {
-        forwardVelocity: 0.0,
         forwardAcceleration: 0.0,
-        space: false,
-        shift: false,
-        upwardVelocity: 0.0,
         upwardAcceleration: 0.0,
       };
 
@@ -30,7 +26,7 @@ export const player_input = (() => {
       if (event.currentTarget.activeElement != document.body) {
         return;
       }
-      console.log(event.keyCode);
+      // console.log(event.keyCode);
       switch (event.keyCode) {
         case 87: // W
           this.Parent.Attributes.InputCurrent.forwardAcceleration = 1.0;
