@@ -199,10 +199,11 @@ class Spaceship {
     this.velocityRectangle.position.z = rectangleLength / 2;
   }
 
-  // Placeholder for future movement and interaction logic
-  update() {
-    // Add any real-time updates for spaceship here (like movement, firing weapons)
-  }
+
+  
+
+
+
 }
 
 return {
