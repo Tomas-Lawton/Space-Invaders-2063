@@ -23,21 +23,21 @@ let playerShip
 let playerEntity
 
 // Setup Audio (refactor more clean!)
-// async function startAudioContext() {
-//   try {
-//     console.log("Starting audio context")
-//     const audioContext = new AudioContext();
-//     audioManager = new Audio_Manager(audioContext);
-//     await audioManager.loadSounds("./public/audio/sounds");
-//     await audioManager.loadSoundtrack("./public/audio/soundtrack.wav");
-//     await audioManager.loadSpaceshipSound("./public/audio/ship_rumble.wav");
-//     audioManager.playSpaceshipSound();
-//     console.log("Started Audio Context.")
-//   } catch (error) {
-//     console.error("Failed to initialize sounds or audio context:", error);
-//   }
-// }
-// startAudioContext()
+async function startAudioContext() {
+  try {
+    console.log("Starting audio context")
+    const audioContext = new AudioContext();
+    audioManager = new Audio_Manager(audioContext);
+    await audioManager.loadSounds("./public/audio/sounds");
+    await audioManager.loadSoundtrack("./public/audio/soundtrack.wav");
+    await audioManager.loadSpaceshipSound("./public/audio/ship_rumble.wav");
+    audioManager.playSpaceshipSound();
+    console.log("Started Audio Context.")
+  } catch (error) {
+    console.error("Failed to initialize sounds or audio context:", error);
+  }
+}
+startAudioContext()
 
 // 2 Create World 
 world = new gameworld.World({ scene: scene });
@@ -54,11 +54,11 @@ playerEntity.AddComponent(playerInputComponent);
 playerEntity.InitEntity();
 
 // 5 Create GUI
-// setupGUI({
-//   camera,
-//   renderer,
-//   audioManager,
-// });
+setupGUI({
+  camera,
+  renderer,
+  audioManager,
+});
 
 const currentSpeed = 0.1;
 const maxVelocity = .5;
@@ -73,7 +73,6 @@ function animate(currentTime, previousTime=0) {
   requestAnimationFrame(animate);
   let timeElapsed = (currentTime - previousTime) / 1000;
   previousTime = currentTime;
-  // console.log(timeElapsed)
 
   if (!playerMesh || playerShip) { // caching to currentSpeed up loop
     playerMesh = playerShip.mesh;
@@ -164,23 +163,15 @@ function animate(currentTime, previousTime=0) {
         );
       }
 
-
-      // Calculate sine and cosine values for the player's rotation
       const sinY = Math.sin(playerMesh.rotation.y); // Sine of yaw rotation (y-axis)
       const cosY = Math.cos(playerMesh.rotation.y); // Cosine of yaw rotation (y-axis)
       const cosX = Math.cos(playerMesh.rotation.x); // Cosine of pitch rotation (x-axis)
 
-      // Initialize the move vector based on player input and rotations
       moveVector.set(
           sinY * cosX * input.forwardVelocity, // X component: Forward motion in X-axis
           -Math.sin(meshChild.rotation.x) * input.forwardVelocity + input.upwardVelocity, // Y component: Vertical motion (up/down)
           cosY * cosX * input.forwardVelocity // Z component: Forward motion in Z-axis
       );
-
-      // Normalize the move vector to maintain consistent speed if it's not zero
-      // if (moveVector.length() > 0) {
-      //     moveVector.normalize().multiplyScalar(currentSpeed); // Normalize and scale by currentSpeed
-      // }
 
 
 
