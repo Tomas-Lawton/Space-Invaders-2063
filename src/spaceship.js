@@ -141,31 +141,7 @@ export const spaceship = (() => {
       console.log("shot laser")
     }
 
-    checkLaserCollision(laserPosition, laserDirection) {
-      // REFACTOR
 
-      // this.raycaster.set(laserPosition, laserDirection.clone().normalize());
-      // const intersects = this.raycaster.intersectObjects(asteroidGroup.children); // Assuming asteroidGroup is accessible
-      // if (intersects.length > 0) {
-      //   console.log('Laser hit an asteroid');
-
-      //   // Loop through each intersected object and remove it from the scene
-      //   for (const intersect of intersects) {
-      //     // If the intersected object has a parent, remove it directly from the parent
-      //     if (intersect.object.parent) {
-      //       intersect.object.parent.remove(intersect.object);
-
-      //       if (this.boomSound) {
-      //         this.boomSound.currentTime = 0; // Reset to the start
-      //         this.boomSound.volume = 0.5; // Set volume to 25%
-      //         this.boomSound.play(); // Play the sound
-      //       }
-      //     }
-      //   }
-      //   return true; // Collision detected
-      // }
-      // return false; // No collision detected
-    }
 
     updateVelocityRectangle(currentVelocity, maxVelocity) {
       const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, -150);
@@ -174,24 +150,55 @@ export const spaceship = (() => {
       this.velocityRectangle.position.z = rectangleLength / 2;
     }
 
-    handleLaserMovement() {
+    checkLaserCollision(laserBeam, asteroid) {
+      console.log(asteroid)
+      const collisionDistance = 10; 
+      if (laserBeam.position.distanceTo(asteroid.position) < collisionDistance) {    
+        if (asteroid.parent) {
+          asteroid.parent.remove(asteroid);
+        }
+        if (this.boomSound) {
+          this.boomSound.currentTime = 0; // Reset to the start
+          this.boomSound.volume = 0.5; // Set volume
+          this.boomSound.play(); // Play sound
+        }
+        return true; // Collision detected
+      }
+      return false; // No collision detected
+    }
+
+    handleLaserMovement(asteroidSystem) {
       if (this.activeLasers) {
-        this.activeLasers.forEach((beam) => {
-          const { laserBeam, velocity, direction } = beam;
+        this.activeLasers.forEach((beam, index) => {
+          const { laserBeam, velocity } = beam;
           laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
-          this.checkLaserCollision(laserBeam.position, direction);
-          if (laserBeam.position.distanceTo(this.mesh.position) > 200) {
+          if (asteroidSystem) {
+            console.log(asteroidSystem)
+            for (const system of asteroidSystem) {
+              system.asteroidGroup.children.forEach(asteroid => {
+                if (this.checkLaserCollision(laserBeam, asteroid)) {
+                  console.log('HIT');
+                  this.scene.remove(laserBeam);
+                  this.activeLasers.splice(index, 1);
+                  return; // Exit the loops after removing the laser
+                }
+              }) 
+            }
+          }
+          if (laserBeam.position.distanceTo(this.mesh.position) > 30) {
             this.scene.remove(laserBeam);
+            this.activeLasers.splice(index, 1); // Remove from activeLasers array
           }
         });
       }
     }
+    
 
-    Update(forwardAcceleration, upwardAcceleration, timeElapsed, audioManager) {
+    Update(forwardAcceleration, upwardAcceleration, timeElapsed, audioManager, asteroidGroups) {
       this.calculateRotation();
       this.calculateVelocity(forwardAcceleration, upwardAcceleration, timeElapsed);
       this.moveSpaceship();
-      this.handleLaserMovement();
+      this.handleLaserMovement(asteroidGroups);
       this.updateVelocityRectangle(this.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
       this.thirdPersonCamera.Update(timeElapsed);
       audioManager.updateSpaceshipVolume(this.forwardVelocity)

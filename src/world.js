@@ -9,13 +9,13 @@ export const gameworld = (() => {
       this.scene = params.scene;
       this.rings = [];
       this.particles = [];
-      this.asteroidGroups = []
+      this.asteroidSystem = []
     }
 
     Update(playerShip, audioManager) {
-      if (this.asteroidGroups) {
-        this.asteroidGroups.forEach((asteroidGroup) => {
-          asteroidGroup.animateAsteroidGroup();
+      if (this.asteroidSystem) {
+        this.asteroidSystem.forEach((asteroidSystem) => {
+          asteroidSystem.animateAsteroidGroup();
         });
       }
 
@@ -46,7 +46,7 @@ export const gameworld = (() => {
     async createAsteroids() {
       let loader = new asteroids.AsteroidLoader(this.scene, 'public/asteroids/')
       let group = await loader.loadAsteroids()
-      this.asteroidGroups.push(group)
+      this.asteroidSystem.push(group)
     }
 
     createWorld() {

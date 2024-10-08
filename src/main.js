@@ -77,7 +77,7 @@ class Game {
 
         if (this.playerShip && this.world && this.audioManager){
           // THREE
-          this.playerShip.Update(input.forwardAcceleration, input.upwardAcceleration, timeElapsed, this.audioManager);
+          this.playerShip.Update(input.forwardAcceleration, input.upwardAcceleration, timeElapsed, this.audioManager, this.world.asteroidSystem);
           this.world.Update(this.playerShip, this.audioManager); // depends on user and sound
           // HUD
           updateVelocityBars(this.playerShip, PHYSICS_CONSTANTS.maxVelocity);
