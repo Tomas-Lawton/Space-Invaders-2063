@@ -115,10 +115,12 @@ class Game {
             this.loadPlayerMesh();
             return;
         }
-        this.handleLaserMovement();
-        this.handleRotation(input);
-        this.updateVelocity(input, timeElapsed);
-        this.playerShip.Update(input.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity, this.calculateMoveVector(input), timeElapsed)
+        this.calculateRotation(input);
+        this.calculateVelocity(input, timeElapsed);
+        let moveInputVector = this.calculateMoveVector(input)
+
+
+        this.playerShip.Update(input.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity, moveInputVector, timeElapsed)
         updateVelocityBars(input.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity); // UI
     }
 
@@ -128,20 +130,8 @@ class Game {
         this.meshChild = this.playerMesh.children[0];
     }
 
-    handleLaserMovement() {
-        if (this.playerShip.activeLasers) {
-            this.playerShip.activeLasers.forEach((beam) => {
-                const { laserBeam, velocity, direction } = beam;
-                laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
-                this.playerShip.checkLaserCollision(laserBeam.position, direction);
-                if (laserBeam.position.distanceTo(this.playerMesh.position) > 200) {
-                    this.playerShip.scene.remove(laserBeam);
-                }
-            });
-        }
-    }
 
-    handleRotation(input) {
+    calculateRotation(input) {
         if (input.forwardVelocity > 0) {
             const continuousRotation = -(mouseX * 0.0001);
             this.playerMesh.rotation.y += continuousRotation;
@@ -152,7 +142,7 @@ class Game {
         }
     }
 
-    updateVelocity(input, timeElapsed) {
+    calculateVelocity(input, timeElapsed) {
         this.updateUpwardVelocity(input, timeElapsed);
         this.updateForwardVelocity(input, timeElapsed);
     }

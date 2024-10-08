@@ -200,8 +200,22 @@ class Spaceship {
     this.velocityRectangle.position.z = rectangleLength / 2;
   }
 
+  handleLaserMovement() {
+    if (this.activeLasers) {
+      this.activeLasers.forEach((beam) => {
+          const { laserBeam, velocity, direction } = beam;
+          laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
+          this.checkLaserCollision(laserBeam.position, direction);
+          if (laserBeam.position.distanceTo(this.mesh.position) > 200) {
+              this.scene.remove(laserBeam);
+          }
+      });
+  }
+  }
+
 
   Update(forwardVelocity, maxVelocity, moveVector, timeElapsed){
+    this.handleLaserMovement()
     this.mesh.position.add(moveVector);
     this.thirdPersonCamera.Update(timeElapsed);
     this.updateVelocityRectangle(forwardVelocity, maxVelocity)
