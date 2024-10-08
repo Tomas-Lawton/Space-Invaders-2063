@@ -16,8 +16,8 @@ export const gameworld = (() => {
       if (this.scene) {
         this.createWorld();
         // this.createStarfield();
-        // this.createRunway();       
-        // this.addGround();
+        this.createRunway();       
+        this.addGround();
         // this.createRings();
         // this.addLights();
         // this.createStar();
