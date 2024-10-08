@@ -15,7 +15,7 @@ class AsteroidLoader {
 
       const gltf = await this.loader.loadAsync("scene.gltf");
       const loadedModel = gltf.scene;
-      const numberOfAsteroids = 50;
+      const numberOfAsteroids = 100;
 
       // Create a single PointLight for the entire asteroid group
       const pointLight = new THREE.PointLight(0xffa500, 2, 50); // Set intensity and distance

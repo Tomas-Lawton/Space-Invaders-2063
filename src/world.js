@@ -31,14 +31,14 @@ export const gameworld = (() => {
     addElements() {
       if (this.scene) {
         this.createWorld();
-        this.createStarfield();
-        this.createRunway();       
-        this.addGround();
-        this.createRings();
-        this.addLights();
-        this.createStar();
-        this.addParticles();
-        this.createLoops();
+        // this.createStarfield();
+        // this.createRunway();       
+        // this.addGround();
+        // this.createRings();
+        // this.addLights();
+        // this.createStar();
+        // this.addParticles();
+        // this.createLoops();
         this.createAsteroids();
       }
     }

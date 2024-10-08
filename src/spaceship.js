@@ -149,21 +149,24 @@ export const spaceship = (() => {
       this.velocityRectangle.geometry = new THREE.BoxGeometry(3, 3, rectangleLength); // Adjust width and height as needed
       this.velocityRectangle.position.z = rectangleLength / 2;
     }
-
+    
     checkLaserCollision(laserBeam, asteroid) {
-      console.log(asteroid)
-      const collisionDistance = 10; 
-      if (laserBeam.position.distanceTo(asteroid.position) < collisionDistance) {    
+      const laserBox = new THREE.Box3().setFromObject(laserBeam);
+      const asteroidBox = new THREE.Box3().setFromObject(asteroid);
+    
+      if (laserBox.intersectsBox(asteroidBox)) {
+        console.log('Laser hit the asteroid');
         if (asteroid.parent) {
           asteroid.parent.remove(asteroid);
         }
         if (this.boomSound) {
-          this.boomSound.currentTime = 0; // Reset to the start
-          this.boomSound.volume = 0.5; // Set volume
-          this.boomSound.play(); // Play sound
+          this.boomSound.currentTime = 0;
+          this.boomSound.volume = 0.5;
+          this.boomSound.play();
         }
         return true; // Collision detected
       }
+    
       return false; // No collision detected
     }
 
@@ -173,7 +176,7 @@ export const spaceship = (() => {
           const { laserBeam, velocity } = beam;
           laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
           if (asteroidSystem) {
-            console.log(asteroidSystem)
+            // console.log(asteroidSystem)
             for (const system of asteroidSystem) {
               system.asteroidGroup.children.forEach(asteroid => {
                 if (this.checkLaserCollision(laserBeam, asteroid)) {
@@ -185,7 +188,7 @@ export const spaceship = (() => {
               }) 
             }
           }
-          if (laserBeam.position.distanceTo(this.mesh.position) > 30) {
+          if (laserBeam.position.distanceTo(this.mesh.position) > 60) {
             this.scene.remove(laserBeam);
             this.activeLasers.splice(index, 1); // Remove from activeLasers array
           }

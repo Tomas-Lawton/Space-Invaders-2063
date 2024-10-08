@@ -1,11 +1,11 @@
 Model Information:
-* title:	Wandering Asteroids Of Milkyway
-* source:	https://sketchfab.com/3d-models/wandering-asteroids-of-milkyway-6a8e84e0fdea43628b8b3ab85b130281
-* author:	ARCTIC  WOLVES™ (https://sketchfab.com/arctic.wolves)
+* title:	Asteroid 1a Game Model
+* source:	https://sketchfab.com/3d-models/asteroid-1a-game-model-8b07a00e0b034ff58e4aa29a5027723b
+* author:	Mykhailo Ohorodnichuk (https://sketchfab.com/GamePiggs)
 
 Model License:
 * license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
 * requirements:	Author must be credited. Commercial use is allowed.
 
 If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
-This work is based on "Wandering Asteroids Of Milkyway" (https://sketchfab.com/3d-models/wandering-asteroids-of-milkyway-6a8e84e0fdea43628b8b3ab85b130281) by ARCTIC  WOLVES™ (https://sketchfab.com/arctic.wolves) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+This work is based on "Asteroid 1a Game Model" (https://sketchfab.com/3d-models/asteroid-1a-game-model-8b07a00e0b034ff58e4aa29a5027723b) by Mykhailo Ohorodnichuk (https://sketchfab.com/GamePiggs) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
