@@ -201,7 +201,11 @@ class Spaceship {
   }
 
 
-  
+  Update(forwardVelocity, maxVelocity, moveVector, timeElapsed){
+    this.mesh.position.add(moveVector);
+    this.thirdPersonCamera.Update(timeElapsed);
+    this.updateVelocityRectangle(forwardVelocity, maxVelocity)
+  }
 
 
 
