@@ -8,6 +8,7 @@ export const progressContainer = document.getElementById("progress-container")
 export const progressText = document.getElementById("progress")
 
 export function updateVelocityBars(currentVelocity, maxVelocity) {
-    let h = mapValue(currentVelocity, 0, maxVelocity, 0, 300);
-    velocityBar.style.height = `${h}px`; // Adjust based on your design
-  }
+  let maxHeight = window.innerHeight - 50;
+  let h = mapValue(currentVelocity, 0, maxVelocity, 0, maxHeight);
+  velocityBar.style.height = `${h}px`;
+}

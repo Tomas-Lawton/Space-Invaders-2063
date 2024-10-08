@@ -12,8 +12,8 @@ import { updateVelocityBars, cursor } from "./dom.js";
 import { player_input } from "./player-input.js";
 
 // default physics
-const maxVelocity = .8;
-const acceleration = .17;
+const maxVelocity = .7;
+const acceleration = .2;
 const deceleration = 0.15;
 const verticalAcceleration = 0.0005;
 
@@ -73,14 +73,13 @@ class Game {
       this.previousTime = currentTime; // Update previousTime for the next frame
       this.update(timeElapsed); // Call the update method
   }
-    // LOOP LOGIC
     update(timeElapsed) {
         if (this.playerEntity && this.playerEntity.GetComponent("PlayerInput")) {
           this.playerEntity.Update();
           const input = this.playerEntity.Attributes.InputCurrent;
     
           if (input) {
-            this.updatePlayerMovement(input, timeElapsed);
+            this.updatePlayer(input, timeElapsed);
             this.updateAudioVolume(input);
             this.updateWorld();
           }
@@ -91,18 +90,14 @@ class Game {
 
     updateWorld() {
       if (this.world) {
-          // Update asteroid groups
           if (this.world.asteroidGroups) {
               this.world.asteroidGroups.forEach(asteroidGroup => {
                   asteroidGroup.animateAsteroidGroup(); // Assuming animateAsteroidGroup updates the position and state of asteroids
               });
           }
   
-          // Update rings and check for collisions
           this.world.rings.forEach(ring => {
               ring.update(); // Make sure to call update first
-              
-              // Check for collision with player ship
               if (ring.checkCollisionWithRing(this.playerShip.mesh)) {
                   console.log("Collision detected! Playing sound.");
                   this.audioManager.playNextSound(); // Play sound on collision
@@ -111,54 +106,66 @@ class Game {
       }
     }
 
-    updatePlayerMovement(input, timeElapsed) {   
-    if (!this.playerMesh) {
-        console.log("Still Loading...");
-        this.playerMesh = this.playerShip.mesh;
-        if (!this.playerMesh) return;
-        this.meshChild = this.playerMesh.children[0];
-    } 
+    updatePlayer(input, timeElapsed) {   
+      if (!this.playerMesh) {
+          console.log("Still Loading...");
+          this.playerMesh = this.playerShip.mesh;
+          if (!this.playerMesh) return;
+          this.meshChild = this.playerMesh.children[0];
+      } 
 
-    let playerMesh = this.playerMesh;
-    let meshChild = this.meshChild;
+      let playerMesh = this.playerMesh;
+      let meshChild = this.meshChild;
+      let playerShip = this.playerShip
 
-    // Only allow rotation if there is forward velocity
-    if (input.forwardVelocity > 0) {
-        const continuousRotation = -(mouseX * 0.0001);
-        playerMesh.rotation.y += continuousRotation;
+      if (playerShip.activeLasers) {
+        playerShip.activeLasers.forEach(beam => {
+          let { laserBeam, velocity, direction } = beam
+          laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
+          playerShip.checkLaserCollision(laserBeam.position, direction);
+          if (laserBeam.position.distanceTo(playerShip.mesh.position) > 200) {
+            playerShip.scene.remove(laserBeam);
+          }
+        });
+      }
 
-        const targetX = meshChild.rotation.x + mouseY * 0.0001;
-        const mappedTargetX = mapValue(
-            targetX,
-            -Math.PI,
-            Math.PI,
-            -Math.PI * 0.93,
-            Math.PI * 0.93
-        );
-        meshChild.rotation.x = THREE.MathUtils.lerp(meshChild.rotation.x, mappedTargetX, 0.8);
+      // Only allow rotation if there is forward velocity
+      if (input.forwardVelocity > 0) {
+          const continuousRotation = -(mouseX * 0.0001);
+          playerMesh.rotation.y += continuousRotation;
+
+          const targetX = meshChild.rotation.x + mouseY * 0.0001;
+          const mappedTargetX = mapValue(
+              targetX,
+              -Math.PI,
+              Math.PI,
+              -Math.PI * 0.93,
+              Math.PI * 0.93
+          );
+          meshChild.rotation.x = THREE.MathUtils.lerp(meshChild.rotation.x, mappedTargetX, 0.8);
+      } else {
+          console.log("No forward velocity; rotation is disabled.");
+      }
+
+      // Update upward velocity
+    if (input.upwardAcceleration > 0) {
+        input.upwardVelocity += input.upwardAcceleration * verticalAcceleration * timeElapsed;
+        input.upwardVelocity = Math.min(input.upwardVelocity, maxVelocity);
+    } else if (input.upwardAcceleration < 0) {
+        input.upwardVelocity += input.upwardAcceleration * verticalAcceleration * timeElapsed;
+        input.upwardVelocity = Math.max(input.upwardVelocity, -maxVelocity);
     } else {
-        console.log("No forward velocity; rotation is disabled.");
+        input.upwardVelocity = (Math.abs(input.upwardVelocity) <= 0.3 * timeElapsed) ? 0 : input.upwardVelocity - Math.sign(input.upwardVelocity) * 0.1 * timeElapsed;
     }
 
-    // Update upward velocity
-  if (input.upwardAcceleration > 0) {
-      input.upwardVelocity += input.upwardAcceleration * verticalAcceleration * timeElapsed;
-      input.upwardVelocity = Math.min(input.upwardVelocity, maxVelocity);
-  } else if (input.upwardAcceleration < 0) {
-      input.upwardVelocity += input.upwardAcceleration * verticalAcceleration * timeElapsed;
-      input.upwardVelocity = Math.max(input.upwardVelocity, -maxVelocity);
-  } else {
-      input.upwardVelocity = (Math.abs(input.upwardVelocity) <= 0.3 * timeElapsed) ? 0 : input.upwardVelocity - Math.sign(input.upwardVelocity) * 0.1 * timeElapsed;
-  }
-
-    // Update forward velocity
-    if (input.forwardAcceleration > 0) {
-      input.forwardVelocity += input.forwardAcceleration * acceleration * timeElapsed;
-      input.forwardVelocity = Math.min(input.forwardVelocity, maxVelocity);
-  } else if (input.forwardAcceleration < 0) {
-      input.forwardVelocity += input.forwardAcceleration * deceleration * timeElapsed;
-      input.forwardVelocity = Math.max(input.forwardVelocity, 0);
-  }
+      // Update forward velocity
+      if (input.forwardAcceleration > 0) {
+        input.forwardVelocity += input.forwardAcceleration * acceleration * timeElapsed;
+        input.forwardVelocity = Math.min(input.forwardVelocity, maxVelocity);
+    } else if (input.forwardAcceleration < 0) {
+        input.forwardVelocity += input.forwardAcceleration * deceleration * timeElapsed;
+        input.forwardVelocity = Math.max(input.forwardVelocity, 0);
+    }
 
     const moveVector = this.calculateMoveVector(input);
     playerMesh.position.add(moveVector);

@@ -164,6 +164,7 @@ class Spaceship {
     }
   
     this.activeLasers.push({ laserBeam, velocity, direction });
+    console.log("shot laser")
   }
 
   checkLaserCollision(laserPosition, laserDirection) {
