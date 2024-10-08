@@ -51,28 +51,38 @@ export const asteroids = (() => {
         const pointLight = new THREE.PointLight(0xffa500, 2, 50);
         this.scene.add(pointLight); // Add the light to the scene
 
+        const originX = (Math.random() - 0.5) * 100; // Random X between -50 and 50
+        const originY = (Math.random() - 0.5) * 100; // Random Y between -50 and 50
+        const originZ = (Math.random() - 0.5) * 100; // Random Z between -50 and 50
+    
         for (let i = 0; i < numberOfAsteroids; i++) {
-          const asteroidClone = this.loadedModels[Math.floor(Math.random() * Math.random() * this.loadedModels.length)].clone(); // weighed selection
+          const asteroidClone = this.loadedModels[Math.floor(Math.random() * this.loadedModels.length)].clone(); // weighted selection
+    
+          // Set position relative to the random origin
           asteroidClone.position.set(
-            (Math.random() - 0.5) * 100,
-            (Math.random() - 0.5) * 100,
-            (Math.random() - 0.5) * 100
+            originX + (Math.random() - 0.5) * 50, // Adjust the range as needed
+            originY + (Math.random() - 0.5) * 50,
+            originZ + (Math.random() - 0.5) * 50
           );
+    
           asteroidClone.rotation.set(
             Math.random() * Math.PI,
             Math.random() * Math.PI,
             Math.random() * Math.PI
           );
+    
           asteroidClone.velocity = new THREE.Vector3(
             (Math.random() - 0.5) * 0.02,
             (Math.random() - 0.5) * 0.02,
             (Math.random() - 0.5) * 0.02
           );
-
-          const scale = Math.random() * 4 + 1; // Scale factor between 0.5 and 2.5
+    
+          asteroidClone.health = 100; // Set health
+    
+          const scale = Math.random() * 4 + 1; // Scale factor between 1 and 5
           asteroidClone.scale.set(scale, scale, scale); // Apply uniform scaling
-
-          this.asteroidGroup.add(asteroidClone);
+    
+          this.asteroidGroup.add(asteroidClone); // Add the asteroid to the group
         }
 
         return this; // Return the instance of AsteroidLoader
@@ -80,6 +90,12 @@ export const asteroids = (() => {
         console.error("Error loading asteroids:", error);
       }
     }
+
+
+    // destroyAsteroid(asteroid) {
+    //   this.asteroidGroup.remove(asteroid); // Remove from the group
+    //   console.log('Asteroid destroyed:', asteroid);
+    // }
 
     animateAsteroidGroup() {
       this.asteroidGroup.children.forEach((asteroid) => {

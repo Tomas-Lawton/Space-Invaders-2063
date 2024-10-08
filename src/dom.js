@@ -19,4 +19,11 @@ export function updateHealthBar(health, maxHealth) {
   let maxHeight = window.innerWidth - 50;
   let h = mapValue(health, 0, maxHealth, 0, maxHeight);
   healthBar.style.height = `${h}px`;
+
+  const healthPercentage = health / maxHealth;
+  const red = Math.floor((1 - healthPercentage) * 255);
+  const green = Math.floor(healthPercentage * 255);
+  const color = `rgb(${red}, ${green}, 0)`;
+
+  healthBar.style.backgroundColor = color;
 }

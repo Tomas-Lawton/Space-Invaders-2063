@@ -10,7 +10,7 @@ import { cursor } from "./dom.js";
 
 export const spaceship = (() => {
   class Spaceship {
-    constructor(scene, camera, health=100) {
+    constructor(scene, camera, health = 100) {
       this.scene = scene;
       this.camera = camera;
       this.spaceshipParams = {
@@ -33,6 +33,7 @@ export const spaceship = (() => {
 
       this.lightSound = new Audio('public/audio/pew.mp3');
       this.boomSound = new Audio('public/audio/boom.mp3');
+      this.alarmSound = new Audio('public/audio/alarm.mp3');
 
       this.forwardVelocity = 0
       this.upwardVelocity = 0
@@ -40,19 +41,20 @@ export const spaceship = (() => {
       this.activeLasers = [];
 
       this.setHealth(health, true)
+      this.damageAmount = 26
 
       return this
     }
 
     damageShip(damage) {
       this.health -= damage;
-      
+
       if (this.health <= 0) {
         alert('Dead')
       }
     }
 
-    setHealth(health, init=false) {
+    setHealth(health, init = false) {
       this.health = health
       if (init) {
         this.maxHealth = health
@@ -166,24 +168,14 @@ export const spaceship = (() => {
       this.velocityRectangle.geometry = new THREE.BoxGeometry(3, 3, rectangleLength); // Adjust width and height as needed
       this.velocityRectangle.position.z = rectangleLength / 2;
     }
-    
+
     checkCollision(laserBeam, asteroid) {
       const laserBox = new THREE.Box3().setFromObject(laserBeam);
       const asteroidBox = new THREE.Box3().setFromObject(asteroid);
-    
       if (laserBox.intersectsBox(asteroidBox)) {
-        console.log('Laser hit the asteroid');
-        if (asteroid.parent) {
-          asteroid.parent.remove(asteroid);
-        }
-        if (this.boomSound) {
-          this.boomSound.currentTime = 0;
-          this.boomSound.volume = 0.5;
-          this.boomSound.play();
-        }
+        console.log('Collision');
         return true; // Collision detected
       }
-    
       return false; // No collision detected
     }
 
@@ -200,9 +192,22 @@ export const spaceship = (() => {
                   console.log('HIT');
                   this.scene.remove(laserBeam);
                   this.activeLasers.splice(index, 1);
+
+                  asteroid.health -= this.damageAmount; // Reduce health
+                  console.log(`Asteroid damaged! Remaining health: ${asteroid.health}`);
+
+                  if (asteroid.health <= 0) {
+                    asteroid.parent.remove(asteroid);
+                    if (this.boomSound) {
+                      this.boomSound.currentTime = 0;
+                      this.boomSound.volume = 0.5;
+                      this.boomSound.play();
+                    }
+                  }
+
                   return; // Exit the loops after removing the laser
                 }
-              }) 
+              })
             }
           }
           if (laserBeam.position.distanceTo(this.mesh.position) > 60) {
@@ -213,22 +218,65 @@ export const spaceship = (() => {
       }
     }
 
-    checkAsteroidCollisions(asteroidSystem){
+
+    startRumbleEffect() {
+      const shakeDuration = 1000; // Duration of the shake in milliseconds
+      const shakeIntensity = 0.2; // Maximum shake offset
+      const endTimestamp = performance.now() + shakeDuration;
+
+      const rumble = () => {
+        const currentTimestamp = performance.now();
+
+        if (currentTimestamp < endTimestamp) {
+          const offsetX = (Math.random() - 0.5) * shakeIntensity;
+          const offsetY = (Math.random() - 0.5) * shakeIntensity;
+          const offsetZ = (Math.random() - 0.5) * shakeIntensity;
+
+          // Apply offset to the mesh's current position
+          this.mesh.position.x += offsetX;
+          this.mesh.position.y += offsetY;
+          this.mesh.position.z += offsetZ;
+
+          requestAnimationFrame(rumble);
+        }
+      };
+
+      requestAnimationFrame(rumble);
+    }
+
+    checkAsteroidCollisions(asteroidSystem) {
+      const currentTimestamp = performance.now();
+      if (currentTimestamp - this.lastCollisionCheck < 3000) {
+        return; // Exit if it's been less than 1 second
+      }
+      this.lastCollisionCheck = currentTimestamp;
+
       if (asteroidSystem) {
-        // console.log(asteroidSystem)
         for (const system of asteroidSystem) {
           system.asteroidGroup.children.forEach(asteroid => {
             if (this.checkCollision(this.mesh, asteroid)) {
-              console.log('HIT');
-              this.damageShip(10)
-              document.getElementById("health-bar")
-              return; // Exit the loops after removing the laser
+              console.log('HIT USER');
+              this.damageShip(9); // Call the damage function
+
+              // Play boom sound if available
+              if (this.boomSound) {
+                this.boomSound.currentTime = 0; // Reset sound to start
+                this.boomSound.volume = 0.5; // Set volume
+                this.boomSound.play(); // Play sound
+              }
+              if (this.alarmSound) {
+                this.alarmSound.currentTime = 0; // Reset sound to start
+                this.alarmSound.volume = 0.5; // Set volume
+                this.alarmSound.play(); // Play sound
+              }
+              this.startRumbleEffect();
+              return; // Exit the loops after detecting a hit
             }
-          }) 
+          });
         }
       }
     }
-    
+
     Update(forwardAcceleration, upwardAcceleration, timeElapsed, audioManager, asteroidGroups) {
       this.calculateRotation();
       this.calculateVelocity(forwardAcceleration, upwardAcceleration, timeElapsed);
@@ -254,28 +302,28 @@ export const spaceship = (() => {
       this.updateUpwardVelocity(upwardAcceleration, timeElapsed); // update this.upwardVelocity
       this.updateForwardVelocity(forwardAcceleration, timeElapsed); // update this.forwardVelocty
     }
-  
+
     updateUpwardVelocity(upwardAcceleration, timeElapsed) {
       if (upwardAcceleration > 0) {
         this.upwardVelocity += PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
         this.upwardVelocity = Math.min(this.upwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
-    } else if (upwardAcceleration < 0) {
+      } else if (upwardAcceleration < 0) {
         this.upwardVelocity -= PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
         this.upwardVelocity = Math.max(this.upwardVelocity, -PHYSICS_CONSTANTS.maxVelocity);
-    } else {
+      } else {
         const easingFactor = 0.05; // Increase this value to make the easing more noticeable
         this.upwardVelocity -= Math.sign(this.upwardVelocity) * easingFactor * timeElapsed; // Ease towards zero
+      }
     }
-  }
-    
+
     updateForwardVelocity(forwardAcceleration, timeElapsed) {
-        if (forwardAcceleration > 0) {
-            this.forwardVelocity = Math.min(this.forwardVelocity + PHYSICS_CONSTANTS.acceleration * timeElapsed, PHYSICS_CONSTANTS.maxVelocity);
-        }
-        if (forwardAcceleration < 0) {
-            this.forwardVelocity -= PHYSICS_CONSTANTS.deceleration * timeElapsed;
-            this.forwardVelocity = Math.max(this.forwardVelocity, 0);
-        }
+      if (forwardAcceleration > 0) {
+        this.forwardVelocity = Math.min(this.forwardVelocity + PHYSICS_CONSTANTS.acceleration * timeElapsed, PHYSICS_CONSTANTS.maxVelocity);
+      }
+      if (forwardAcceleration < 0) {
+        this.forwardVelocity -= PHYSICS_CONSTANTS.deceleration * timeElapsed;
+        this.forwardVelocity = Math.max(this.forwardVelocity, 0);
+      }
     }
 
     moveSpaceship() {
@@ -283,13 +331,13 @@ export const spaceship = (() => {
       let sinY = Math.sin(this.mesh.rotation.y); // Calculate sine of Y rotation for movement along the Y axis
       let cosY = Math.cos(this.mesh.rotation.y); // Calculate cosine of Y rotation for movement along the Z axis
       let cosX = Math.cos(this.mesh.children[0].rotation.x); // Calculate cosine of X rotation for vertical movement
-    
+
       moveVector.set(
         sinY * cosX * this.forwardVelocity, // Horizontal movement based on forward velocity and Y rotation
         -Math.sin(this.mesh.children[0].rotation.x) * this.forwardVelocity + this.upwardVelocity, // Vertical movement based on upward velocity and pitch
         cosY * cosX * this.forwardVelocity // Horizontal movement along the Z axis based on forward velocity and Y rotation
       );
-    
+
       this.mesh.position.add(moveVector); // Update the spaceship's position based on the calculated move vector
     }
 
@@ -306,8 +354,8 @@ export const spaceship = (() => {
 
 const centerX = window.innerWidth / 2;
 const centerY = window.innerHeight / 2;
-let mouseX=0
-let mouseY=0
+let mouseX = 0
+let mouseY = 0
 function handleMouseMove(event) {
   mouseX = event.clientX - centerX;
   mouseY = event.clientY - centerY;
