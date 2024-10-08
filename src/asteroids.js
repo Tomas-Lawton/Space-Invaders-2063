@@ -78,7 +78,7 @@ export const asteroids = (() => {
           );
     
           asteroidClone.health = 100; // Set health
-    
+          asteroidClone.healthBar = null
           const scale = Math.random() * 4 + 1; // Scale factor between 1 and 5
           asteroidClone.scale.set(scale, scale, scale); // Apply uniform scaling
     

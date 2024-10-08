@@ -17,12 +17,6 @@ export const gameworld = (() => {
     }
 
     Update(timeElapsed, playerShip, audioManager) {
-
-      if ( this.fogEffect){
-        this.fogEffect.updateFog(timeElapsed); // Update fog time
-      }
-
-
       if (this.asteroidSystem) {
         this.asteroidSystem.forEach((asteroidSystem) => {
           asteroidSystem.animateAsteroidGroup();

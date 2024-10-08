@@ -33,7 +33,9 @@ export const spaceship = (() => {
 
       this.lightSound = new Audio('public/audio/pew.mp3');
       this.boomSound = new Audio('public/audio/boom.mp3');
+      this.softBoom = new Audio('public/audio/soft_boom.mp3');
       this.alarmSound = new Audio('public/audio/alarm.mp3');
+      this.deadSound = new Audio('public/audio/cool1.mp3');
 
       this.forwardVelocity = 0
       this.upwardVelocity = 0
@@ -50,7 +52,12 @@ export const spaceship = (() => {
       this.health -= damage;
 
       if (this.health <= 0) {
-        alert('Dead')
+        if (this.deadSound) {
+          this.deadSound.currentTime = 0;
+          this.deadSound.volume = 0.5; 
+          this.deadSound.play(); 
+      }
+        alert('Youd Died')
       }
     }
 
@@ -157,7 +164,6 @@ export const spaceship = (() => {
       }
 
       this.activeLasers.push({ laserBeam, velocity, direction });
-      console.log("shot laser")
     }
 
 
@@ -181,45 +187,106 @@ export const spaceship = (() => {
 
     handleLaserMovement(asteroidSystem) {
       if (this.activeLasers) {
-        this.activeLasers.forEach((beam, index) => {
-          const { laserBeam, velocity } = beam;
-          laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
-          if (asteroidSystem) {
-            // console.log(asteroidSystem)
-            for (const system of asteroidSystem) {
-              system.asteroidGroup.children.forEach(asteroid => {
-                if (this.checkCollision(laserBeam, asteroid)) {
-                  console.log('HIT');
-                  this.scene.remove(laserBeam);
-                  this.activeLasers.splice(index, 1);
+          this.activeLasers.forEach((beam, index) => {
+              const { laserBeam, velocity } = beam;
+              laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
+              if (asteroidSystem) {
+                  for (const system of asteroidSystem) {
+                      system.asteroidGroup.children.forEach(asteroid => {
+                          if (this.checkCollision(laserBeam, asteroid)) {
+                              this.scene.remove(laserBeam);
+                              this.activeLasers.splice(index, 1);
+  
+                              asteroid.health -= this.damageAmount; 
+                              if (this.softBoom) {
+                                this.softBoom.currentTime = 0;
+                                this.softBoom.volume = 0.5; 
+                                this.softBoom.play(); 
+                            }
+                              this.startRumbleEffect(asteroid);
 
-                  asteroid.health -= this.damageAmount; // Reduce health
-                  console.log(`Asteroid damaged! Remaining health: ${asteroid.health}`);
-
-                  if (asteroid.health <= 0) {
-                    asteroid.parent.remove(asteroid);
-                    if (this.boomSound) {
-                      this.boomSound.currentTime = 0;
-                      this.boomSound.volume = 0.5;
-                      this.boomSound.play();
-                    }
+                              this.showHealthBar(asteroid); 
+  
+                              if (asteroid.health <= 0) {
+                                  this.removeHealthBar(asteroid); 
+                                  asteroid.parent.remove(asteroid);
+                                  this.playSound(); 
+                              }
+  
+                              return; 
+                          }
+                      });
                   }
-
-                  return; // Exit the loops after removing the laser
-                }
-              })
-            }
-          }
-          if (laserBeam.position.distanceTo(this.mesh.position) > 60) {
-            this.scene.remove(laserBeam);
-            this.activeLasers.splice(index, 1); // Remove from activeLasers array
-          }
-        });
+              }
+              if (laserBeam.position.distanceTo(this.mesh.position) > 100) {
+                  this.scene.remove(laserBeam);
+                  this.activeLasers.splice(index, 1); 
+              }
+          });
       }
+  }
+  showHealthBar(asteroid) {
+    if (!asteroid.healthBar) {
+        const healthBar = document.createElement('div');
+        healthBar.className = 'asteroid-health-bar';
+        healthBar.style.position = 'absolute';
+        healthBar.style.height = '5px';
+        healthBar.style.width = '100px'; 
+        document.body.appendChild(healthBar);
+        
+        asteroid.healthBar = { element: healthBar }; 
+
+        // Start an interval to update the health bar position
+        asteroid.healthBar.interval = setInterval(() => {
+            this.updateHealthBarPosition(asteroid);
+        }, 50); // Update every 100 milliseconds
     }
 
+    const healthPercentage = asteroid.health / 100; 
+    asteroid.healthBar.element.style.width = `${healthPercentage * 100}px`;
+    asteroid.healthBar.element.style.backgroundColor = `rgb(${255 * (1 - healthPercentage)}, ${255 * healthPercentage}, 0)`; 
+}
 
-    startRumbleEffect() {
+//at a set interval so not always
+updateHealthBarPosition(asteroid) {
+  const screenPosition = asteroid.position.clone().project(this.camera); 
+  const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
+  const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
+
+  const cameraDirection = new THREE.Vector3();
+  this.camera.getWorldDirection(cameraDirection); // Get the direction the camera is facing
+
+  // Get the direction to the asteroid
+  const asteroidDirection = asteroid.position.clone().sub(this.camera.position).normalize();
+
+  // Calculate the angle between the camera direction and asteroid direction
+  const angle = cameraDirection.dot(asteroidDirection);
+
+  if (screenPosition.z > 0 && angle > 0) {
+      asteroid.healthBar.element.style.left = `${x}px`;
+      asteroid.healthBar.element.style.top = `${y - 10}px`;
+      asteroid.healthBar.element.style.display = 'block'; // Show the health bar
+  } else {
+      asteroid.healthBar.element.style.display = 'none'; // Hide the health bar if not visible
+  }
+}
+
+removeHealthBar(asteroid) {
+    if (asteroid.healthBar) {
+        clearInterval(asteroid.healthBar.interval); // Clear the interval
+        document.body.removeChild(asteroid.healthBar.element);
+        delete asteroid.healthBar; 
+    }
+}
+  playSound() {
+      if (this.boomSound) {
+          this.boomSound.currentTime = 0;
+          this.boomSound.volume = 0.5; 
+          this.boomSound.play(); 
+      }
+  }
+
+    startRumbleEffect(obj) {
       const shakeDuration = 1000; // Duration of the shake in milliseconds
       const shakeIntensity = 0.2; // Maximum shake offset
       const endTimestamp = performance.now() + shakeDuration;
@@ -233,9 +300,9 @@ export const spaceship = (() => {
           const offsetZ = (Math.random() - 0.5) * shakeIntensity;
 
           // Apply offset to the mesh's current position
-          this.mesh.position.x += offsetX;
-          this.mesh.position.y += offsetY;
-          this.mesh.position.z += offsetZ;
+          obj.position.x += offsetX;
+          obj.position.y += offsetY;
+          obj.position.z += offsetZ;
 
           requestAnimationFrame(rumble);
         }
@@ -269,7 +336,7 @@ export const spaceship = (() => {
                 this.alarmSound.volume = 0.5; // Set volume
                 this.alarmSound.play(); // Play sound
               }
-              this.startRumbleEffect();
+              this.startRumbleEffect(this.mesh);
               return; // Exit the loops after detecting a hit
             }
           });
