@@ -1,33 +1,40 @@
 import * as THREE from "three";
 import { Particle } from "./Particle.js";
 import { Ring } from "./Ring.js";
+import { asteroids } from "./asteroids.js"
 
-export const environment = (() => {
+export const gameworld = (() => {
   class World {
     constructor(params) {
       this.scene = params.scene;
       this.rings = [];
       this.particles = [];
-
+      this.asteroidGroups = []
     }
 
-    create() {
+    addElements() {
       if (this.scene) {
         this.createWorld();
-        this.createStarfield();
+        // this.createStarfield();
         // this.createRunway();       
         // this.addGround();
         // this.createRings();
-        this.addLights();
-        this.createStar();
-        this.addParticles();
-        this.createLoops();
+        // this.addLights();
+        // this.createStar();
+        // this.addParticles();
+        // this.createLoops();
+        // this.createAsteroids();
       }
     }
 
+    async createAsteroids() {
+      let loader = new asteroids.AsteroidLoader(this.scene, 'public/asteroids/')
+      let group = await loader.loadAsteroids()
+      this.asteroidGroups.push(group)
+    }
+
     createWorld() {
-      // this.scene.fog = new THREE.Fog(0x111111, 0.005);
-      this.scene.fog = new THREE.Fog(0x8090F, 0.5);
+      // this.scene.fog = new THREE.Fog(0x8090F, 0.5);
 
 
       // this.scene.fog = new THREE.FogExp2(0xffffff, 0.001); // Change color and density as needed

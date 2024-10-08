@@ -30,6 +30,7 @@ export const third_person_camera = (() => {
     }
 
     Update(timeElapsed) {
+      // console.log(timeElapsed)
       const idealOffset = this._CalculateIdealOffset();
       const idealLookat = this._CalculateIdealLookat();
 

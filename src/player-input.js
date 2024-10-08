@@ -14,7 +14,6 @@ export const player_input = (() => {
       this.Parent.Attributes.InputCurrent = {
         forwardVelocity: 0.0,
         forwardAcceleration: 0.0,
-        axis1Side: 0.0,
         space: false,
         shift: false,
         upwardVelocity: 0.0,
@@ -33,12 +32,6 @@ export const player_input = (() => {
       }
       console.log(event.keyCode);
       switch (event.keyCode) {
-        // case 65: // a
-        //   this.Parent.Attributes.InputCurrent.axis1Side = -1.0;
-        //   break;
-        // case 68: // d
-        //   this.Parent.Attributes.InputCurrent.axis1Side = 1.0;
-        //   break;
         case 87: // W
           this.Parent.Attributes.InputCurrent.forwardAcceleration = 1.0;
           break;

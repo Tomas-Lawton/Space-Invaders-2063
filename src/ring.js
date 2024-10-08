@@ -98,7 +98,7 @@ export class Ring {
   checkCollisionWithRing(object = {}) {
     if (object.position) {
       const objectPosition = object.position.clone();
-      const ringPosition = this.ring.position.clone();
+      // const ringPosition = this.ring.position.clone();
 
       const ringInverseMatrix = new THREE.Matrix4().copy(this.ring.matrixWorld).invert();
       objectPosition.applyMatrix4(ringInverseMatrix);
