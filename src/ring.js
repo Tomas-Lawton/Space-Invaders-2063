@@ -95,32 +95,25 @@ export class Ring {
     this.elapsedTime = 0; // Reset elapsed time after non-collision
   }
 
-  checkCollisionWithRing(object = {}) {
-    if (object.position) {
-      const objectPosition = object.position.clone();
-      // const ringPosition = this.ring.position.clone();
+  // checkCollisionWithRing(object = {}) {
+  //   if (object.position) {
+  //     const objectPosition = object.position.clone();
+  //     const ringInverseMatrix = new THREE.Matrix4().copy(this.ring.matrixWorld).invert();
+  //     objectPosition.applyMatrix4(ringInverseMatrix);
 
-      const ringInverseMatrix = new THREE.Matrix4().copy(this.ring.matrixWorld).invert();
-      objectPosition.applyMatrix4(ringInverseMatrix);
+  //     const rotationMatrix = new THREE.Matrix4().makeRotationFromEuler(this.ring.rotation);
+  //     objectPosition.applyMatrix4(rotationMatrix);
 
-      const rotationMatrix = new THREE.Matrix4().makeRotationFromEuler(this.ring.rotation);
-      objectPosition.applyMatrix4(rotationMatrix);
+  //     objectPosition.y = 0;
+  //     const distanceToCenter = new THREE.Vector2(objectPosition.x, objectPosition.z).length();
 
-      objectPosition.y = 0;
-      const distanceToCenter = new THREE.Vector2(objectPosition.x, objectPosition.z).length();
-
-      if (distanceToCenter < this.radius && !this.isColliding) {
-        this.handleCollision();
-        return true;
-      }
-
-      // if (distanceToCenter >= this.radius && this.isColliding) {
-      //   this.handleNonCollision();
-      // }
-
-      return false;
-    }
-  }
+  //     if (distanceToCenter < this.radius && !this.isColliding) {
+  //       this.handleCollision();
+  //       return true;
+  //     }
+  //     return false;
+  //   }
+  // }
 
   update() {
     this.elapsedTime += this.clock.getDelta();

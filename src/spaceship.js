@@ -187,14 +187,14 @@ export const spaceship = (() => {
       }
     }
 
-    Update(forwardAcceleration, upwardAcceleration, timeElapsed) {
+    Update(forwardAcceleration, upwardAcceleration, timeElapsed, audioManager) {
       this.calculateRotation();
       this.calculateVelocity(forwardAcceleration, upwardAcceleration, timeElapsed);
       this.moveSpaceship();
       this.handleLaserMovement();
       this.updateVelocityRectangle(this.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
       this.thirdPersonCamera.Update(timeElapsed);
-      return this.forwardVelocity // for ui
+      audioManager.updateSpaceshipVolume(this.forwardVelocity)
     }
 
     calculateRotation() {

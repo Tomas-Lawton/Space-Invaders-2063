@@ -1,3 +1,6 @@
+import { mapValue } from "./utils.js";
+import { PHYSICS_CONSTANTS } from "./constants.js"
+
 export class Audio_Manager {
   constructor(audioContext) {
     this.audioContext = audioContext;
@@ -103,6 +106,11 @@ export class Audio_Manager {
       this.soundtrack.pause();
       console.log('Paused Soundtrack');
     }
+  }
+
+  updateSpaceshipVolume(vel) {
+    const spaceshipVolumeLevel = mapValue(vel, 0, PHYSICS_CONSTANTS.maxVelocity, 0, 1);
+    this.setSpaceshipVolume(spaceshipVolumeLevel);
   }
   async playSoundAtIndex(index) {
     console.log('play sound');

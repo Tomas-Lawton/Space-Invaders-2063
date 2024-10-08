@@ -12,18 +12,34 @@ export const gameworld = (() => {
       this.asteroidGroups = []
     }
 
+    Update(playerShip, audioManager) {
+      if (this.asteroidGroups) {
+        this.asteroidGroups.forEach((asteroidGroup) => {
+          asteroidGroup.animateAsteroidGroup();
+        });
+      }
+
+      // this.rings.forEach((ring) => {
+      //   ring.update();
+      //   if (ring.checkCollisionWithRing(playerShip.mesh)) {
+      //     console.log("Collision detected! Playing sound.");
+      //     audioManager.playNextSound();
+      //   }
+      // });
+    }
+
     addElements() {
       if (this.scene) {
         this.createWorld();
-        // this.createStarfield();
+        this.createStarfield();
         this.createRunway();       
         this.addGround();
-        // this.createRings();
-        // this.addLights();
-        // this.createStar();
-        // this.addParticles();
-        // this.createLoops();
-        // this.createAsteroids();
+        this.createRings();
+        this.addLights();
+        this.createStar();
+        this.addParticles();
+        this.createLoops();
+        this.createAsteroids();
       }
     }
 
@@ -34,21 +50,7 @@ export const gameworld = (() => {
     }
 
     createWorld() {
-      // this.scene.fog = new THREE.Fog(0x8090F, 0.5);
-
-
-      // this.scene.fog = new THREE.FogExp2(0xffffff, 0.001); // Change color and density as needed
-      // const textureLoader = new THREE.TextureLoader();
-      // const cloudTexture = textureLoader.load('./sprite/cloudy.jpg');
-      // const geometry = new THREE.PlaneGeometry(100, 100); // Size of the plane
-      // const material = new THREE.MeshBasicMaterial({
-      //     map: cloudTexture,
-      //     transparent: true,
-      //     opacity: 0.5 // Adjust opacity for desired effect
-      // });
-      // const cloudPlane = new THREE.Mesh(geometry, material);
-      // cloudPlane.rotation.x = -Math.PI / 2; // Rotate to lie flat
-      // this.scene.add(cloudPlane);
+      this.scene.fog = new THREE.Fog(0x8090F, 0.5);
 
       const cubeTextureLoader = new THREE.CubeTextureLoader();
       const textureUrls = [

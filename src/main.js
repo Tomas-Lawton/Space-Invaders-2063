@@ -6,7 +6,6 @@ import { gameworld } from "./world.js";
 import { spaceship } from "./spaceship.js";
 import { setupGUI } from "./gui.js";
 import { entity } from "./entity.js";
-import { mapValue } from "./utils.js";
 import { initRenderer, initComposer } from "./renderer.js";
 import { updateVelocityBars } from "./dom.js";
 import { player_input } from "./player-input.js";
@@ -16,8 +15,8 @@ class Game {
   constructor() {
     this.initScene();
     this.initEntities();
-    this.previousTime = 0; // Initialize previousTime for the animation loop
     this.initialize();
+    this.previousTime = 0; // animation loop
   }
 
   initScene() {
@@ -75,49 +74,21 @@ class Game {
       this.playerEntity.Update();
       let input = this.playerEntity.Attributes.InputCurrent;
       if (input) {
-        // console.log(input)   
-            
-        // THREE ELEMENTS
-        let velocityCurrent = this.playerShip.Update(input.forwardAcceleration, input.upwardAcceleration, timeElapsed);
-        // this.updateAudioVolume(input);
-        this.updateWorld();
-        
-        // HUD ELEMENTS
-        updateVelocityBars(velocityCurrent, PHYSICS_CONSTANTS.maxVelocity);
+
+        if (this.playerShip && this.world && this.audioManager){
+          // THREE
+          this.playerShip.Update(input.forwardAcceleration, input.upwardAcceleration, timeElapsed, this.audioManager);
+          this.world.Update(this.playerShip, this.audioManager); // depends on user and sound
+          // HUD
+          updateVelocityBars(this.playerShip, PHYSICS_CONSTANTS.maxVelocity);
+        }
+
       }
     }
     this.composer.render();
   }
-
-  updateWorld() {
-    if (this.world) {
-      if (this.world.asteroidGroups) {
-        this.world.asteroidGroups.forEach((asteroidGroup) => {
-          asteroidGroup.animateAsteroidGroup();
-        });
-      }
-
-      this.world.rings.forEach((ring) => {
-        ring.update();
-        if (ring.checkCollisionWithRing(this.playerShip.mesh)) {
-          console.log("Collision detected! Playing sound.");
-          this.audioManager.playNextSound();
-        }
-      });
-    }
-  }
-
-  updateAudioVolume(input) {
-    const spaceshipVolumeLevel = mapValue(input.forwardVelocity, 0, PHYSICS_CONSTANTS.maxVelocity, 0, 1);
-    if (this.audioManager) {
-      this.audioManager.setSpaceshipVolume(spaceshipVolumeLevel);
-    }
-  }
-
 }
 
-
 const game = new Game();
-
 window.addEventListener("mousedown", () => game.playerShip.createAndShootLight());
 
