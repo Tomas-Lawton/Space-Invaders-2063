@@ -5,7 +5,7 @@ import { third_person_camera } from './camera.js';
 import { mapValue } from './utils.js'; // Assuming you have a utility function for mapping values
 import { progressContainer, progressText } from "./dom.js"
 import { PHYSICS_CONSTANTS } from "./constants.js"
-import { cursor } from "./dom.js";
+import { cursor, incrementOre } from "./dom.js";
 
 
 export const spaceship = (() => {
@@ -57,7 +57,7 @@ export const spaceship = (() => {
           this.deadSound.volume = 0.5; 
           this.deadSound.play(); 
       }
-        alert('Youd Died')
+        console.log('Youd Died')
       }
     }
 
@@ -211,6 +211,7 @@ export const spaceship = (() => {
                                   this.removeHealthBar(asteroid); 
                                   asteroid.parent.remove(asteroid);
                                   this.playSound(); 
+                                  incrementOre(asteroid.type)
                               }
   
                               return; 
@@ -323,7 +324,7 @@ removeHealthBar(asteroid) {
           system.asteroidGroup.children.forEach(asteroid => {
             if (this.checkCollision(this.mesh, asteroid)) {
               console.log('HIT USER');
-              this.damageShip(9); // Call the damage function
+              this.damageShip(18); // Call the damage function
 
               // Play boom sound if available
               if (this.boomSound) {

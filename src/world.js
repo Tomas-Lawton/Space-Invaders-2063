@@ -5,8 +5,7 @@ import { Particle } from "./Particle.js";
 import { Ring } from "./Ring.js";
 import { asteroids } from "./asteroids.js"
 
-// import FogEffect from "./fog.js"
-
+//  MAKE EVERYTHING PROCEDURAL AROUND THE USER
 export const gameworld = (() => {
   class World {
     constructor(params) {
@@ -23,10 +22,12 @@ export const gameworld = (() => {
         });
       }
 
-      if (this.planet) {
-        this.planet.rotation.y += 0.001; // Rotate the planet around its Y-axis
-
+      if (this.planets) {
+        this.planets.forEach(planet => planet.rotation.y += 0.001)
       }
+
+      // if ()
+      this.animateStars(playerShip);
 
       // this.rings.forEach((ring) => {
       //   ring.update();
@@ -44,95 +45,90 @@ export const gameworld = (() => {
 
         this.createWorld();
         this.createStarfield();
-        this.createRunway();       
+        // this.createRunway();       
         this.addGround();
-        this.createRings();
+        // this.createRings();
         this.addLights();
-        this.createStar();
-        this.addParticles();
-        this.createLoops();
+        // this.createStar();
+        // this.addParticles();
+        // this.createLoops();
         this.createAsteroids();
-        this.loadPlanet();
+        this.loadPlanets();
 
 
 
       }
     }
-    async loadPlanet() {
+    async loadPlanets() {
+      const numPlanets = 4;
       const planetLoader = new GLTFLoader();
-      const gltf = await planetLoader.setPath('public/planet/').loadAsync("scene.gltf");
+  
+      // Set the path correctly before loading
+      const path = 'public/planet/';
+      const gltf = await planetLoader.setPath(path).loadAsync("scene.gltf");
+      
       if (!gltf || !gltf.scene) {
           throw new Error(`Failed to load model from path: ${path}`);
       }
-      
-      const model = gltf.scene.clone();
-      
-      model.position.set(
-          (Math.random() - 0.5) * 1000,
-          (Math.random() - 0.5) * 1000,
-          (Math.random() - 0.5) * 1000
-      );
   
-      const scale = 40; // Increased scale for a larger planet
-      model.scale.set(scale, scale, scale);
-      
-      model.traverse((node) => {
-          if (node.isMesh) {
-              node.material.side = THREE.DoubleSide;
+      this.planets = []; // Initialize the planets array
   
-              const fogGeometry = new THREE.SphereGeometry(scale * 1.5, 32, 32); // Larger sphere for fog
-              const fogMaterial = new THREE.MeshStandardMaterial({
-                  color: 0xff4500, // Color of the fog (OrangeRed)
-                  opacity: 1, // Higher opacity for thicker fog
-                  transparent: true,
-                  depthWrite: false,
-                  blending: THREE.AdditiveBlending // Use additive blending for a glowing fog effect
-              });
-          
-              // Create a foggy sphere around the planet
-              const fogSphere = new THREE.Mesh(fogGeometry, fogMaterial);
-              fogSphere.position.copy(model.position);
-              this.scene.add(fogSphere);
-          }
-      });
-  
-      // Create multiple diffused lights around the planet using reds and oranges
-      const lightPositions = [
-          { x: 30, y: 30, z: 30 },
-          { x: -30, y: 30, z: -30 },
-          { x: 30, y: -30, z: -30 },
-          { x: -30, y: -30, z: 30 },
-          { x: 0, y: 50, z: 0 },
-          { x: 0, y: -50, z: 0 },
-          { x: 50, y: 0, z: 0 },
-          { x: -50, y: 0, z: 0 },
-      ];
-  
-      const lightColors = [
-          0xff4500, // OrangeRed
-          0xff6347, // Tomato
-          0xff8c00, // DarkOrange
-          0xffff00, // Yellow (optional for more brightness)
-          0xffa500, // Orange
-      ];
-  
-      lightPositions.forEach((pos, index) => {
-          const light = new THREE.PointLight(lightColors[index % lightColors.length], 3, 200); // Increased distance for diffusion
-          light.position.set(
-              model.position.x + pos.x,
-              model.position.y + pos.y,
-              model.position.z + pos.z
+      for (let i = 0; i < numPlanets; i++) {
+          const model = gltf.scene.clone();
+          model.position.set(
+              (Math.random() - 0.5) * 1000,
+              (Math.random() - 0.5) * 1000,
+              (Math.random() - 0.5) * 1000
           );
-          this.scene.add(light);
-      });
   
-      this.scene.add(model);
-      this.planet = model;
+          const scale = 40; // Increased scale for a larger planet
+          model.scale.set(scale, scale, scale);
   
+        let randomColor = Math.floor(Math.random() * 16777215);
+                  
+        const fogGeometry = new THREE.SphereGeometry(scale * 1.5, 32, 32); // Larger sphere for fog
+        const fogMaterial = new THREE.MeshStandardMaterial({
+            color: randomColor, // Color of the fog (OrangeRed)
+            opacity: .6, // Higher opacity for thicker fog
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending // Use additive blending for a glowing fog effect
+        });
+
+        const fogSphere = new THREE.Mesh(fogGeometry, fogMaterial);
+        fogSphere.position.copy(model.position);
+        this.scene.add(fogSphere);
+          
+          const lightPositions = [
+              { x: 30, y: 30, z: 30 },
+              // { x: -30, y: 30, z: -30 },
+              // { x: 30, y: -30, z: -30 },
+              { x: -30, y: -30, z: 30 },
+              // { x: 0, y: 50, z: 0 },
+              // { x: 0, y: -50, z: 0 },
+              { x: 50, y: 0, z: 0 },
+              // { x: -50, y: 0, z: 0 },
+          ];
   
+
+  
+          lightPositions.forEach((pos, index) => {
+              const light = new THREE.PointLight(randomColor, 3, 200); // Increased distance for diffusion
+              light.position.set(
+                  model.position.x + pos.x,
+                  model.position.y + pos.y,
+                  model.position.z + pos.z
+              );
+              this.scene.add(light);
+          });
+  
+          this.scene.add(model);
+          this.planets.push(model); // Corrected the push to the planets array
+      }
   }
+  
     async createAsteroids() {
-      const systems = 1;
+      const systems = 3;
       const asteroidPaths = [
         // 'public/asteroid_models/asteroids/',
         'public/asteroid_models/plane/',
@@ -167,72 +163,91 @@ export const gameworld = (() => {
 
     }
     createStarfield() {
-      const starCount = 6000;
-      const starPositions = new Float32Array(starCount * 3); // 3 coordinates for each star (x, y, z)
-      const velocities = new Float32Array(starCount * 3); // 3 velocities for each star (vx, vy, vz)
-      const accelerations = new Float32Array(starCount * 3); // 3 accelerations for each star (ax, ay, az)
+      this.starCount = 6000; // Initial star count
+      this.starPositions = new Float32Array(this.starCount * 3);
+      this.velocities = new Float32Array(this.starCount * 3);
+      this.accelerations = new Float32Array(this.starCount * 3);
     
-      // Initialize star positions, velocities, and accelerations
-      for (let i = 0; i < starCount; i++) {
-        starPositions[i * 3] = Math.random() * 600 - 300; // x
-        starPositions[i * 3 + 1] = Math.random() * 600 - 300; // y
-        starPositions[i * 3 + 2] = Math.random() * 600 - 300; // z
-    
-        // Set random initial velocities for each star (can be adjusted)
-        velocities[i * 3] = (Math.random() - 0.5) * 0.02; // vx
-        velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.02; // vy
-        velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.02; // vz
-    
-        // Set a small constant acceleration for each axis (can be adjusted)
-        accelerations[i * 3] = 0.0001; // ax
-        accelerations[i * 3 + 1] = 0.0001; // ay
-        accelerations[i * 3 + 2] = 0.0001; // az
+      for (let i = 0; i < this.starCount; i++) {
+        this.starPositions[i * 3] = Math.random() * 600 - 300; // x
+        this.starPositions[i * 3 + 1] = Math.random() * 600 - 300; // y
+        this.starPositions[i * 3 + 2] = Math.random() * 600 - 300; // z
+
+        // Set a coefficient for slight directionality
+        const directionCoefficient = .4; // Adjust this value to change the directionality
+
+        // Set initial velocities with slight directionality
+        this.velocities[i * 3] = (Math.random() - 0.5) * .01; // vx
+        this.velocities[i * 3 + 1] = (Math.random() - 0.5) * .01; // vy
+        this.velocities[i * 3 + 2] = (Math.random() - 0.5) * .08 - directionCoefficient; // vz
+
+        // Set small constant acceleration (optional)
+        this.accelerations[i * 3] = 0.001; // ax
+        this.accelerations[i * 3 + 1] = 0.001; // ay
+        this.accelerations[i * 3 + 2] = 0.001; // az
       }
-    
+
       const starGeo = new THREE.BufferGeometry();
-      starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-    
+      starGeo.setAttribute('position', new THREE.BufferAttribute(this.starPositions, 3));
+
       const textureLoader = new THREE.TextureLoader();
       textureLoader.load('public/sprite/star.png', (texture) => {
         const starMaterial = new THREE.PointsMaterial({
           color: 0xaaaaaa,
           size: 0.7,
           map: texture,
+          opacity: .5,
           transparent: true,
           depthWrite: false,
         });
-    
-        const stars = new THREE.Points(starGeo, starMaterial);
-        this.scene.add(stars);
-    
-        const animateStars = () => {
-          for (let i = 0; i < starCount; i++) {
-            // Update velocities with acceleration
-            velocities[i * 3] += accelerations[i * 3]; // vx
-            velocities[i * 3 + 1] += accelerations[i * 3 + 1]; // vy
-            velocities[i * 3 + 2] += accelerations[i * 3 + 2]; // vz
-    
-            // Update positions based on velocities
-            starPositions[i * 3] += velocities[i * 3]; // Update x
-            starPositions[i * 3 + 1] += velocities[i * 3 + 1]; // Update y
-            starPositions[i * 3 + 2] += velocities[i * 3 + 2]; // Update z
-    
-            // Reset position if star goes out of bounds
-            if (starPositions[i * 3 + 1] < -200) {
-              starPositions[i * 3 + 1] = 200;
-              velocities[i * 3 + 1] = 0; // Reset vertical velocity
-            }
-          }
-    
-          starGeo.attributes.position.needsUpdate = true;
-          // stars.rotation.z += 0.0000001;
-    
-          requestAnimationFrame(animateStars);
-        };
-    
-        animateStars();
+
+        this.stars = new THREE.Points(starGeo, starMaterial);
+        this.scene.add(this.stars);
+        this.stars.frustumCulled = false;
       });
+    
     }
+    animateStars(playerShip) {
+      const userPosition = playerShip.mesh.position
+
+      for (let i = 0; i < this.starCount; i++) {
+        const index = i * 3;
+
+        // Update positions based on velocities
+        this.starPositions[index] += this.velocities[index];
+        this.starPositions[index + 1] += this.velocities[index + 1];
+        this.starPositions[index + 2] += this.velocities[index + 2];
+
+        // Reposition if outside boundary
+        const distance = this.calculateDistance(userPosition, this.starPositions, i);
+        if (distance > 200) { // Assuming a threshold for repositioning
+          this.repositionStar(i, userPosition);
+        }
+      }
+
+      // Mark geometry attributes for update
+      this.stars.geometry.attributes.position.needsUpdate = true;
+    }
+
+    calculateDistance(userPosition, starPositions, index) {
+      const dx = starPositions[index * 3] - userPosition.x;
+      const dy = starPositions[index * 3 + 1] - userPosition.y;
+      const dz = starPositions[index * 3 + 2] - userPosition.z;
+      return Math.sqrt(dx * dx + dy * dy + dz * dz);
+  }
+
+  repositionStar(index, userPosition) {
+    this.starPositions[index * 3] = userPosition.x + (Math.random() * 600 - 300); // New x
+    this.starPositions[index * 3 + 1] = userPosition.y + (Math.random() * 600 - 300); // New y
+    this.starPositions[index * 3 + 2] = userPosition.z + (Math.random() * 600 - 300); // New z
+
+    this.velocities[index * 3] = (Math.random() - 0.5) * 0.001; // New vx
+    this.velocities[index * 3 + 1] = (Math.random() - 0.5) * 0.001; // New vy
+    this.velocities[index * 3 + 2] = (Math.random() - 0.5) * 0.001; // New vz
+}
+
+
+
 
     addGround () {
 

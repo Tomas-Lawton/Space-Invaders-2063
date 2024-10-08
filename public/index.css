@@ -78,9 +78,6 @@ h1 {
   z-index: 10; /* Ensure health bar appears above other elements */
 }
 
-
-
-
 #custom-cursor {
   width: 35px;
   height: 35px;
@@ -89,4 +86,14 @@ h1 {
   border-radius: 50%;
   background: url('./sprite/target_big.png') no-repeat center center; /* Use absolute URL */
   background-size: contain; /* Ensures the image fits within the element */
+}
+
+#ores {
+  position: absolute;
+  top: 35px;
+  transform: translateX(-50%);
+  left: 50%;
+  color: white;
+  display: flex;
+  gap: 15px;
 }
