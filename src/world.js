@@ -20,10 +20,10 @@ export const gameworld = (() => {
         this.scene.add(softLight)
 
         this.createWorld();
-        // this.createStarfield(2000); //procedural
+        this.createStarfield(2000); //procedural
         this.createAsteroidSystems(10); //procedural
-        // this.createPlanets(4); //procedural
-        // this.createStar();
+        this.createPlanets(4); //procedural
+        this.createStar();
 
         // this.createRunway();       
         // this.addGround();

@@ -251,40 +251,34 @@ export const spaceship = (() => {
     asteroid.healthBar.element.style.backgroundColor = `rgb(${255 * (1 - healthPercentage)}, ${255 * healthPercentage}, 0)`; 
 }
 
-//at a set interval so not always
 updateHealthBarPosition(asteroid) {
-  const localPosition = asteroid.position.clone();
-  const parentGroup = asteroid.parent; 
-  const groupPosition = parentGroup.position.clone();
-  const actualPosition = localPosition.add(groupPosition);
+    const localPosition = asteroid.position.clone();
+    const groupPosition = asteroid.parent.position.clone();
+    const actualPosition = localPosition.add(groupPosition);
+    const screenPosition = actualPosition.project(this.camera);
+    const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
+    const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
+    const distanceToAsteroid = this.camera.position.distanceTo(actualPosition);
+    const visibilityThreshold = 1000;
 
-  // Project the actual position to screen space
-  const screenPosition = actualPosition.project(this.camera);
-  const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
-  const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
-
-  const cameraDirection = new THREE.Vector3();
-  this.camera.getWorldDirection(cameraDirection).negate();
-
-  const asteroidDirection = actualPosition.clone().sub(this.camera.position).normalize();
-  const angle = cameraDirection.dot(asteroidDirection);
-
-  const distanceToAsteroid = this.camera.position.distanceTo(actualPosition);
-  const visibilityThreshold = 1000;
-
-  if (screenPosition.z > 0 && angle > 0 && distanceToAsteroid < visibilityThreshold) {
-      asteroid.healthBar.element.style.left = `${x}px`;
-      asteroid.healthBar.element.style.top = `${y - 10}px`;
-      asteroid.healthBar.element.style.display = 'block';
-  } else {
-      asteroid.healthBar.element.style.display = 'none';
-  }
+    if (distanceToAsteroid < visibilityThreshold) {
+        if (screenPosition.z > 0) { // In front of the camera
+            asteroid.healthBar.element.style.left = `${x}px`;
+            asteroid.healthBar.element.style.top = `${y - 10}px`;
+            asteroid.healthBar.element.style.display = 'block';
+        } else { // Off screen or facing away
+            asteroid.healthBar.element.style.display = 'none';
+        }
+    } else { // Too far
+        this.removeHealthBar(asteroid);
+    }
 }
+
 removeHealthBar(asteroid) {
     if (asteroid.healthBar) {
-        clearInterval(asteroid.healthBar.interval); // Clear the interval
-        document.body.removeChild(asteroid.healthBar.element);
-        delete asteroid.healthBar; 
+      document.body.removeChild(asteroid.healthBar.element);
+      // delete asteroid.healthBar; 
+      clearInterval(asteroid.healthBar.interval); // Clear the interval
     }
 }
   playSound() {
