@@ -219,7 +219,7 @@ export const spaceship = (() => {
                       });
                   }
               }
-              if (laserBeam.position.distanceTo(this.mesh.position) > 100) {
+              if (laserBeam.position.distanceTo(this.mesh.position) > 250) {
                   this.scene.remove(laserBeam);
                   this.activeLasers.splice(index, 1); 
               }

@@ -174,7 +174,7 @@ export const gameworld = (() => {
         this.starPositions[i * 3 + 2] = Math.random() * 600 - 300; // z
 
         // Set a coefficient for slight directionality
-        const directionCoefficient = .4; // Adjust this value to change the directionality
+        const directionCoefficient = .8; // Adjust this value to change the directionality
 
         // Set initial velocities with slight directionality
         this.velocities[i * 3] = (Math.random() - 0.5) * .01; // vx
@@ -194,7 +194,7 @@ export const gameworld = (() => {
       textureLoader.load('public/sprite/star.png', (texture) => {
         const starMaterial = new THREE.PointsMaterial({
           color: 0xaaaaaa,
-          size: 0.7,
+          size: 0.4,
           map: texture,
           opacity: .5,
           transparent: true,
@@ -241,9 +241,9 @@ export const gameworld = (() => {
     this.starPositions[index * 3 + 1] = userPosition.y + (Math.random() * 600 - 300); // New y
     this.starPositions[index * 3 + 2] = userPosition.z + (Math.random() * 600 - 300); // New z
 
-    this.velocities[index * 3] = (Math.random() - 0.5) * 0.001; // New vx
-    this.velocities[index * 3 + 1] = (Math.random() - 0.5) * 0.001; // New vy
-    this.velocities[index * 3 + 2] = (Math.random() - 0.5) * 0.001; // New vz
+    // this.velocities[index * 3] = (Math.random() - 0.5) * 0.001; // New vx
+    // this.velocities[index * 3 + 1] = (Math.random() - 0.5) * 0.001; // New vy
+    // this.velocities[index * 3 + 2] = (Math.random() - 0.5) * 0.001; // New vz
 }
 
 

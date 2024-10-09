@@ -1,6 +1,6 @@
 export const PHYSICS_CONSTANTS = {
-    maxVelocity: 0.7,
-    acceleration: 0.3,
-    deceleration: 0.3,
+    maxVelocity: 1,
+    acceleration: 0.25,
+    deceleration: 0.4,
     verticalAcceleration: 0.05,
 };
