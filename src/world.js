@@ -15,14 +15,14 @@ export const gameworld = (() => {
     }
     addElements() {
       if (this.scene) {
-        this.createWorld();
-        this.createStarfield();
+        // this.createWorld();
+        // this.createStarfield();
+        // this.createAsteroids();
 
         // this.createRunway();       
         // this.addGround();
         // this.createRings();
         // this.addLights();
-        this.createAsteroids();
         // this.loadPlanets();
 
 
@@ -225,22 +225,25 @@ export const gameworld = (() => {
     
     }
     animateStars(playerShip) {
-      const userPosition = playerShip.mesh.position
+      if (this.stars && this.starPositions && starPositions){
+        const userPosition = playerShip.mesh.position
 
-      for (let i = 0; i < this.starCount; i++) {
-        const index = i * 3;
-
-        this.starPositions[index] += this.velocities[index];
-        this.starPositions[index + 1] += this.velocities[index + 1];
-        this.starPositions[index + 2] += this.velocities[index + 2];
-
-        const distance = this.calculateDistanceArr(userPosition, this.starPositions, i);
-        if (distance > 200) { 
-          this.reposition(i, userPosition);
+        for (let i = 0; i < this.starCount; i++) {
+          const index = i * 3;
+  
+          this.starPositions[index] += this.velocities[index];
+          this.starPositions[index + 1] += this.velocities[index + 1];
+          this.starPositions[index + 2] += this.velocities[index + 2];
+  
+          const distance = this.calculateDistanceArr(userPosition, this.starPositions, i);
+          if (distance > 200) { 
+            this.reposition(i, userPosition);
+          }
         }
+  
+        this.stars.geometry.attributes.position.needsUpdate = true;
       }
-
-      this.stars.geometry.attributes.position.needsUpdate = true;
+    
     }
 
     calculateDistanceArr(userPosition, obj, index) {
