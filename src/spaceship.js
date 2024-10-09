@@ -316,40 +316,43 @@ removeHealthBar(asteroid) {
 
     checkAsteroidCollisions(asteroidLoader) {
       const currentTimestamp = performance.now();
-      if (currentTimestamp - this.lastCollisionCheck < 3000) {
-        return; // Exit if it's been less than 1 second
+    
+      if (this.lastCollisionCheck === undefined) {
+        this.lastCollisionCheck = currentTimestamp;
       }
-      this.lastCollisionCheck = currentTimestamp;
-
+    
+      if (currentTimestamp - this.lastCollisionCheck < 1000) {
+        return;
+      }
+    
       if (asteroidLoader.asteroidSystem) {
         for (const system of asteroidLoader.asteroidSystem) {
           system.children.forEach(asteroid => {
             if (asteroid instanceof THREE.Light) {
-              return
+              return;
             }
             if (this.checkCollision(this.mesh, asteroid)) {
               console.log('HIT USER');
-              this.damageShip(18); // Call the damage function
-
-              // Play boom sound if available
+              this.damageShip(18);
+    
               if (this.boomSound) {
-                this.boomSound.currentTime = 0; // Reset sound to start
-                this.boomSound.volume = 0.5; // Set volume
-                this.boomSound.play(); // Play sound
+                this.boomSound.currentTime = 0;
+                this.boomSound.volume = 0.5;
+                this.boomSound.play();
               }
               if (this.alarmSound) {
-                this.alarmSound.currentTime = 0; // Reset sound to start
-                this.alarmSound.volume = 0.5; // Set volume
-                this.alarmSound.play(); // Play sound
+                this.alarmSound.currentTime = 0;
+                this.alarmSound.volume = 0.5;
+                this.alarmSound.play();
               }
               this.startRumbleEffect(this.mesh);
-              return; // Exit the loops after detecting a hit
+              this.lastCollisionCheck = currentTimestamp;
+              return;
             }
           });
         }
       }
     }
-
     Update(forwardAcceleration, upwardAcceleration, timeElapsed, audioManager, asteroidLoader) {
       this.calculateRotation();
       this.calculateVelocity(forwardAcceleration, upwardAcceleration, timeElapsed);

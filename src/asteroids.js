@@ -46,9 +46,8 @@ export const asteroids = (() => {
           );
         this.scene.add(asteroidGroup);
         const numberOfAsteroids = Math.floor(Math.random() * 90);
-        console.log(numberOfAsteroids)
-        // let entropyCoefficient = (Math.random()) + 1;
-        const entropyCoefficient = .5
+        let entropyCoefficient = (Math.random() -.5) * 3;
+        // const entropyCoefficient = .5
         for (let i = 0; i < numberOfAsteroids; i++) {
           let selectedModel = Math.floor(Math.random() * this.loadedModels.length)
           const asteroidClone = this.loadedModels[selectedModel].clone(); // weighted selection

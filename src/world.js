@@ -25,10 +25,9 @@ export const gameworld = (() => {
         this.createPlanets(4); //procedural
         this.createStar();
 
-        // this.createRunway();       
-        // this.addGround();
-        // this.createRings();
-        // this.addLights();
+        this.addGround();
+        this.createRings();
+        this.addLights();
         // this.createLoops();
       }
     }
@@ -183,31 +182,31 @@ export const gameworld = (() => {
       
     const r = 20;
     const segments = 64; // You can adjust the number of segments for a smoother circle
-    const groundMesh = new THREE.Mesh( new THREE.CircleGeometry( r, segments ), new THREE.MeshPhongMaterial( { color: 0xcbcbcb, depthWrite: false } ) );
-    groundMesh.rotation.x = - Math.PI / 2;
-    groundMesh.receiveShadow = true;
-    this.scene.add( groundMesh );
+    // const groundMesh = new THREE.Mesh( new THREE.CircleGeometry( r, segments ), new THREE.MeshPhongMaterial( { color: 0xcbcbcb, depthWrite: false } ) );
+    // groundMesh.rotation.x = - Math.PI / 2;
+    // groundMesh.receiveShadow = true;
+    // this.scene.add( groundMesh );
 
-      // const groundGeometry = new THREE.CircleGeometry(groundRadius, groundSegments);
-      // groundGeometry.rotateX(-Math.PI / 2);
-      // const groundMaterial = new THREE.MeshStandardMaterial({
-      //   color: 0x111111,
-      //   metalness: 0.8,
-      //   roughness: 0.5,
-      //   side: THREE.DoubleSide,
-      // });
+      const groundGeometry = new THREE.CircleGeometry(r, segments);
+      groundGeometry.rotateX(-Math.PI / 2);
+      const groundMaterial = new THREE.MeshStandardMaterial({
+        color: 0x111111,
+        metalness: 0.8,
+        roughness: 0.5,
+        side: THREE.DoubleSide,
+      });
       
-      // const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
-      // groundMesh.castShadow = false;
-      // groundMesh.receiveShadow = true;
+      const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+      groundMesh.castShadow = false;
+      groundMesh.receiveShadow = true;
       
       this.scene.add(groundMesh);
     }
     createRings() {
       const glowGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
       const glowMaterial = new THREE.MeshStandardMaterial({
-        emissive: 0xff6600, 
-        emissiveIntensity: 3,
+        emissive: 0xffffff, 
+        emissiveIntensity: 1,
         color: 0x777777,
       });
     
@@ -277,32 +276,7 @@ export const gameworld = (() => {
         generateRingPoints(i * r, i * 30, i);
       }
     }
-    createRunway() {
-      const glowGeometry2 = new THREE.BoxGeometry(.3, .3, .3);
-      const glowMaterial2 = new THREE.MeshStandardMaterial({
-        emissive: 0xee7d11,
-        emissiveIntensity: .8,
-        color: 0xff6200,
-      });
     
-      const runwayLights = (yOff) => {
-        const glowMesh1 = new THREE.Mesh(glowGeometry2, glowMaterial2);
-        const glowMesh2 = new THREE.Mesh(glowGeometry2, glowMaterial2);
-        const glowMesh3 = new THREE.Mesh(glowGeometry2, glowMaterial2);
-        const glowMesh4 = new THREE.Mesh(glowGeometry2, glowMaterial2);
-        glowMesh1.position.set(2, 0, -2 + yOff);
-        glowMesh2.position.set(-2, 0, -2 + yOff);
-        glowMesh3.position.set(2, 0, 2 + yOff);
-        glowMesh4.position.set(-2, 0, 2 + yOff);
-        const glowMeshArray = [glowMesh1, glowMesh2, glowMesh3, glowMesh4];
-        this.scene.add(...glowMeshArray);
-      };
-    
-      let numSquares = 40;
-      for (let i = 0; i < numSquares; i++) {
-        runwayLights(i * 8);
-      }
-    }
     addLights() {
       const ambientLight = new THREE.AmbientLight(0x333333, 0.5);
       this.scene.add(ambientLight);
