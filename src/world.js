@@ -4,6 +4,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { Particle } from "./Particle.js";
 import { Ring } from "./Ring.js";
 import { asteroids } from "./asteroids.js"
+import { planets } from "./planets.js"
 
 //  MAKE EVERYTHING PROCEDURAL AROUND THE USER
 export const gameworld = (() => {
@@ -11,35 +12,31 @@ export const gameworld = (() => {
     constructor(params) {
       this.scene = params.scene;
       this.rings = [];
-      this.asteroidSystem = []
     }
     addElements() {
       if (this.scene) {
-        // this.createWorld();
-        // this.createStarfield();
-        // this.createAsteroids();
+        this.createWorld();
+        this.createStarfield(2000);
+        this.createAsteroidSystems(10);
+        this.createPlanets(4);
+        this.createStar();
 
         // this.createRunway();       
         // this.addGround();
         // this.createRings();
         // this.addLights();
-        // this.loadPlanets();
-
-
-        // this.createStar();
         // this.createLoops();
       }
     }
     Update(timeElapsed, playerShip, audioManager) {
-      if (this.asteroidSystem) {
-        this.asteroidSystem.forEach((asteroidSystem) => {
-          asteroidSystem.animateAsteroidGroup();
-        });
+      if (this.asteroidLoader) {
+        this.asteroidLoader.animateAsteroidGroup();
       }
 
-      this.animatePlanets(playerShip)
+      if (this.planetLoader) {
+        this.planetLoader.animatePlanets(playerShip, this.repositionObj)
+      }
 
-      // if ()
       this.animateStars(playerShip);
 
       // this.rings.forEach((ring) => {
@@ -53,112 +50,23 @@ export const gameworld = (() => {
       this.scene.backgroundRotation.y += 0.0001
 
     }
-    async loadPlanets() {
-      this.planets = [];
-      const numPlanets = 4;
-      const planetLoader = new GLTFLoader();
-      const path = 'public/planet/';
-      const gltf = await planetLoader.setPath(path).loadAsync("scene.gltf");
-  
-      if (!gltf || !gltf.scene) {
-          throw new Error(`Failed to load model from path: ${path}`);
-      }
-  
-      for (let i = 0; i < numPlanets; i++) {
-          const planetGroup = this.createPlanetGroup(gltf);
-          this.scene.add(planetGroup); 
-          this.planets.push(planetGroup);
-      }
+    async createPlanets(planetNum) {
+      const planetsLoader = new planets.PlanetLoader(this.scene)
+      planetsLoader.initialisePlanets(planetNum)
+      this.planetLoader = planetsLoader
   }
   
-  createPlanetGroup(gltf) {
-      const planetGroup = new THREE.Group();
-      const scale = 100;
-      const model = this.createPlanetModel(gltf, scale);
-      
-      const randomColor = this.getRandomDeepColor(); 
-      const fogSphere = this.createFog(model.position, randomColor, scale);
-      // const lights = this.createLights(model.position, randomColor, scale);
-      
-      planetGroup.add(model);
-      planetGroup.add(fogSphere);
-      // lights.forEach(light => planetGroup.add(light));
-      
-      planetGroup.position.set(
-          (Math.random() - 0.5) * 1000,
-          (Math.random() - 0.5) * 1000,
-          (Math.random() - 0.5) * 1000
-      );
-  
-      return planetGroup;
-  }
-  
-  getRandomDeepColor() {
-      const r = Math.floor(Math.random() * 128); // Red component between 0 and 127
-      const g = Math.floor(Math.random() * 128); // Green component between 0 and 127
-      const b = Math.floor(Math.random() * 128); // Blue component between 0 and 127
-      return (r << 16) | (g << 8) | b; // Shift and combine RGB values
-  }
-      
-  createPlanetModel(gltf, scale) {
-      const model = gltf.scene.clone();
-      model.scale.set(scale, scale, scale);
-      return model;
-  }
-  
-  createFog(position, color, scale) {
-      const fogGeometry = new THREE.SphereGeometry(scale * 1.3, 32, 32);
-      const fogMaterial = new THREE.MeshPhysicalMaterial({
-          color: color,
-          opacity: 0.8,
-          transparent: true,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending,
-          side: THREE.DoubleSide,
-          metalness: 0.5, 
-          roughness: 0.01
-      });
-  
-      const fogSphere = new THREE.Mesh(fogGeometry, fogMaterial);
-      // Set position relative to the planet model
-      fogSphere.position.copy(position);
-      return fogSphere;
-  }
-  
-  createLights(position, color, scale) {
-      const lightPositions = [
-          { x: 30, y: 30, z: 30 },
-          { x: -30, y: -30, z: 30 },
-          { x: 50, y: 0, z: 0 }
-      ];
-       
-      return lightPositions.map(pos => {
-          const light = new THREE.PointLight(color, 10, 1000); 
-          // Set the position relative to the planet model
-          light.position.set(
-              pos.x * scale/2 + position.x, 
-              pos.y * scale/2 + position.y, 
-              pos.z * scale/2 + position.z  
-          );
-          return light;
-      });
-  }
-    async createAsteroids() {
-      const systems = 3;
-      const asteroidPaths = [
-        // 'public/asteroid_models/asteroids/',
+    async createAsteroidSystems(systems) {
+      const modelPaths = [
         'public/asteroid_models/plane/',
         'public/asteroid_models/iron/',
         'public/asteroid_models/gold/',
         'public/asteroid_models/crystal/',
       ];
-  
-      for (let i = 0; i < systems; i++) {
-          const loader = new asteroids.AsteroidLoader(this.scene, asteroidPaths);
-          await loader.initialiseSystem(); // Wait for models to initialize
-          const group = await loader.loadAsteroids(); // Wait for asteroids to load
-          this.asteroidSystem.push(group); // Push the loaded group into the asteroid system
-      }
+      const asteroidLoader = new asteroids.AsteroidLoader(this.scene, modelPaths);
+      await asteroidLoader.initialiseSystem(systems); 
+      console.log("Loaded Asteroid Systems.")
+      this.asteroidLoader = asteroidLoader
   }
 
     createWorld() {
@@ -179,8 +87,8 @@ export const gameworld = (() => {
 
     }
 
-    createStarfield() {
-      this.starCount = 2000; // Initial star count
+    createStarfield(starCount) {
+      this.starCount = starCount; // Initial star count
       this.starPositions = new Float32Array(this.starCount * 3);
       this.velocities = new Float32Array(this.starCount * 3);
       this.accelerations = new Float32Array(this.starCount * 3);
@@ -225,7 +133,7 @@ export const gameworld = (() => {
     
     }
     animateStars(playerShip) {
-      if (this.stars && this.starPositions && starPositions){
+      if (this.stars && this.starPositions && this.starPositions){
         const userPosition = playerShip.mesh.position
 
         for (let i = 0; i < this.starCount; i++) {
@@ -251,19 +159,6 @@ export const gameworld = (() => {
       const dy = obj[index * 3 + 1] - userPosition.y;
       const dz = obj[index * 3 + 2] - userPosition.z;
       return Math.sqrt(dx * dx + dy * dy + dz * dz);
-  }
-
-  animatePlanets(playerPos) {
-    if (this.planets) {
-      this.planets.forEach(planet => {
-        planet.children[0].rotation.y += 0.001; 
-        
-        const distance = playerPos.mesh.position.distanceTo(planet.position);
-        if (distance > 1000) {
-          this.repositionObj(planet.position, playerPos.mesh.position); 
-        }
-      });
-    }
   }
   
   repositionObj(obj1Position, obj2Position) {

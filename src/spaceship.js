@@ -185,14 +185,14 @@ export const spaceship = (() => {
       return false; // No collision detected
     }
 
-    handleLaserMovement(asteroidSystem) {
+    handleLaserMovement(asteroidLoader) {
       if (this.activeLasers) {
           this.activeLasers.forEach((beam, index) => {
               const { laserBeam, velocity } = beam;
               laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
-              if (asteroidSystem) {
-                  for (const system of asteroidSystem) {
-                      system.asteroidGroup.children.forEach(asteroid => {
+              if (asteroidLoader.asteroidSystem) {
+                  for (const system of asteroidLoader.asteroidSystem) {
+                      system.children.forEach(asteroid => {
                           if (this.checkCollision(laserBeam, asteroid)) {
                               this.scene.remove(laserBeam);
                               this.activeLasers.splice(index, 1);
@@ -312,16 +312,16 @@ removeHealthBar(asteroid) {
       requestAnimationFrame(rumble);
     }
 
-    checkAsteroidCollisions(asteroidSystem) {
+    checkAsteroidCollisions(asteroidLoader) {
       const currentTimestamp = performance.now();
       if (currentTimestamp - this.lastCollisionCheck < 3000) {
         return; // Exit if it's been less than 1 second
       }
       this.lastCollisionCheck = currentTimestamp;
 
-      if (asteroidSystem) {
-        for (const system of asteroidSystem) {
-          system.asteroidGroup.children.forEach(asteroid => {
+      if (asteroidLoader.asteroidSystem) {
+        for (const system of asteroidLoader.asteroidSystem) {
+          system.children.forEach(asteroid => {
             if (this.checkCollision(this.mesh, asteroid)) {
               console.log('HIT USER');
               this.damageShip(18); // Call the damage function
@@ -345,13 +345,13 @@ removeHealthBar(asteroid) {
       }
     }
 
-    Update(forwardAcceleration, upwardAcceleration, timeElapsed, audioManager, asteroidGroups) {
+    Update(forwardAcceleration, upwardAcceleration, timeElapsed, audioManager, asteroidLoader) {
       this.calculateRotation();
       this.calculateVelocity(forwardAcceleration, upwardAcceleration, timeElapsed);
       this.moveSpaceship();
-      this.handleLaserMovement(asteroidGroups);
+      this.handleLaserMovement(asteroidLoader);
       this.updateVelocityRectangle(this.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
-      this.checkAsteroidCollisions(asteroidGroups)
+      this.checkAsteroidCollisions(asteroidLoader)
       this.thirdPersonCamera.Update(timeElapsed);
       audioManager.updateSpaceshipVolume(this.forwardVelocity)
     }

@@ -7,36 +7,38 @@ export const asteroids = (() => {
       this.scene = scene;
       this.paths = paths;
       this.loader = new GLTFLoader();
-      this.loadedModels = []; // Initialize as an empty array
+      this.loadedModels = [];
+      this.asteroidSystem = [];
     }
 
-    async initialiseSystem() {
+    async initialiseSystem(systems) {
       try {
+        // Load Asteroid Models
         const modelPromises = this.paths.map(async (path) => {
           const gltf = await this.loader.setPath(path).loadAsync("scene.gltf");
-          if (!gltf || !gltf.scene) {
-            throw new Error(`Failed to load model from path: ${path}`);
-          }
-    
-          const model = gltf.scene.clone(); // Clone the loaded model
+          const model = gltf.scene.clone(); 
           model.traverse((node) => {
             if (node.isMesh) {
               node.material.side = THREE.DoubleSide;
             }
           });
-          // console.log("Loaded model:", model);
-          return model; // Return the cloned model
+          return model; 
         });
-    
         this.loadedModels = await Promise.all(modelPromises);
+
+        // Now load the systems
+        for (let i = 0; i < systems; i++) {
+          const group = await this.loadAsteroids(); 
+          this.asteroidSystem.push(group); 
+        }
       } catch (error) {
         console.error("Error loading models:", error);
       }
     }
     async loadAsteroids() {
       try {
-        this.asteroidGroup = new THREE.Group();
-        this.scene.add(this.asteroidGroup);
+        let asteroidGroup = new THREE.Group();
+        this.scene.add(asteroidGroup);
 
         const numberOfAsteroids = Math.floor(Math.random()+.1 * 90);
 
@@ -71,26 +73,24 @@ export const asteroids = (() => {
           );
     
           asteroidClone.velocity = new THREE.Vector3(
-            (Math.random() - 0.5) * 0.02  * entropyCoefficient,
-            (Math.random() - 0.5) * 0.02  * entropyCoefficient,
-            (Math.random() - 0.5) * 0.02  * entropyCoefficient
+            (Math.random() - 0.5) * 0.05  * entropyCoefficient,
+            (Math.random() - 0.5) * 0.05  * entropyCoefficient,
+            (Math.random() - 0.5) * 0.05  * entropyCoefficient
           );
     
           asteroidClone.type = selectedModel
           asteroidClone.health = 100; // Set health
           asteroidClone.healthBar = null
           const scale = Math.random() * 4 + 1; // Scale factor between 1 and 5
-          asteroidClone.scale.set(scale, scale, scale); // Apply uniform scaling
-    
-          this.asteroidGroup.add(asteroidClone); // Add the asteroid to the group
+          asteroidClone.scale.set(scale, scale, scale); 
+          asteroidGroup.add(asteroidClone); 
         }
 
-        return this; // Return the instance of AsteroidLoader
+        return asteroidGroup;
       } catch (error) {
         console.error("Error loading asteroids:", error);
       }
     }
-
 
     // destroyAsteroid(asteroid) {
     //   this.asteroidGroup.remove(asteroid); // Remove from the group
@@ -98,9 +98,14 @@ export const asteroids = (() => {
     // }
 
     animateAsteroidGroup() {
-      this.asteroidGroup.children.forEach((asteroid) => {
-        asteroid.position.add(asteroid.velocity);
-      });
+      if (this.asteroidSystem) {
+        this.asteroidSystem.forEach(system => {
+          system.children.forEach((asteroid) => {
+            asteroid.position.add(asteroid.velocity);
+          });
+        })
+      }
+    
     }
   }
 
