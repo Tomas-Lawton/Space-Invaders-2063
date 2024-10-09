@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-
+import { getRandomDeepColor } from "./utils.js"
 
 export const planets = (() => {
 class PlanetLoader {
@@ -31,7 +31,7 @@ class PlanetLoader {
         const scale = 100;
         const model = this.createPlanetModel(gltf, scale);
         
-        const randomColor = this.getRandomDeepColor(); 
+        const randomColor = getRandomDeepColor(); 
         const fogSphere = this.createFog(model.position, randomColor, scale);
         
         planetGroup.add(model);
@@ -49,13 +49,6 @@ class PlanetLoader {
         return planetGroup;
     }
 
-    // Generates a random deep color (dark tones)
-    getRandomDeepColor() {
-        const r = Math.floor(Math.random() * 128); // Red component between 0 and 127
-        const g = Math.floor(Math.random() * 128); // Green component between 0 and 127
-        const b = Math.floor(Math.random() * 128); // Blue component between 0 and 127
-        return (r << 16) | (g << 8) | b; // Shift and combine RGB values
-    }
 
     // Creates the planet model and scales it appropriately
     createPlanetModel(gltf, scale) {

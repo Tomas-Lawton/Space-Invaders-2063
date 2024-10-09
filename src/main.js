@@ -89,5 +89,15 @@ class Game {
 }
 
 const game = new Game();
-window.addEventListener("mousedown", () => game.playerShip.createAndShootLight());
+let shootingInterval;
 
+window.addEventListener("mousedown", () => {
+    game.playerShip.createAndShootLight();
+    shootingInterval = setInterval(() => {
+        game.playerShip.createAndShootLight();
+    }, 180);
+});
+
+window.addEventListener("mouseup", () => {
+    clearInterval(shootingInterval);
+});

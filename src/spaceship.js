@@ -20,7 +20,8 @@ export const spaceship = (() => {
         scale: 0.08,
       };
 
-      this.loader = new GLTFLoader().setPath('public/spaceship_-_cb1/');
+      this.loader = new GLTFLoader().setPath('public/ships/ship_0/');
+      
       this.mesh = null; // 3d
       this.thirdPersonCamera = null; // follow cam
 
@@ -85,6 +86,10 @@ export const spaceship = (() => {
           );
           loadedModel.rotation.y = 1.5 * Math.PI;
           loadedModel.position.z += 22;
+          // loadedModel.scale.set(.3, .3, .3)
+          // loadedModel.scale.set(2, 2, 2)
+          // loadedModel.scale.set(30, 30, 30)
+
           tempObjectGroup.add(loadedModel);
 
           // Add lights
@@ -102,6 +107,7 @@ export const spaceship = (() => {
           tempObjectGroup.add(this.velocityRectangle);
 
           this.mesh.add(tempObjectGroup);
+
           this.scene.add(this.mesh);
 
           // Initialize third-person camera
@@ -368,7 +374,7 @@ removeHealthBar(asteroid) {
       if (this.forwardVelocity > 0 || this.upwardVelocity > 0) {
         const continuousRotation = -(mouseX * 0.0001);
         this.mesh.rotation.y += continuousRotation;
-        const targetX = this.mesh.children[0].rotation.x + mouseY * 0.0002; // Assuming meshChild is the first child
+        const targetX = this.mesh.children[0].rotation.x + mouseY * 0.0002; 
         const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.93, Math.PI * 0.93);
         this.mesh.children[0].rotation.x = THREE.MathUtils.lerp(this.mesh.children[0].rotation.x, mappedTargetX, 0.8);
       }

@@ -6,7 +6,8 @@ import { Ring } from "./Ring.js";
 import { asteroids } from "./asteroids.js"
 import { planets } from "./planets.js"
 
-//  MAKE EVERYTHING PROCEDURAL AROUND THE USER
+import { getRandomDeepColor } from "./utils.js"
+
 export const gameworld = (() => {
   class World {
     constructor(params) {
@@ -15,8 +16,8 @@ export const gameworld = (() => {
     }
     addElements() {
       if (this.scene) {
-        const softLight = new THREE.AmbientLight(0xffffff, .2);
-        softLight.position.set(0, 0, 0);
+        const softLight = new THREE.AmbientLight(0xffffff, 1);
+        softLight.position.set(0, 10, 0);
         this.scene.add(softLight)
 
         this.createWorld();
@@ -24,6 +25,7 @@ export const gameworld = (() => {
         this.createAsteroidSystems(5); //procedural
         this.createPlanets(4); //procedural
         this.createStar();
+
 
         this.addGround();
         this.createRings();
@@ -228,16 +230,15 @@ export const gameworld = (() => {
       }
     }
     createStar() {
-      const posZ = 0;
       const posY = 350;
-
+      const col = getRandomDeepColor()
 
       const sphereRadius = 13;
       const sphereSegments = 32;
       const transparentMaterial = new THREE.MeshStandardMaterial({
-        color: 0xff6600,
+        color: col,
         metalness: 0.8,
-        emissive: 0xff6600, 
+        emissive: col, 
         emissiveIntensity: 50,
 
         roughness: 0.5,
@@ -254,12 +255,12 @@ export const gameworld = (() => {
 
       const glowGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
       const glowMaterial = new THREE.MeshStandardMaterial({
-        emissive: 0xff6600, 
-        emissiveIntensity: 3,
-        color: 0x777777,
+        emissive: col, 
+        emissiveIntensity: 50,
+        color: col,
       });
     
-      const generateRingPoints = (radius, pointCount, h) => {
+      const generateRingPoints = (radius, pointCount) => {
         for (let i = 0; i < pointCount; i++) {
           const angle = (Math.PI * 2 * i) / pointCount;
           const x = radius * Math.cos(angle);
