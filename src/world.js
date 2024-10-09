@@ -15,11 +15,15 @@ export const gameworld = (() => {
     }
     addElements() {
       if (this.scene) {
+        const softLight = new THREE.AmbientLight(0xffffff, .2);
+        softLight.position.set(0, 0, 0);
+        this.scene.add(softLight)
+
         this.createWorld();
-        this.createStarfield(2000);
-        this.createAsteroidSystems(10);
-        this.createPlanets(4);
-        this.createStar();
+        // this.createStarfield(2000); //procedural
+        this.createAsteroidSystems(10); //procedural
+        // this.createPlanets(4); //procedural
+        // this.createStar();
 
         // this.createRunway();       
         // this.addGround();
@@ -30,7 +34,7 @@ export const gameworld = (() => {
     }
     Update(timeElapsed, playerShip, audioManager) {
       if (this.asteroidLoader) {
-        this.asteroidLoader.animateAsteroidGroup();
+        this.asteroidLoader.animateAsteroids(playerShip, this.repositionObj);
       }
 
       if (this.planetLoader) {
@@ -70,8 +74,6 @@ export const gameworld = (() => {
   }
 
     createWorld() {
-      this.scene.fog = new THREE.Fog(0x8090F, 0.5);
-
       const cubeTextureLoader = new THREE.CubeTextureLoader();
       const textureUrls = [
         'public/blue/bkg1_right.png',  // right
@@ -162,7 +164,6 @@ export const gameworld = (() => {
   }
   
   repositionObj(obj1Position, obj2Position) {
-    console.log('moved planet')
     obj1Position.x = obj2Position.x + (Math.random() * 600 - 300); // New x position
     obj1Position.y = obj2Position.y + (Math.random() * 600 - 300); // New y position
     obj1Position.z = obj2Position.z + (Math.random() * 600 - 300); // New z position

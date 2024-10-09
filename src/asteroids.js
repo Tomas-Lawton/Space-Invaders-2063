@@ -35,37 +35,30 @@ export const asteroids = (() => {
         console.error("Error loading models:", error);
       }
     }
+
     async loadAsteroids() {
       try {
         let asteroidGroup = new THREE.Group();
+        asteroidGroup.position.set(
+          (Math.random() - 0.5) * 1000, 
+          (Math.random() - 0.5) * 1000,
+          (Math.random() - 0.5) * 1000
+          );
         this.scene.add(asteroidGroup);
-
-        const numberOfAsteroids = Math.floor(Math.random()+.1 * 90);
-
-        const originX = (Math.random() - 0.5) * 1000; // Random X between -50 and 50
-        const originY = (Math.random() - 0.5) * 1000; // Random Y between -50 and 50
-        const originZ = (Math.random() - 0.5) * 1000; // Random Z between -50 and 50
-
-        // const randomColor = Math.floor(Math.random() * 16777215).toString(16); //0xffa500
-        const pointLight = new THREE.PointLight(0xffa500, 2, 150);
-        pointLight.position.set(originX, originY, originZ);
-
-        this.scene.add(pointLight); // Add the light to the scene
-
-
-        let entropyCoefficient = (Math.random() -.5) * 3;
-
+        const numberOfAsteroids = Math.floor(Math.random() * 90);
+        console.log(numberOfAsteroids)
+        // let entropyCoefficient = (Math.random()) + 1;
+        const entropyCoefficient = .5
         for (let i = 0; i < numberOfAsteroids; i++) {
           let selectedModel = Math.floor(Math.random() * this.loadedModels.length)
           const asteroidClone = this.loadedModels[selectedModel].clone(); // weighted selection
     
-          // Set position relative to the random origin
           asteroidClone.position.set(
-            originX + (Math.random() - 0.5) * 50 * entropyCoefficient, 
-            originY + (Math.random() - 0.5) * 50 * entropyCoefficient,
-            originZ + (Math.random() - 0.5) * 50 * entropyCoefficient
-          );
-    
+            (Math.random() - 0.5) * 50 * entropyCoefficient,
+            (Math.random() - 0.5) * 50 * entropyCoefficient,
+            (Math.random() - 0.5) * 50 * entropyCoefficient
+         );
+
           asteroidClone.rotation.set(
             Math.random() * Math.PI  * entropyCoefficient,
             Math.random() * Math.PI  * entropyCoefficient,
@@ -86,6 +79,12 @@ export const asteroids = (() => {
           asteroidGroup.add(asteroidClone); 
         }
 
+
+        // LIGHT THE GROUP
+        const pointLight = new THREE.PointLight(0xCC5500, 800, 400);
+        pointLight.position.set(0, 0, 0);
+        asteroidGroup.add(pointLight); 
+
         return asteroidGroup;
       } catch (error) {
         console.error("Error loading asteroids:", error);
@@ -97,12 +96,23 @@ export const asteroids = (() => {
     //   console.log('Asteroid destroyed:', asteroid);
     // }
 
-    animateAsteroidGroup() {
+    animateAsteroids(playerPos, reposition) {
       if (this.asteroidSystem) {
         this.asteroidSystem.forEach(system => {
+
+          //animate individual asteroid
           system.children.forEach((asteroid) => {
+            if (asteroid instanceof THREE.Light) {
+              return
+            }
             asteroid.position.add(asteroid.velocity);
-          });
+          }); 
+
+          // check group distance
+          const distance = playerPos.mesh.position.distanceTo(system.position);
+          if (distance > 1000) {
+            reposition(system.position, playerPos.mesh.position); 
+          }
         })
       }
     

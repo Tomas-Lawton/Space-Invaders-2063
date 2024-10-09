@@ -193,6 +193,9 @@ export const spaceship = (() => {
               if (asteroidLoader.asteroidSystem) {
                   for (const system of asteroidLoader.asteroidSystem) {
                       system.children.forEach(asteroid => {
+                        if (asteroid instanceof THREE.Light) {
+                          return
+                        }
                           if (this.checkCollision(laserBeam, asteroid)) {
                               this.scene.remove(laserBeam);
                               this.activeLasers.splice(index, 1);
@@ -250,28 +253,33 @@ export const spaceship = (() => {
 
 //at a set interval so not always
 updateHealthBarPosition(asteroid) {
-  const screenPosition = asteroid.position.clone().project(this.camera); 
+  const localPosition = asteroid.position.clone();
+  const parentGroup = asteroid.parent; 
+  const groupPosition = parentGroup.position.clone();
+  const actualPosition = localPosition.add(groupPosition);
+
+  // Project the actual position to screen space
+  const screenPosition = actualPosition.project(this.camera);
   const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
   const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
 
   const cameraDirection = new THREE.Vector3();
-  this.camera.getWorldDirection(cameraDirection); // Get the direction the camera is facing
+  this.camera.getWorldDirection(cameraDirection).negate();
 
-  // Get the direction to the asteroid
-  const asteroidDirection = asteroid.position.clone().sub(this.camera.position).normalize();
-
-  // Calculate the angle between the camera direction and asteroid direction
+  const asteroidDirection = actualPosition.clone().sub(this.camera.position).normalize();
   const angle = cameraDirection.dot(asteroidDirection);
 
-  if (screenPosition.z > 0 && angle > 0) {
+  const distanceToAsteroid = this.camera.position.distanceTo(actualPosition);
+  const visibilityThreshold = 1000;
+
+  if (screenPosition.z > 0 && angle > 0 && distanceToAsteroid < visibilityThreshold) {
       asteroid.healthBar.element.style.left = `${x}px`;
       asteroid.healthBar.element.style.top = `${y - 10}px`;
-      asteroid.healthBar.element.style.display = 'block'; // Show the health bar
+      asteroid.healthBar.element.style.display = 'block';
   } else {
-      asteroid.healthBar.element.style.display = 'none'; // Hide the health bar if not visible
+      asteroid.healthBar.element.style.display = 'none';
   }
 }
-
 removeHealthBar(asteroid) {
     if (asteroid.healthBar) {
         clearInterval(asteroid.healthBar.interval); // Clear the interval
@@ -322,6 +330,9 @@ removeHealthBar(asteroid) {
       if (asteroidLoader.asteroidSystem) {
         for (const system of asteroidLoader.asteroidSystem) {
           system.children.forEach(asteroid => {
+            if (asteroid instanceof THREE.Light) {
+              return
+            }
             if (this.checkCollision(this.mesh, asteroid)) {
               console.log('HIT USER');
               this.damageShip(18); // Call the damage function

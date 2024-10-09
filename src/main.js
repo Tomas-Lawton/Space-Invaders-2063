@@ -35,13 +35,11 @@ class Game {
   async initialize() {
     await this.setupAudio();
     this.world.addElements();
-    this.playerMesh = this.playerShip.loadSpaceship();
-
-    const playerInputComponent = new player_input.PlayerInput();
-    this.playerEntity.AddComponent(playerInputComponent);
+    this.playerShip.loadSpaceship();
+    this.playerEntity.AddComponent(new player_input.PlayerInput());
     this.playerEntity.InitEntity();
-
     setupGUI({ camera: this.camera, renderer: this.renderer, audioManager: this.audioManager });
+    
     this.animate();
   }
 
