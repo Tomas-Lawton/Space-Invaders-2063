@@ -11,10 +11,25 @@ export const gameworld = (() => {
     constructor(params) {
       this.scene = params.scene;
       this.rings = [];
-      this.particles = [];
       this.asteroidSystem = []
     }
+    addElements() {
+      if (this.scene) {
+        this.createWorld();
+        this.createStarfield();
 
+        // this.createRunway();       
+        // this.addGround();
+        // this.createRings();
+        // this.addLights();
+        this.createAsteroids();
+        // this.loadPlanets();
+
+
+        // this.createStar();
+        // this.createLoops();
+      }
+    }
     Update(timeElapsed, playerShip, audioManager) {
       if (this.asteroidSystem) {
         this.asteroidSystem.forEach((asteroidSystem) => {
@@ -22,9 +37,7 @@ export const gameworld = (() => {
         });
       }
 
-      if (this.planets) {
-        this.planets.forEach(planet => planet.rotation.y += 0.001)
-      }
+      this.animatePlanets(playerShip)
 
       // if ()
       this.animateStars(playerShip);
@@ -36,97 +49,100 @@ export const gameworld = (() => {
       //     audioManager.playNextSound();
       //   }
       // });
-    }
 
-    addElements() {
-      if (this.scene) {
-         // Create and apply the fog effect
-        //  this.fogEffect = new FogEffect(this.scene, new THREE.Color(0xDFE9F3), .00005);
+      this.scene.backgroundRotation.y += 0.0001
 
-        this.createWorld();
-        this.createStarfield();
-        // this.createRunway();       
-        this.addGround();
-        // this.createRings();
-        this.addLights();
-        // this.createStar();
-        // this.addParticles();
-        // this.createLoops();
-        this.createAsteroids();
-        this.loadPlanets();
-
-
-
-      }
     }
     async loadPlanets() {
+      this.planets = [];
       const numPlanets = 4;
       const planetLoader = new GLTFLoader();
-  
-      // Set the path correctly before loading
       const path = 'public/planet/';
       const gltf = await planetLoader.setPath(path).loadAsync("scene.gltf");
-      
+  
       if (!gltf || !gltf.scene) {
           throw new Error(`Failed to load model from path: ${path}`);
       }
   
-      this.planets = []; // Initialize the planets array
-  
       for (let i = 0; i < numPlanets; i++) {
-          const model = gltf.scene.clone();
-          model.position.set(
-              (Math.random() - 0.5) * 1000,
-              (Math.random() - 0.5) * 1000,
-              (Math.random() - 0.5) * 1000
-          );
-  
-          const scale = 40; // Increased scale for a larger planet
-          model.scale.set(scale, scale, scale);
-  
-        let randomColor = Math.floor(Math.random() * 16777215);
-                  
-        const fogGeometry = new THREE.SphereGeometry(scale * 1.5, 32, 32); // Larger sphere for fog
-        const fogMaterial = new THREE.MeshStandardMaterial({
-            color: randomColor, // Color of the fog (OrangeRed)
-            opacity: .6, // Higher opacity for thicker fog
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending // Use additive blending for a glowing fog effect
-        });
-
-        const fogSphere = new THREE.Mesh(fogGeometry, fogMaterial);
-        fogSphere.position.copy(model.position);
-        this.scene.add(fogSphere);
-          
-          const lightPositions = [
-              { x: 30, y: 30, z: 30 },
-              // { x: -30, y: 30, z: -30 },
-              // { x: 30, y: -30, z: -30 },
-              { x: -30, y: -30, z: 30 },
-              // { x: 0, y: 50, z: 0 },
-              // { x: 0, y: -50, z: 0 },
-              { x: 50, y: 0, z: 0 },
-              // { x: -50, y: 0, z: 0 },
-          ];
-  
-
-  
-          lightPositions.forEach((pos, index) => {
-              const light = new THREE.PointLight(randomColor, 3, 200); // Increased distance for diffusion
-              light.position.set(
-                  model.position.x + pos.x,
-                  model.position.y + pos.y,
-                  model.position.z + pos.z
-              );
-              this.scene.add(light);
-          });
-  
-          this.scene.add(model);
-          this.planets.push(model); // Corrected the push to the planets array
+          const planetGroup = this.createPlanetGroup(gltf);
+          this.scene.add(planetGroup); 
+          this.planets.push(planetGroup);
       }
   }
   
+  createPlanetGroup(gltf) {
+      const planetGroup = new THREE.Group();
+      const scale = 100;
+      const model = this.createPlanetModel(gltf, scale);
+      
+      const randomColor = this.getRandomDeepColor(); 
+      const fogSphere = this.createFog(model.position, randomColor, scale);
+      // const lights = this.createLights(model.position, randomColor, scale);
+      
+      planetGroup.add(model);
+      planetGroup.add(fogSphere);
+      // lights.forEach(light => planetGroup.add(light));
+      
+      planetGroup.position.set(
+          (Math.random() - 0.5) * 1000,
+          (Math.random() - 0.5) * 1000,
+          (Math.random() - 0.5) * 1000
+      );
+  
+      return planetGroup;
+  }
+  
+  getRandomDeepColor() {
+      const r = Math.floor(Math.random() * 128); // Red component between 0 and 127
+      const g = Math.floor(Math.random() * 128); // Green component between 0 and 127
+      const b = Math.floor(Math.random() * 128); // Blue component between 0 and 127
+      return (r << 16) | (g << 8) | b; // Shift and combine RGB values
+  }
+      
+  createPlanetModel(gltf, scale) {
+      const model = gltf.scene.clone();
+      model.scale.set(scale, scale, scale);
+      return model;
+  }
+  
+  createFog(position, color, scale) {
+      const fogGeometry = new THREE.SphereGeometry(scale * 1.3, 32, 32);
+      const fogMaterial = new THREE.MeshPhysicalMaterial({
+          color: color,
+          opacity: 0.8,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          side: THREE.DoubleSide,
+          metalness: 0.5, 
+          roughness: 0.01
+      });
+  
+      const fogSphere = new THREE.Mesh(fogGeometry, fogMaterial);
+      // Set position relative to the planet model
+      fogSphere.position.copy(position);
+      return fogSphere;
+  }
+  
+  createLights(position, color, scale) {
+      const lightPositions = [
+          { x: 30, y: 30, z: 30 },
+          { x: -30, y: -30, z: 30 },
+          { x: 50, y: 0, z: 0 }
+      ];
+       
+      return lightPositions.map(pos => {
+          const light = new THREE.PointLight(color, 10, 1000); 
+          // Set the position relative to the planet model
+          light.position.set(
+              pos.x * scale/2 + position.x, 
+              pos.y * scale/2 + position.y, 
+              pos.z * scale/2 + position.z  
+          );
+          return light;
+      });
+  }
     async createAsteroids() {
       const systems = 3;
       const asteroidPaths = [
@@ -159,11 +175,12 @@ export const gameworld = (() => {
       ];
       const cubeMap = cubeTextureLoader.load(textureUrls);
       this.scene.background = cubeMap;
-      // this.scene.background = new THREE.Color( 0x08090F );
+      this.scene.backgroundRotation = new THREE.Euler(0, 0, 0);
 
     }
+
     createStarfield() {
-      this.starCount = 6000; // Initial star count
+      this.starCount = 2000; // Initial star count
       this.starPositions = new Float32Array(this.starCount * 3);
       this.velocities = new Float32Array(this.starCount * 3);
       this.accelerations = new Float32Array(this.starCount * 3);
@@ -213,37 +230,50 @@ export const gameworld = (() => {
       for (let i = 0; i < this.starCount; i++) {
         const index = i * 3;
 
-        // Update positions based on velocities
         this.starPositions[index] += this.velocities[index];
         this.starPositions[index + 1] += this.velocities[index + 1];
         this.starPositions[index + 2] += this.velocities[index + 2];
 
-        // Reposition if outside boundary
-        const distance = this.calculateDistance(userPosition, this.starPositions, i);
-        if (distance > 200) { // Assuming a threshold for repositioning
-          this.repositionStar(i, userPosition);
+        const distance = this.calculateDistanceArr(userPosition, this.starPositions, i);
+        if (distance > 200) { 
+          this.reposition(i, userPosition);
         }
       }
 
-      // Mark geometry attributes for update
       this.stars.geometry.attributes.position.needsUpdate = true;
     }
 
-    calculateDistance(userPosition, starPositions, index) {
-      const dx = starPositions[index * 3] - userPosition.x;
-      const dy = starPositions[index * 3 + 1] - userPosition.y;
-      const dz = starPositions[index * 3 + 2] - userPosition.z;
+    calculateDistanceArr(userPosition, obj, index) {
+      const dx = obj[index * 3] - userPosition.x;
+      const dy = obj[index * 3 + 1] - userPosition.y;
+      const dz = obj[index * 3 + 2] - userPosition.z;
       return Math.sqrt(dx * dx + dy * dy + dz * dz);
   }
 
-  repositionStar(index, userPosition) {
+  animatePlanets(playerPos) {
+    if (this.planets) {
+      this.planets.forEach(planet => {
+        planet.children[0].rotation.y += 0.001; 
+        
+        const distance = playerPos.mesh.position.distanceTo(planet.position);
+        if (distance > 1000) {
+          this.repositionObj(planet.position, playerPos.mesh.position); 
+        }
+      });
+    }
+  }
+  
+  repositionObj(obj1Position, obj2Position) {
+    console.log('moved planet')
+    obj1Position.x = obj2Position.x + (Math.random() * 600 - 300); // New x position
+    obj1Position.y = obj2Position.y + (Math.random() * 600 - 300); // New y position
+    obj1Position.z = obj2Position.z + (Math.random() * 600 - 300); // New z position
+  }
+
+  reposition(index, userPosition) {
     this.starPositions[index * 3] = userPosition.x + (Math.random() * 600 - 300); // New x
     this.starPositions[index * 3 + 1] = userPosition.y + (Math.random() * 600 - 300); // New y
     this.starPositions[index * 3 + 2] = userPosition.z + (Math.random() * 600 - 300); // New z
-
-    // this.velocities[index * 3] = (Math.random() - 0.5) * 0.001; // New vx
-    // this.velocities[index * 3 + 1] = (Math.random() - 0.5) * 0.001; // New vy
-    // this.velocities[index * 3 + 2] = (Math.random() - 0.5) * 0.001; // New vz
 }
 
 
@@ -404,19 +434,6 @@ export const gameworld = (() => {
         requestAnimationFrame(animateAll);
       };
       animateAll();
-    }
-
-    addParticles() {
-      const particleCount = 120;
-      for (let i = 0; i < particleCount; i++) {
-        const position = new THREE.Vector3(
-          Math.random() * 20 - 10,
-          Math.random() * 10,
-          Math.random() * 20 - 10
-        );
-        const particle = new Particle(this.scene, position);
-        this.particles.push(particle);
-      }
     }
   }
 

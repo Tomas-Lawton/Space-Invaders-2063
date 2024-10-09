@@ -13,12 +13,7 @@ export const asteroids = (() => {
     async initialiseSystem() {
       try {
         const modelPromises = this.paths.map(async (path) => {
-          console.log("Loading path:", path);
-    
-          // Set the path and load the GLTF model
           const gltf = await this.loader.setPath(path).loadAsync("scene.gltf");
-    
-          // Ensure the loaded model exists and is a valid GLTF structure
           if (!gltf || !gltf.scene) {
             throw new Error(`Failed to load model from path: ${path}`);
           }
@@ -29,14 +24,11 @@ export const asteroids = (() => {
               node.material.side = THREE.DoubleSide;
             }
           });
-          console.log("Loaded model:", model);
+          // console.log("Loaded model:", model);
           return model; // Return the cloned model
         });
     
-        // Wait for all promises to resolve, then assign the models to loadedModels
         this.loadedModels = await Promise.all(modelPromises);
-    
-        console.log("All models loaded:", this.loadedModels);
       } catch (error) {
         console.error("Error loading models:", error);
       }
