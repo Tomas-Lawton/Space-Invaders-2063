@@ -21,7 +21,7 @@ export const gameworld = (() => {
 
         this.createWorld();
         this.createStarfield(2000); //procedural
-        this.createAsteroidSystems(10); //procedural
+        this.createAsteroidSystems(5); //procedural
         this.createPlanets(4); //procedural
         this.createStar();
 

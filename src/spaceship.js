@@ -117,7 +117,7 @@ export const spaceship = (() => {
           return this.mesh
         },
         (xhr) => {
-          let progressAmount = Math.max((xhr.loaded / xhr.total) * 100, 1)
+          let progressAmount = (xhr.loaded / xhr.total) * 100
           progressText.innerHTML = `LOADING ${progressAmount}/100`;
         },
         (error) => {

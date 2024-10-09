@@ -1,7 +1,4 @@
-@font-face {
-  font-family: 'Code';
-  src: local('Code Light'), url(fonts/code_light.otf) format('otf');
-}
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Sixtyfour+Convergence&display=swap');
 
 body {
   background-color: black;
@@ -9,10 +6,13 @@ body {
 }
 
 h1 {
-  color: rgb(215, 215, 215);
   font-size: 7em;
-  font-family: 'Code';
+  font-family: "Exo 2";
+  font-weight: 100;
   margin: 0px;
+  font-size: 48px;
+  color: white;
+  font-weight: bold;
 }
 
 #progress-container {
@@ -22,13 +22,6 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-#progress {
-  font-family: 'Code';
-  font-size: 48px;
-  font-weight: bold;
-  color: white;
 }
 
 #velocity-bar-background {
@@ -97,3 +90,23 @@ h1 {
   display: flex;
   gap: 15px;
 }
+
+/* .exo-2-font {
+  font-family: "Exo 2", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.sixtyfour-convergence-font {
+  font-family: "Sixtyfour Convergence", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "BLED" 0,
+    "SCAN" 0,
+    "XELA" 0,
+    "YELA" 0;
+} */
+
