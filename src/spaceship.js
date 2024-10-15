@@ -214,7 +214,7 @@ export const spaceship = (() => {
                                 this.softBoom.play(); 
                             }
                               this.startRumbleEffect(asteroid);
-                              asteroid.velocity.add(velocity.clone().multiplyScalar(0.008)) //smack it away a bit
+                              asteroid.velocity.add(velocity.clone().multiplyScalar(0.005)) //smack it away a bit
 
                               this.showHealthBar(asteroid); 
   
@@ -388,7 +388,22 @@ removeHealthBar(asteroid) {
             if (this.checkCollision(this.mesh, asteroid)) {
               console.log('HIT USER');
               this.damageShip(18);
-    
+
+              // let sinY = Math.sin(this.mesh.rotation.y); // Sine of Y rotation for lateral movement
+              // let cosY = Math.cos(this.mesh.rotation.y); // Cosine of Y rotation for forward movement
+              // let cosX = Math.cos(this.mesh.children[0].rotation.x); // Cosine of X rotation for vertical movement
+              // const hitVec = new THREE.Vector3();
+              // // Set the ship's movement vector
+              // hitVec.set(
+              //   sinY * cosX * this.forwardVelocity, // Horizontal movement along X-axis (lateral)
+              //   -Math.sin(this.mesh.children[0].rotation.x) * this.forwardVelocity + this.upwardVelocity, // Vertical movement along Y-axis (pitch control)
+              //   cosY * cosX * this.forwardVelocity // Forward movement along Z-axis
+              // );
+              
+              // // Apply the ship's movement vector to the asteroid to make it move in the same direction
+              // asteroid.velocity.add(hitVec.clone().multiplyScalar(0.5)); // Smack the asteroid away in the same direction
+
+
               if (this.boomSound) {
                 this.boomSound.currentTime = 0;
                 this.boomSound.volume = 0.5;
