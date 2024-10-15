@@ -162,7 +162,8 @@ export const asteroids = (() => {
     //   console.log('Asteroid destroyed:', asteroid);
     // }
 
-    animateAsteroids(playerPos, reposition) {
+    animateAsteroids(playerCurrentPosition, reposition) {
+
       if (this.asteroidSystem) {
         this.asteroidSystem.forEach(system => {
 
@@ -175,9 +176,9 @@ export const asteroids = (() => {
           }); 
 
           // check group distance
-          const distance = playerPos.mesh.position.distanceTo(system.position);
+          const distance = playerCurrentPosition.distanceTo(system.position);
           if (distance > 1000) {
-            reposition(system.position, playerPos.mesh.position); 
+            reposition(system.position, playerCurrentPosition); 
           }
         })
       }

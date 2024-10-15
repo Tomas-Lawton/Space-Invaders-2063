@@ -7,7 +7,7 @@ import { spaceship } from "./spaceship.js";
 import { setupGUI } from "./gui.js";
 import { entity } from "./entity.js";
 import { initRenderer, initComposer } from "./renderer.js";
-import { updateVelocityBar, updateHealthBar } from "./dom.js";
+import { updateVelocityBar, updateHealthBar, progressContainer } from "./dom.js";
 import { player_input } from "./player-input.js";
 import { PHYSICS_CONSTANTS } from "./constants.js"
 
@@ -35,9 +35,13 @@ class Game {
   async initialize() {
     await this.setupAudio();
     this.world.addElements();
-    this.playerShip.loadSpaceship();
-    this.playerEntity.AddComponent(new player_input.PlayerInput());
-    this.playerEntity.InitEntity();
+
+    if (this.playerEntity && this.playerShip) {
+      this.playerShip.loadSpaceship();
+      this.playerEntity.AddComponent(new player_input.PlayerInput());
+      this.playerEntity.InitEntity();
+    }
+
     setupGUI({ camera: this.camera, renderer: this.renderer, audioManager: this.audioManager });
     
     this.animate();
@@ -63,7 +67,7 @@ class Game {
     requestAnimationFrame((time) => this.animate(time));
     const timeElapsed = (currentTime - this.previousTime) / 1000;
     this.previousTime = currentTime;
-    if (!this.playerShip.mesh) return; // wait for load
+    if (this.playerShip && !this.playerShip.mesh) return; // wait for load
     this.Update(timeElapsed);
   }
 
@@ -73,14 +77,34 @@ class Game {
       let input = this.playerEntity.Attributes.InputCurrent;
       if (input) {
 
+
+        // update ship
         if (this.playerShip && this.world && this.audioManager){
-          // THREE
           this.playerShip.Update(input.forwardAcceleration, input.upwardAcceleration, timeElapsed, this.audioManager, this.world.asteroidLoader);
-          this.world.Update(timeElapsed, this.playerShip, this.audioManager); // depends on user and sound
-          // HUD
+        } else {
+          progressContainer.style.display = 'none';
+        }
+
+        // update world
+        if (this.world && this.audioManager){
+          let playerCurrentPosition
+          if (this.playerShip === undefined || this.playerShip === null) {
+            playerCurrentPosition = new THREE.Vector3(0, 0, 0);
+          } else {
+            playerCurrentPosition = this.playerShip.mesh.position
+          }
+
+          this.world.Update(timeElapsed, playerCurrentPosition, this.audioManager); // depends on user and sound
+        }
+
+        // update hud
+        if (this.playerShip){
           updateVelocityBar(this.playerShip.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
           updateHealthBar(this.playerShip.health, this.playerShip.maxHealth)
         }
+
+
+
 
       }
     }
@@ -92,10 +116,12 @@ const game = new Game();
 let shootingInterval;
 
 window.addEventListener("mousedown", () => {
+  if (game.playerShip) {
     game.playerShip.createAndShootLight();
     shootingInterval = setInterval(() => {
         game.playerShip.createAndShootLight();
-    }, 180);
+    }, 150);
+  }
 });
 
 window.addEventListener("mouseup", () => {

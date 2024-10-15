@@ -96,14 +96,14 @@ class PlanetLoader {
     }
 
 
-  animatePlanets(playerPos, reposition) {
+  animatePlanets(playerCurrentPosition, reposition) {
     if (this.planets) {
       this.planets.forEach(planet => {
         planet.children[0].rotation.y += 0.0001; 
         
-        const distance = playerPos.mesh.position.distanceTo(planet.position);
+        const distance = playerCurrentPosition.distanceTo(planet.position);
         if (distance > 1000) {
-            reposition(planet.position, playerPos.mesh.position); 
+            reposition(planet.position, playerCurrentPosition); 
         }
       });
     }
