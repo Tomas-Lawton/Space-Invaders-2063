@@ -26,14 +26,12 @@ export const gameworld = (() => {
         this.createPlanets(4); //procedural
         this.createStar();
 
+        // this.addGround();
 
-        this.addGround();
-        this.createRings();
-        this.addLights();
         // this.createLoops();
       }
     }
-    Update(timeElapsed, playerCurrentPosition, audioManager) {
+    Update(playerCurrentPosition, audioManager) {
 
       if (this.asteroidLoader) {
         this.asteroidLoader.animateAsteroids(playerCurrentPosition, this.repositionObj);
@@ -56,7 +54,6 @@ export const gameworld = (() => {
       // });
 
       this.scene.backgroundRotation.y += 0.0001
-
     }
     async createPlanets(planetNum) {
       const planetsLoader = new planets.PlanetLoader(this.scene)
@@ -178,61 +175,72 @@ export const gameworld = (() => {
     this.starPositions[index * 3 + 2] = userPosition.z + (Math.random() * 600 - 300); // New z
 }
 
-
-
-
     addGround () {
-
-      
+    // Ground
     const r = 20;
-    const segments = 64; // You can adjust the number of segments for a smoother circle
-    // const groundMesh = new THREE.Mesh( new THREE.CircleGeometry( r, segments ), new THREE.MeshPhongMaterial( { color: 0xcbcbcb, depthWrite: false } ) );
-    // groundMesh.rotation.x = - Math.PI / 2;
-    // groundMesh.receiveShadow = true;
-    // this.scene.add( groundMesh );
+    const segments = 64; 
+    const groundGeometry = new THREE.CircleGeometry(r, segments);
+    groundGeometry.rotateX(-Math.PI / 2);
+    const groundMaterial = new THREE.MeshStandardMaterial({
+      color: 0x111111,
+      metalness: 0.8,
+      roughness: 0.5,
+      side: THREE.DoubleSide,
+    });
+    
+    const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+    groundMesh.castShadow = false;
+    groundMesh.receiveShadow = true;
+    
+    this.scene.add(groundMesh);
 
-      const groundGeometry = new THREE.CircleGeometry(r, segments);
-      groundGeometry.rotateX(-Math.PI / 2);
-      const groundMaterial = new THREE.MeshStandardMaterial({
-        color: 0x111111,
-        metalness: 0.8,
-        roughness: 0.5,
-        side: THREE.DoubleSide,
-      });
-      
-      const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
-      groundMesh.castShadow = false;
-      groundMesh.receiveShadow = true;
-      
-      this.scene.add(groundMesh);
-    }
-    createRings() {
-      const glowGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-      const glowMaterial = new THREE.MeshStandardMaterial({
-        emissive: 0xffffff, 
-        emissiveIntensity: 1,
-        color: 0x777777,
-      });
-    
-      const generateRingPoints = (radius, pointCount, h) => {
-        for (let i = 0; i < pointCount; i++) {
-          const angle = (Math.PI * 2 * i) / pointCount;
-          const x = radius * Math.cos(angle);
-          const y = radius * Math.sin(angle);
-          const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
-          glowPoint.position.set(x, 0, y);
-          this.scene.add(glowPoint);
-        }
-      };
-    
-      let numRings = 5;
-      let r = 4;
-      for (let i = 0; i < numRings; i++) {
-        generateRingPoints(i * r, i * 10, i);
+    // Ground Lights
+    const ambientLight = new THREE.AmbientLight(0x333333, 0.5);
+    this.scene.add(ambientLight);
+  
+    const spotLight = new THREE.SpotLight(0xff3300, 1, 20, 0.8, 0.5);
+    spotLight.position.set(0, 15, 0);
+    spotLight.castShadow = true;
+    spotLight.shadow.bias = -0.0001;
+    this.scene.add(spotLight);
+  
+    const spotLight2 = new THREE.SpotLight(0x0055aa, 1, 20, 0.8, 0.5);
+    spotLight2.position.set(0, 15, -15);
+    spotLight2.castShadow = true;
+    spotLight2.shadow.bias = -0.0001;
+    this.scene.add(spotLight2);
+
+
+    // ring lights
+
+    const glowGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    const glowMaterial = new THREE.MeshStandardMaterial({
+      emissive: 0xffffff, 
+      emissiveIntensity: 1,
+      color: 0x777777,
+    });
+  
+    const generateRingPoints = (radius, pointCount, h) => {
+      for (let i = 0; i < pointCount; i++) {
+        const angle = (Math.PI * 2 * i) / pointCount;
+        const x = radius * Math.cos(angle);
+        const y = radius * Math.sin(angle);
+        const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
+        glowPoint.position.set(x, 0, y);
+        this.scene.add(glowPoint);
       }
+    };
+  
+    let numRings = 5;
+    let r2 = 4;
+    for (let i = 0; i < numRings; i++) {
+      generateRingPoints(i * r2, i * 10, i);
     }
+
+    }
+    
     createStar() {
-      const posY = 350;
+      const posZ = 350;
       const col = getRandomDeepColor()
 
       const sphereRadius = 13;
@@ -242,7 +250,6 @@ export const gameworld = (() => {
         metalness: 0.8,
         emissive: col, 
         emissiveIntensity: 50,
-
         roughness: 0.5,
         opacity: 0.5,
         transparent: true,
@@ -252,7 +259,7 @@ export const gameworld = (() => {
       const sphereMesh = new THREE.Mesh(sphereGeometry, transparentMaterial);
     
       sphereMesh.rotation.x = -Math.PI / 2;
-      sphereMesh.position.z = posY;
+      sphereMesh.position.z = posZ;
       this.scene.add(sphereMesh);
 
       const glowGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
@@ -268,7 +275,7 @@ export const gameworld = (() => {
           const x = radius * Math.cos(angle);
           const y = radius * Math.sin(angle);
           const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
-          glowPoint.position.set(x, 0, y+posY);
+          glowPoint.position.set(x, 0, y+posZ);
           this.scene.add(glowPoint);
         }
       };
@@ -280,23 +287,6 @@ export const gameworld = (() => {
       }
     }
     
-    addLights() {
-      const ambientLight = new THREE.AmbientLight(0x333333, 0.5);
-      this.scene.add(ambientLight);
-    
-      const spotLight = new THREE.SpotLight(0xff3300, 1, 20, 0.8, 0.5);
-      spotLight.position.set(0, 15, 0);
-      spotLight.castShadow = true;
-      spotLight.shadow.bias = -0.0001;
-      this.scene.add(spotLight);
-    
-      const spotLight2 = new THREE.SpotLight(0x0055aa, 1, 20, 0.8, 0.5);
-      spotLight2.position.set(0, 15, -15);
-      spotLight2.castShadow = true;
-      spotLight2.shadow.bias = -0.0001;
-      this.scene.add(spotLight2);
-    }
-
     createLoops() {
       const numRings = 10 
       for (let i = 0; i < numRings; i++) {
