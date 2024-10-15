@@ -99,7 +99,7 @@ class PlanetLoader {
   animatePlanets(playerPos, reposition) {
     if (this.planets) {
       this.planets.forEach(planet => {
-        planet.children[0].rotation.y += 0.001; 
+        planet.children[0].rotation.y += 0.0001; 
         
         const distance = playerPos.mesh.position.distanceTo(planet.position);
         if (distance > 1000) {

@@ -203,6 +203,7 @@ export const spaceship = (() => {
                           return
                         }
                           if (this.checkCollision(laserBeam, asteroid)) {
+                            // HIT ASTEROID WITH LASER
                               this.scene.remove(laserBeam);
                               this.activeLasers.splice(index, 1);
   
@@ -213,10 +214,12 @@ export const spaceship = (() => {
                                 this.softBoom.play(); 
                             }
                               this.startRumbleEffect(asteroid);
+                              asteroid.velocity.add(velocity.clone().multiplyScalar(0.008)) //smack it away a bit
 
                               this.showHealthBar(asteroid); 
   
                               if (asteroid.health <= 0) {
+                                  
                                   this.removeHealthBar(asteroid); 
                                   asteroid.parent.remove(asteroid);
                                   this.playSound(); 
@@ -257,27 +260,72 @@ export const spaceship = (() => {
     asteroid.healthBar.element.style.backgroundColor = `rgb(${255 * (1 - healthPercentage)}, ${255 * healthPercentage}, 0)`; 
 }
 
-updateHealthBarPosition(asteroid) {
-    const localPosition = asteroid.position.clone();
-    const groupPosition = asteroid.parent.position.clone();
-    const actualPosition = localPosition.add(groupPosition);
-    const screenPosition = actualPosition.project(this.camera);
-    const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
-    const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
-    const distanceToAsteroid = this.camera.position.distanceTo(actualPosition);
-    const visibilityThreshold = 1000;
+// updateHealthBarPosition(asteroid) {
+//     const localPosition = asteroid.position.clone();
+//     const groupPosition = asteroid.parent.position.clone();
+//     const actualPosition = localPosition.add(groupPosition);
+//     this.camera.updateMatrixWorld();
 
-    if (distanceToAsteroid < visibilityThreshold) {
-        if (screenPosition.z > 0) { // In front of the camera
-            asteroid.healthBar.element.style.left = `${x}px`;
-            asteroid.healthBar.element.style.top = `${y - 10}px`;
-            asteroid.healthBar.element.style.display = 'block';
-        } else { // Off screen or facing away
-            asteroid.healthBar.element.style.display = 'none';
-        }
-    } else { // Too far
-        this.removeHealthBar(asteroid);
-    }
+// 		// this.camera.updateMatrixWorld();
+// 		// const screenPosition = localPosition.project( this.camera )
+//     // const x = screenPosition.x
+//     // const y = screenPosition.y
+
+//     const screenPosition = actualPosition.project(this.camera);
+//     const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
+//     const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
+//     const distanceToAsteroid = this.camera.position.distanceTo(actualPosition);
+//     const visibilityThreshold = 1000;
+
+//     if (distanceToAsteroid < visibilityThreshold) {
+//         if (screenPosition.z > 0) { // In front of the camera
+//             asteroid.healthBar.element.style.left = `${x}px`;
+//             asteroid.healthBar.element.style.top = `${y - 10}px`;
+//             asteroid.healthBar.element.style.display = 'block';
+//         } else { // Off screen or facing away
+//             asteroid.healthBar.element.style.display = 'none';
+//         }
+//     } else { // Too far
+//         this.removeHealthBar(asteroid);
+//     }
+// }
+
+updateHealthBarPosition(asteroid) {
+  // Use temporary vectors to avoid frequent cloning
+  const actualPosition = new THREE.Vector3();
+  actualPosition.copy(asteroid.position).add(asteroid.parent.position);
+
+  // Early exit if too far
+  const distanceToAsteroid = this.camera.position.distanceTo(actualPosition);
+  const visibilityThreshold = 1000;
+  if (distanceToAsteroid >= visibilityThreshold) {
+      this.removeHealthBar(asteroid);
+      return;
+  }
+
+  // Get the direction from the camera to the asteroid
+  const directionToAsteroid = new THREE.Vector3();
+  directionToAsteroid.subVectors(actualPosition, this.camera.position).normalize();
+
+  // Get the camera's forward direction (already normalized)
+  const cameraForward = new THREE.Vector3();
+  this.camera.getWorldDirection(cameraForward);
+
+  // Check if the asteroid is in front of the camera using the dot product
+  if (directionToAsteroid.dot(cameraForward) > 0) {
+      // Project asteroid position onto screen space
+      const screenPosition = actualPosition.project(this.camera);
+      const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
+      const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
+
+      // Update health bar position
+      asteroid.healthBar.element.style.left = `${x}px`;
+      asteroid.healthBar.element.style.top = `${y - 10}px`;
+      asteroid.healthBar.element.style.display = 'block';
+  } else {
+      // Asteroid is behind the camera, hide the health bar
+      asteroid.healthBar.element.style.display = 'none';
+  }
 }
 
 removeHealthBar(asteroid) {
