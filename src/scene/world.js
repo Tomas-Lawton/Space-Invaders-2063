@@ -24,7 +24,7 @@ export const gameworld = (() => {
         this.createStarfield(2000); //procedural
         this.createAsteroidSystems(5); //procedural
         this.createPlanets(4); //procedural
-        this.createStar();
+        // this.createStar();
 
         this.createEnemies(5)
 
@@ -46,7 +46,7 @@ export const gameworld = (() => {
       if (this.enemyLoader) {
         this.enemyLoader.animateEnemies(playerCurrentPosition)
       }
-      
+
       if (this.stars) {
         this.animateStars(playerCurrentPosition);
       }
