@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-import { Particle } from "../procedural/particle.js";
 import { Ring } from "../procedural/ring.js";
 import { asteroids } from "../procedural/asteroids.js"
 import { planets } from "../procedural/planets.js"
+
+import { enemy } from '../components/enemy.js'
 
 import { getRandomDeepColor } from "../utils/utils.js"
 
@@ -26,6 +26,8 @@ export const gameworld = (() => {
         this.createPlanets(4); //procedural
         this.createStar();
 
+        this.createEnemies(5)
+
         // this.addGround();
 
         // this.createLoops();
@@ -41,9 +43,14 @@ export const gameworld = (() => {
         this.planetLoader.animatePlanets(playerCurrentPosition, this.repositionObj)
       }
 
+      if (this.enemyLoader) {
+        this.enemyLoader.animateEnemies(playerCurrentPosition)
+      }
+      
       if (this.stars) {
         this.animateStars(playerCurrentPosition);
       }
+
 
       // this.rings.forEach((ring) => {
       //   ring.update();
@@ -88,6 +95,12 @@ export const gameworld = (() => {
       this.scene.background = cubeMap;
       this.scene.backgroundRotation = new THREE.Euler(0, 0, 0);
 
+    }
+
+    createEnemies(enemies){
+      const enemyLoader = new enemy.EnemyLoader(this.scene);
+      enemyLoader.initaliseEnemies(enemies); 
+      this.enemyLoader = enemyLoader
     }
 
     createStarfield(starCount) {

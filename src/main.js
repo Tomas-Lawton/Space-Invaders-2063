@@ -40,6 +40,8 @@ class Game {
 
   initEntities() {
     this.world = new gameworld.World({ scene: this.scene });
+
+    // load user ship
     this.playerEntity = new entity.Entity();
     this.playerShip = new spaceship.Spaceship(this.scene, this.camera, 100);
   }

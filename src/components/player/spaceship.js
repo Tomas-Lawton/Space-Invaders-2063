@@ -1,4 +1,3 @@
-/// create spaceships for user and enemies
 import * as THREE from 'three';
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { third_person_camera } from '../../scene/camera.js';
