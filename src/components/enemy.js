@@ -106,7 +106,7 @@ export const enemy = (() => {
   
       animateForwardMovement(enemy) {
         if (enemy) {
-            let speed = .1; 
+            let speed = .4; 
             let direction = new THREE.Vector3();  
             enemy.getWorldDirection(direction);  // Get the direction the ship is facing            
             direction.multiplyScalar(speed);
@@ -128,7 +128,7 @@ export const enemy = (() => {
       
           const angleToPlayer = enemyDirection.angleTo(directionToPlayer);  // Angle between enemy's direction and direction to player
       
-          // If the enemy is facing the player within the angle threshold
+        //   If the enemy is facing the player within the angle threshold
           if (angleToPlayer < angleThreshold) {
             this.createAndShootLight(enemy);  // Fire the laser
           }
@@ -139,12 +139,11 @@ export const enemy = (() => {
         const direction = new THREE.Vector3();
         enemy.getWorldDirection(direction);  // Get the direction the ship is facing
     
-        // Create the laser
         const laserBeam = new THREE.Mesh(
           new THREE.SphereGeometry(0.2, 16, 16),
           new THREE.MeshStandardMaterial({
             emissive: 0xff0000,        // Red emissive color
-            emissiveIntensity: 30,      // Intensity of the red glow
+            emissiveIntensity: 3,      // Intensity of the red glow
             color: 0xff0000,      
           })
         );
@@ -153,13 +152,9 @@ export const enemy = (() => {
         laserBeam.lookAt(laserBeam.position.clone().add(direction));  // Make the laser face the direction the enemy is facing
         this.scene.add(laserBeam);
     
-        // Apply velocity to the laser
-        const velocity = direction.multiplyScalar(500);  // The velocity of the laser
-    
-        // Add the laser and velocity to active lasers
+        const velocity = direction.multiplyScalar(300);  // The velocity of the laser
         this.activeLasers.push({ laserBeam, velocity, direction });
     
-        // Play sound (if sound is available)
         if (this.lightSound) {
           this.lightSound.currentTime = 0;
           this.lightSound.volume = 0.25;
@@ -171,16 +166,12 @@ export const enemy = (() => {
         this.activeLasers.forEach((laserData, index) => {
           const { laserBeam, velocity } = laserData;
       
-          // Move the laser in the direction of its velocity
           laserBeam.position.add(velocity);
       
-          // Calculate the distance between the laser and the player
           const distanceToPlayer = laserBeam.position.distanceTo(playerCurrentPosition);
-      
-          // If the laser is more than 200 units away from the player, remove it
           if (distanceToPlayer > 200) {
-            this.scene.remove(laserBeam);  // Remove the laser from the scene
-            this.activeLasers.splice(index, 1);  // Remove the laser from the active lasers array
+            this.scene.remove(laserBeam);  
+            this.activeLasers.splice(index, 1); 
           }
         });
       }
