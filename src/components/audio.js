@@ -1,5 +1,5 @@
-import { mapValue } from "./utils.js";
-import { PHYSICS_CONSTANTS } from "./constants.js"
+import { mapValue } from "../utils/utils.js";
+import { PHYSICS_CONSTANTS } from "../utils/constants.js"
 
 export class Audio_Manager {
   constructor(audioContext) {

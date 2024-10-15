@@ -1,5 +1,5 @@
 // DOM Elements
-import { mapValue } from "./utils.js";
+import { mapValue } from "../utils/utils.js";
 
 document.body.style.cursor = "none";
 const velocityBar = document.getElementById("velocity-bar");

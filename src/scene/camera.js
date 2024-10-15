@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { entity } from './entity.js';
-import { mapValue } from "./utils.js";
+import { entity } from '../utils/entity.js';
+import { mapValue } from "../utils/utils.js";
 export const third_person_camera = (() => {
   
   class ThirdPersonCamera extends entity.Component {

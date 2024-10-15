@@ -1,11 +1,11 @@
 /// create spaceships for user and enemies
 import * as THREE from 'three';
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { third_person_camera } from './camera.js';
-import { mapValue } from './utils.js'; // Assuming you have a utility function for mapping values
-import { progressContainer, progressText } from "./dom.js"
-import { PHYSICS_CONSTANTS } from "./constants.js"
-import { cursor, incrementOre } from "./dom.js";
+import { third_person_camera } from '../../scene/camera.js';
+import { mapValue } from '../../utils/utils.js'; // Assuming you have a utility function for mapping values
+import { progressContainer, progressText } from "../dom.js"
+import { PHYSICS_CONSTANTS } from "../../utils/constants.js"
+import { cursor, incrementOre } from "../dom.js";
 
 
 export const spaceship = (() => {

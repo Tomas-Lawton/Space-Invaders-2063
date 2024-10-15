@@ -3,16 +3,17 @@
 body {
   background-color: black;
   margin: 0;
+  font-family: "Exo 2";
+  color: white;
+  font-weight: bold;
+  font-weight: 100;
+  text-transform:uppercase;
 }
 
 h1 {
   font-size: 7em;
-  font-family: "Exo 2";
-  font-weight: 100;
   margin: 0px;
   font-size: 48px;
-  color: white;
-  font-weight: bold;
 }
 
 #progress-container {
@@ -29,26 +30,26 @@ h1 {
   position: absolute;
   left: 25px;
   bottom: 25px;
-  width: 4px;
+  width: 7px;
   height: calc(100% - 50px);
 }
 
 #velocity-bar {
   width: 4px; 
   height: 0px; 
-  background: #9500ff6d;
+  background: #9500ff;
   position: absolute;
   left: 25px;
   bottom: 25px; /* Start filling from the bottom */
-  width: 4px;
+  width: 7px;
 }
 
 #health-bar-background {
   background: rgba(63, 63, 63, 0.283);
   position: absolute;
-  left: 21px;
+  left: 15px;
   bottom: 25px;
-  width: 4px;
+  width: 7px;
   height: calc(100% - 50px);
 }
 
@@ -56,9 +57,9 @@ h1 {
 #health-bar {
   background: rgba(0, 255, 42, 0.695);
   position: absolute;
-  left: 21px;
+  left: 15px;
   bottom: 25px;
-  width: 4px;
+  width: 7px;
   height: calc(100% - 50px);
   transition: height 0.3s ease;
 }
@@ -86,7 +87,6 @@ h1 {
   top: 35px;
   transform: translateX(-50%);
   left: 50%;
-  color: white;
   display: flex;
   gap: 15px;
 }

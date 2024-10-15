@@ -1,4 +1,4 @@
-import { entity } from "./entity.js";
+import { entity } from "../../utils/entity.js";
 
 export const player_input = (() => {
 

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { getRandomDeepColor } from "./utils.js"
+import { getRandomDeepColor } from "../utils/utils.js"
 
 export const planets = (() => {
 class PlanetLoader {

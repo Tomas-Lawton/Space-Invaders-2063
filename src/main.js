@@ -1,15 +1,15 @@
 import * as THREE from "three";
 
 // Modules
-import { Audio_Manager } from "./audio.js";
-import { gameworld } from "./world.js";
-import { spaceship } from "./spaceship.js";
-import { setupGUI } from "./gui.js";
-import { entity } from "./entity.js";
-import { initRenderer, initComposer } from "./renderer.js";
-import { updateVelocityBar, updateHealthBar, progressContainer } from "./dom.js";
-import { player_input } from "./player-input.js";
-import { PHYSICS_CONSTANTS } from "./constants.js"
+import { Audio_Manager } from "./components/audio.js";
+import { gameworld } from "./scene/world.js";
+import { spaceship } from "./components/player/spaceship.js";
+import { setupGUI } from "./components/gui.js";
+import { entity } from "./utils/entity.js";
+import { initRenderer, initComposer } from "./scene/renderer.js";
+import { updateVelocityBar, updateHealthBar, progressContainer } from "./components/dom.js";
+import { player_input } from "./components/player/player-input.js";
+import { PHYSICS_CONSTANTS } from "./utils/constants.js"
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 class Game {
@@ -40,8 +40,8 @@ class Game {
 
   initEntities() {
     this.world = new gameworld.World({ scene: this.scene });
-    // this.playerEntity = new entity.Entity();
-    // this.playerShip = new spaceship.Spaceship(this.scene, this.camera, 100);
+    this.playerEntity = new entity.Entity();
+    this.playerShip = new spaceship.Spaceship(this.scene, this.camera, 100);
   }
 
   async initialize() {

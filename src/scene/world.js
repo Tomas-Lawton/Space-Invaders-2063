@@ -1,12 +1,12 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-import { Particle } from "./Particle.js";
-import { Ring } from "./Ring.js";
-import { asteroids } from "./asteroids.js"
-import { planets } from "./planets.js"
+import { Particle } from "../procedural/particle.js";
+import { Ring } from "../procedural/ring.js";
+import { asteroids } from "../procedural/asteroids.js"
+import { planets } from "../procedural/planets.js"
 
-import { getRandomDeepColor } from "./utils.js"
+import { getRandomDeepColor } from "../utils/utils.js"
 
 export const gameworld = (() => {
   class World {
