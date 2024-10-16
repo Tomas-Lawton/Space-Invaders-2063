@@ -38,9 +38,9 @@ class PlanetLoader {
         planetGroup.add(fogSphere);
         
         planetGroup.position.set(
-            ((Math.random() - 0.5) * 1000),
-            ((Math.random() - 0.5) * 1000),
-            ((Math.random() - 0.5) * 1000)
+            ((Math.random() - 0.5) * 1000) + 800,
+            ((Math.random() - 0.5) * 1000) + 800,
+            ((Math.random() - 0.5) * 1000) + 800
         );
 
         this.scene.add(planetGroup); 

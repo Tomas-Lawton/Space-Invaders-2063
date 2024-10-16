@@ -85,7 +85,7 @@ export const enemy = (() => {
   
       phaseTowardsPlayer(enemy, playerCurrentPosition) {
         if (enemy) {
-            const phaseSpeed = 0.006;  // Adjust for smoothness
+            const phaseSpeed = 0.005;  // Adjust for smoothness
             
             // Calculate the direction to the player
             const directionToPlayer = new THREE.Vector3();

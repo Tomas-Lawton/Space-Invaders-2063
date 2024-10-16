@@ -28,7 +28,7 @@ export const gameworld = (() => {
 
         this.createEnemies(4)
 
-        // this.addGround();
+        this.addGround();
 
         // this.createLoops();
       }
@@ -204,7 +204,7 @@ export const gameworld = (() => {
 
     addGround () {
     // Ground
-    const r = 20;
+    const r = 10;
     const segments = 64; 
     const groundGeometry = new THREE.CircleGeometry(r, segments);
     groundGeometry.rotateX(-Math.PI / 2);
@@ -240,11 +240,11 @@ export const gameworld = (() => {
 
     // ring lights
 
-    const glowGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    const glowGeometry = new THREE.SphereGeometry(0.2, 8, 8);
     const glowMaterial = new THREE.MeshStandardMaterial({
-      emissive: 0xffffff, 
-      emissiveIntensity: 1,
-      color: 0x777777,
+      emissive: 0xff4500,        // Emissive color for a dystopian orange glow
+      emissiveIntensity: 4,    // Adjust the intensity of the glow (lower for subtler, higher for more glow)
+      color: 0x2f2f2f,          // Dark, grayish color for the base material
     });
   
     const generateRingPoints = (radius, pointCount, h) => {
@@ -258,7 +258,7 @@ export const gameworld = (() => {
       }
     };
   
-    let numRings = 5;
+    let numRings = 3;
     let r2 = 4;
     for (let i = 0; i < numRings; i++) {
       generateRingPoints(i * r2, i * 10, i);
