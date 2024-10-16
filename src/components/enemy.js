@@ -13,17 +13,18 @@ export const enemy = (() => {
         this.enemies = [];
         this.loader = new GLTFLoader().setPath('public/ships/ship_0/');
         this.activeLasers = []
-
-        this.lightSound = new Audio('public/audio/pew.mp3');
+        this.shootCooldown = 600
+        this.lightSound = new Audio('public/audio/enemy_pew.mp3');
     }
   
       // Initialise enemies without promises, using callback in the loader
       initaliseEnemies(numEnemies) {
           for (let i = 0; i < numEnemies; i++) {
               this.createEnemy((enemyGroup) => {
+                  enemyGroup.lastShotTime = 0;
                   this.scene.add(enemyGroup); 
                   this.enemies.push(enemyGroup);
-                  console.log("Enemy added:", enemyGroup);
+                //   console.log("Enemy added:", enemyGroup);
               });
           }
       }
@@ -36,8 +37,8 @@ export const enemy = (() => {
             enemyGroup.position.set(
                 (Math.random() - 0.5) * 100,
                 (Math.random() - 0.5) * 100,
-                // (Math.random() - 0.5) * 1000
-                300
+                (Math.random() - 0.5) * 100
+                // 300
             );
   
             const loadedModel = gltf.scene;
@@ -106,7 +107,7 @@ export const enemy = (() => {
   
       animateForwardMovement(enemy) {
         if (enemy) {
-            let speed = .4; 
+            let speed = .2; 
             let direction = new THREE.Vector3();  
             enemy.getWorldDirection(direction);  // Get the direction the ship is facing            
             direction.multiplyScalar(speed);
@@ -115,8 +116,10 @@ export const enemy = (() => {
       }
 
       checkFiringPosition(enemy, playerCurrentPosition) {
+        const currentTime = performance.now();  //laser cooldown
+
         const distanceThreshold = 1000;  // Distance threshold for firing
-        const angleThreshold = Math.PI / 8;  // 5 degrees in radians      
+        const angleThreshold = Math.PI / 5;  // 5 degrees in radians      
         const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
       
         if (distanceToPlayer < distanceThreshold) {
@@ -128,40 +131,41 @@ export const enemy = (() => {
       
           const angleToPlayer = enemyDirection.angleTo(directionToPlayer);  // Angle between enemy's direction and direction to player
       
-        //   If the enemy is facing the player within the angle threshold
-          if (angleToPlayer < angleThreshold) {
-            this.createAndShootLight(enemy);  // Fire the laser
+        if (angleToPlayer < angleThreshold && (currentTime - enemy.lastShotTime) > this.shootCooldown) {
+            this.createAndShootLight(enemy);
+            enemy.lastShotTime = currentTime;  // Update last shot time
           }
         }
       }
     
       createAndShootLight(enemy) {
         const direction = new THREE.Vector3();
-        enemy.getWorldDirection(direction);  // Get the direction the ship is facing
-    
+        enemy.getWorldDirection(direction);
+      
         const laserBeam = new THREE.Mesh(
           new THREE.SphereGeometry(0.2, 16, 16),
           new THREE.MeshStandardMaterial({
-            emissive: 0xff0000,        // Red emissive color
-            emissiveIntensity: 3,      // Intensity of the red glow
-            color: 0xff0000,      
+            emissive: 0xff0000,
+            emissiveIntensity: 3,
+            color: 0xff0000,
           })
         );
-    
-        laserBeam.position.copy(enemy.position);  // Start the laser at the enemy's position
-        laserBeam.lookAt(laserBeam.position.clone().add(direction));  // Make the laser face the direction the enemy is facing
+      
+        laserBeam.position.copy(enemy.position);
+        laserBeam.lookAt(laserBeam.position.clone().add(direction));
         this.scene.add(laserBeam);
-    
-        const velocity = direction.multiplyScalar(300);  // The velocity of the laser
+      
+        console.log(direction)
+        const velocity = direction.multiplyScalar(.1);  // higher is slower
         this.activeLasers.push({ laserBeam, velocity, direction });
-    
+      
         if (this.lightSound) {
           this.lightSound.currentTime = 0;
           this.lightSound.volume = 0.25;
           this.lightSound.play();
         }
       }
-    
+
       updateLasers(playerCurrentPosition) {
         this.activeLasers.forEach((laserData, index) => {
           const { laserBeam, velocity } = laserData;
@@ -169,7 +173,7 @@ export const enemy = (() => {
           laserBeam.position.add(velocity);
       
           const distanceToPlayer = laserBeam.position.distanceTo(playerCurrentPosition);
-          if (distanceToPlayer > 200) {
+          if (distanceToPlayer > 50) {
             this.scene.remove(laserBeam);  
             this.activeLasers.splice(index, 1); 
           }
