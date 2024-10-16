@@ -15,6 +15,7 @@ export const enemy = (() => {
         this.activeLasers = []
         this.shootCooldown = 200
         this.lightSound = new Audio('public/audio/enemy_pew.mp3');
+        this.firingDistance = 100
     }
   
       // Initialise enemies without promises, using callback in the loader
@@ -85,7 +86,7 @@ export const enemy = (() => {
   
       phaseTowardsPlayer(enemy, playerCurrentPosition) {
         if (enemy) {
-            const phaseSpeed = 0.005;  // Adjust for smoothness
+            const phaseSpeed = 0.007;  // Adjust for smoothness
             
             // Calculate the direction to the player
             const directionToPlayer = new THREE.Vector3();
@@ -105,7 +106,7 @@ export const enemy = (() => {
   
       animateForwardMovement(enemy) {
         if (enemy) {
-            let speed = .6; 
+            let speed = .4; 
             let direction = new THREE.Vector3();  
             enemy.getWorldDirection(direction);  // Get the direction the ship is facing            
             direction.multiplyScalar(speed);
@@ -116,7 +117,7 @@ export const enemy = (() => {
       checkFiringPosition(enemy, playerCurrentPosition) {
         const currentTime = performance.now();  //laser cooldown
 
-        const distanceThreshold = 1000;  // Distance threshold for firing
+        const distanceThreshold = this.firingDistance;  // Distance threshold for firing
         const angleThreshold = Math.PI / 8;  // 5 degrees in radians      
         const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
       
@@ -154,7 +155,7 @@ export const enemy = (() => {
         this.scene.add(laserBeam);
       
         console.log(direction)
-        const velocity = direction.multiplyScalar(.2);  // higher is slower
+        const velocity = direction.multiplyScalar(1);  // higher is slower
         this.activeLasers.push({ laserBeam, velocity, direction });
       
         if (this.lightSound) {
@@ -171,7 +172,7 @@ export const enemy = (() => {
           laserBeam.position.add(velocity);
       
           const distanceToPlayer = laserBeam.position.distanceTo(playerCurrentPosition);
-          if (distanceToPlayer > 50) {
+          if (distanceToPlayer > this.firingDistance) {
             this.scene.remove(laserBeam);  
             this.activeLasers.splice(index, 1); 
           }
