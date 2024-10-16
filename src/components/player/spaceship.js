@@ -213,7 +213,7 @@ export const spaceship = (() => {
                                 this.softBoom.play(); 
                             }
                               this.startRumbleEffect(asteroid);
-                              asteroid.velocity.add(velocity.clone().multiplyScalar(0.005)) //smack it away a bit
+                              asteroid.velocity.add(velocity.clone().multiplyScalar(0.002)) //smack it away a bit
 
                               this.showHealthBar(asteroid); 
   

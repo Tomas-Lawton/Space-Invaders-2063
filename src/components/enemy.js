@@ -13,7 +13,7 @@ export const enemy = (() => {
         this.enemies = [];
         this.loader = new GLTFLoader().setPath('public/ships/ship_0/');
         this.activeLasers = []
-        this.shootCooldown = 600
+        this.shootCooldown = 200
         this.lightSound = new Audio('public/audio/enemy_pew.mp3');
     }
   
@@ -35,31 +35,32 @@ export const enemy = (() => {
           (gltf) => {
             const enemyGroup = new THREE.Group();
             enemyGroup.position.set(
-                (Math.random() - 0.5) * 100,
-                (Math.random() - 0.5) * 100,
+                (Math.random() - 0.5) * 50,
+                (Math.random() - 0.5) * 50,
                 (Math.random() - 0.5) * 100
-                // 300
+                // 100
             );
-  
+            
             const loadedModel = gltf.scene;
             loadedModel.traverse(
               (child) => child.isMesh && (child.castShadow = child.receiveShadow = true)
             );
             loadedModel.rotation.y = 1.5 * Math.PI;
-            loadedModel.position.z += 22;
             loadedModel.scale.set(.05, .05, .05);
             enemyGroup.add(loadedModel);
-  
+            
             // Add lights
             const ambientLightColor = 0x660099;
-            const ambientLight = new THREE.PointLight(ambientLightColor, 1, 50);
+            const ambientLight = new THREE.PointLight(ambientLightColor, 3, 50);  // Increased intensity to 3
             ambientLight.position.set(0, 5, 0);
             enemyGroup.add(ambientLight);
-  
-            const spotLight = new THREE.SpotLight(0xff6600, 3, 5, Math.PI * 1.1, 0.2);
+            
+            const spotLight = new THREE.SpotLight(0xff6600, 6, 10, Math.PI * 1.1, 0.2);  // Increased intensity to 6, range to 10
             spotLight.position.copy(enemyGroup.position);
             enemyGroup.add(spotLight);
-  
+            
+            enemyGroup.rotation.y =  Math.PI;
+            
             // Use the callback after the enemy is fully loaded
             if (callback) {
               callback(enemyGroup);
@@ -84,30 +85,27 @@ export const enemy = (() => {
   
       phaseTowardsPlayer(enemy, playerCurrentPosition) {
         if (enemy) {
-            let phaseSpeed = 0.05;  // Speed at which the ship adjusts its direction towards the player
+            const phaseSpeed = 0.006;  // Adjust for smoothness
             
-            // Calculate the direction towards the player
-            let directionToPlayer = new THREE.Vector3();
-            directionToPlayer.subVectors(playerCurrentPosition, enemy.position);
-            
-            // Normalize the direction vector and adjust it towards the player
-            directionToPlayer.normalize();
-            
-            // The ship's current direction
-            let currentDirection = new THREE.Vector3();
-            enemy.getWorldDirection(currentDirection);
-            
-            // Gradually adjust the current direction to face the player, but retain some of the original direction
-            let newDirection = currentDirection.lerp(directionToPlayer, phaseSpeed);
-            
-            // Set the ship's direction to the new interpolated direction
-            enemy.lookAt(enemy.position.clone().add(newDirection));
+            // Calculate the direction to the player
+            const directionToPlayer = new THREE.Vector3();
+            directionToPlayer.subVectors(playerCurrentPosition, enemy.position).normalize();
+    
+            // Create a quaternion for the rotation towards the player
+            const targetQuaternion = new THREE.Quaternion();
+            targetQuaternion.setFromUnitVectors(
+                new THREE.Vector3(0, 0, 1), // Default forward direction of the enemy
+                directionToPlayer           // Target direction to the player
+            );
+    
+            // Spherically interpolate (slerp) towards the target orientation
+            enemy.quaternion.slerp(targetQuaternion, phaseSpeed);
         }
-      }
+    }
   
       animateForwardMovement(enemy) {
         if (enemy) {
-            let speed = .2; 
+            let speed = .6; 
             let direction = new THREE.Vector3();  
             enemy.getWorldDirection(direction);  // Get the direction the ship is facing            
             direction.multiplyScalar(speed);
@@ -119,7 +117,7 @@ export const enemy = (() => {
         const currentTime = performance.now();  //laser cooldown
 
         const distanceThreshold = 1000;  // Distance threshold for firing
-        const angleThreshold = Math.PI / 5;  // 5 degrees in radians      
+        const angleThreshold = Math.PI / 8;  // 5 degrees in radians      
         const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
       
         if (distanceToPlayer < distanceThreshold) {
@@ -146,7 +144,7 @@ export const enemy = (() => {
           new THREE.SphereGeometry(0.2, 16, 16),
           new THREE.MeshStandardMaterial({
             emissive: 0xff0000,
-            emissiveIntensity: 3,
+            emissiveIntensity: 10,
             color: 0xff0000,
           })
         );
@@ -156,12 +154,12 @@ export const enemy = (() => {
         this.scene.add(laserBeam);
       
         console.log(direction)
-        const velocity = direction.multiplyScalar(.1);  // higher is slower
+        const velocity = direction.multiplyScalar(.2);  // higher is slower
         this.activeLasers.push({ laserBeam, velocity, direction });
       
         if (this.lightSound) {
           this.lightSound.currentTime = 0;
-          this.lightSound.volume = 0.25;
+          this.lightSound.volume = 0.15;
           this.lightSound.play();
         }
       }

@@ -24,9 +24,9 @@ export const gameworld = (() => {
         this.createStarfield(2000); //procedural
         this.createAsteroidSystems(5); //procedural
         this.createPlanets(4); //procedural
-        // this.createStar();
+        this.createStar();
 
-        this.createEnemies(5)
+        this.createEnemies(4)
 
         // this.addGround();
 
@@ -177,9 +177,23 @@ export const gameworld = (() => {
   }
   
   repositionObj(obj1Position, obj2Position) {
-    obj1Position.x = obj2Position.x + (Math.random() * 600 - 300); // New x position
-    obj1Position.y = obj2Position.y + (Math.random() * 600 - 300); // New y position
-    obj1Position.z = obj2Position.z + (Math.random() * 600 - 300); // New z position
+    // Generate random direction (unit vector)
+    const angle1 = Math.random() * Math.PI * 2; // Random angle around the Y axis
+    const angle2 = Math.acos(2 * Math.random() - 1); // Random angle for elevation
+    
+    // Calculate direction in 3D space using spherical coordinates
+    const direction = {
+      x: Math.sin(angle2) * Math.cos(angle1),
+      y: Math.sin(angle2) * Math.sin(angle1),
+      z: Math.cos(angle2)
+    };
+  
+    // Place obj1 at least 300 units away from obj2
+    const distance = 700 + Math.random() * 700; // Ensure the distance is at least 300
+  
+    obj1Position.x = obj2Position.x + direction.x * distance;
+    obj1Position.y = obj2Position.y + direction.y * distance;
+    obj1Position.z = obj2Position.z + direction.z * distance;
   }
 
   reposition(index, userPosition) {

@@ -28,7 +28,7 @@ class PlanetLoader {
     // Creates a group of planet objects, including model and fog sphere
     createPlanetGroup(gltf) {
         const planetGroup = new THREE.Group();
-        const scale = 100;
+        const scale = (Math.random() - 0.5) * 600
         const model = this.createPlanetModel(gltf, scale);
         
         const randomColor = getRandomDeepColor(); 
@@ -38,9 +38,9 @@ class PlanetLoader {
         planetGroup.add(fogSphere);
         
         planetGroup.position.set(
-            (Math.random() - 0.5) * 1000,
-            (Math.random() - 0.5) * 1000,
-            (Math.random() - 0.5) * 1000
+            ((Math.random() - 0.5) * 1000),
+            ((Math.random() - 0.5) * 1000),
+            ((Math.random() - 0.5) * 1000)
         );
 
         this.scene.add(planetGroup); 
