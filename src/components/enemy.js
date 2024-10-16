@@ -59,8 +59,8 @@ export const enemy = (() => {
             // glowPoint.position.set(0, 0, 0);
             // enemyGroup.add(glowPoint);
     
-            const redLight = new THREE.PointLight(0xff0000, 2, 200);  
-            redLight.position.set(0, 0, 0); 
+            const redLight = new THREE.PointLight(0xff0000, 15, 200);  
+            redLight.position.set(0, 0, -2.5); 
             enemyGroup.add(redLight);
     
             enemyGroup.rotation.y = Math.PI;
@@ -89,7 +89,7 @@ export const enemy = (() => {
   
       phaseTowardsPlayer(enemy, playerCurrentPosition) {
         if (enemy) {
-            const phaseSpeed = 0.004;  // Adjust for smoothness
+            const phaseSpeed = 0.001;  // Adjust for smoothness
             
             // Calculate the direction to the player
             const directionToPlayer = new THREE.Vector3();
@@ -109,7 +109,7 @@ export const enemy = (() => {
   
       animateForwardMovement(enemy) {
         if (enemy) {
-            let speed = .2; 
+            let speed = .3; 
             let direction = new THREE.Vector3();  
             enemy.getWorldDirection(direction);  // Get the direction the ship is facing            
             direction.multiplyScalar(speed);
@@ -148,7 +148,7 @@ export const enemy = (() => {
           new THREE.SphereGeometry(0.2, 16, 16),
           new THREE.MeshStandardMaterial({
             emissive: 0xff0000,
-            emissiveIntensity: 20,
+            emissiveIntensity: 12,
             color: 0xff0000,
           })
         );
