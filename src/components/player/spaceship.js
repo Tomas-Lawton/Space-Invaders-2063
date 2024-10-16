@@ -180,9 +180,9 @@ export const spaceship = (() => {
       this.velocityRectangle.position.z = rectangleLength / 2;
     }
 
-    checkCollision(laserBeam, asteroid) {
-      const laserBox = new THREE.Box3().setFromObject(laserBeam);
-      const asteroidBox = new THREE.Box3().setFromObject(asteroid);
+    checkCollision(mainObj, colisionObj) {
+      const laserBox = new THREE.Box3().setFromObject(mainObj);
+      const asteroidBox = new THREE.Box3().setFromObject(colisionObj);
       if (laserBox.intersectsBox(asteroidBox)) {
         console.log('Collision');
         return true; // Collision detected
@@ -385,49 +385,65 @@ removeHealthBar(asteroid) {
               return;
             }
             if (this.checkCollision(this.mesh, asteroid)) {
-              console.log('HIT USER');
-              this.damageShip(18);
-
-              // let sinY = Math.sin(this.mesh.rotation.y); // Sine of Y rotation for lateral movement
-              // let cosY = Math.cos(this.mesh.rotation.y); // Cosine of Y rotation for forward movement
-              // let cosX = Math.cos(this.mesh.children[0].rotation.x); // Cosine of X rotation for vertical movement
-              // const hitVec = new THREE.Vector3();
-              // // Set the ship's movement vector
-              // hitVec.set(
-              //   sinY * cosX * this.forwardVelocity, // Horizontal movement along X-axis (lateral)
-              //   -Math.sin(this.mesh.children[0].rotation.x) * this.forwardVelocity + this.upwardVelocity, // Vertical movement along Y-axis (pitch control)
-              //   cosY * cosX * this.forwardVelocity // Forward movement along Z-axis
-              // );
-              
-              // // Apply the ship's movement vector to the asteroid to make it move in the same direction
-              // asteroid.velocity.add(hitVec.clone().multiplyScalar(0.5)); // Smack the asteroid away in the same direction
-
-
-              if (this.boomSound) {
-                this.boomSound.currentTime = 0;
-                this.boomSound.volume = 0.5;
-                this.boomSound.play();
-              }
-              if (this.alarmSound) {
-                this.alarmSound.currentTime = 0;
-                this.alarmSound.volume = 0.5;
-                this.alarmSound.play();
-              }
-              this.startRumbleEffect(this.mesh);
-              this.lastCollisionCheck = currentTimestamp;
-              return;
+             this.userHit(40)
+             this.lastCollisionCheck = currentTimestamp;
+             return
             }
           });
         }
       }
     }
-    Update(forwardAcceleration, upwardAcceleration, timeElapsed, audioManager, asteroidLoader) {
+
+    userHit(damage) {
+      console.log('HIT USER');
+      this.damageShip(damage);
+      if (this.boomSound) {
+        this.boomSound.currentTime = 0;
+        this.boomSound.volume = 0.5;
+        this.boomSound.play();
+      }
+      if (this.alarmSound) {
+        this.alarmSound.currentTime = 0;
+        this.alarmSound.volume = 0.5;
+        this.alarmSound.play();
+      }
+      this.startRumbleEffect(this.mesh);
+    }
+
+    checkEnemyLaserCollisions(enemyLoader) {
+      const currentTimestamp = performance.now();
+    
+      if (this.lastCollisionCheck === undefined) {
+        this.lastCollisionCheck = currentTimestamp;
+      }
+    
+      if (currentTimestamp - this.lastCollisionCheck < 300) {
+        return;
+      }
+
+      if (enemyLoader.activeLasers) {
+        enemyLoader.activeLasers.forEach(laserData => {
+          const { laserBeam, velocity } = laserData;
+            if (this.checkCollision(this.mesh, laserBeam)) {
+             this.userHit(10)
+             this.lastCollisionCheck = currentTimestamp;
+             return
+            }
+        })
+      }
+    }
+
+
+
+    Update(forwardAcceleration, upwardAcceleration, timeElapsed, audioManager, asteroidLoader, enemyLoader) {
       this.calculateRotation();
       this.calculateVelocity(forwardAcceleration, upwardAcceleration, timeElapsed);
       this.moveSpaceship();
       this.handleLaserMovement(asteroidLoader);
       this.updateVelocityRectangle(this.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
       this.checkAsteroidCollisions(asteroidLoader)
+      this.checkEnemyLaserCollisions(enemyLoader)
+
       this.thirdPersonCamera.Update(timeElapsed);
       audioManager.updateSpaceshipVolume(this.forwardVelocity)
     }

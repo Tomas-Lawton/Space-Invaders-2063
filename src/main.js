@@ -96,7 +96,7 @@ class Game {
       if (input) {
         // update ship
         if (this.playerShip && this.world && this.audioManager){
-          this.playerShip.Update(input.forwardAcceleration, input.upwardAcceleration, timeElapsed, this.audioManager, this.world.asteroidLoader);
+          this.playerShip.Update(input.forwardAcceleration, input.upwardAcceleration, timeElapsed, this.audioManager, this.world.asteroidLoader, this.world.enemyLoader);
           // update hud
           updateVelocityBar(this.playerShip.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
           updateHealthBar(this.playerShip.health, this.playerShip.maxHealth)

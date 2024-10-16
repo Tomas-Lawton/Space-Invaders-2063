@@ -25,7 +25,6 @@ export const enemy = (() => {
                   enemyGroup.lastShotTime = 0;
                   this.scene.add(enemyGroup); 
                   this.enemies.push(enemyGroup);
-                //   console.log("Enemy added:", enemyGroup);
               });
           }
       }
@@ -39,7 +38,6 @@ export const enemy = (() => {
                 (Math.random() - 0.5) * 50,
                 (Math.random() - 0.5) * 50,
                 (Math.random() - 0.5) * 100
-                // 100
             );
             
             const loadedModel = gltf.scene;
@@ -49,19 +47,24 @@ export const enemy = (() => {
             loadedModel.rotation.y = 1.5 * Math.PI;
             loadedModel.scale.set(.05, .05, .05);
             enemyGroup.add(loadedModel);
-            
-            // Add lights
-            const ambientLightColor = 0x660099;
-            const ambientLight = new THREE.PointLight(ambientLightColor, 3, 50);  // Increased intensity to 3
-            ambientLight.position.set(0, 5, 0);
-            enemyGroup.add(ambientLight);
-            
-            const spotLight = new THREE.SpotLight(0xff6600, 6, 10, Math.PI * 1.1, 0.2);  // Increased intensity to 6, range to 10
-            spotLight.position.copy(enemyGroup.position);
-            enemyGroup.add(spotLight);
-            
-            enemyGroup.rotation.y =  Math.PI;
-            
+
+            // const glowGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+            // const glowMaterial = new THREE.MeshStandardMaterial({
+            //   emissive: 0xff4500,        // Emissive color for a dystopian orange glow
+            //   emissiveIntensity: 4,    // Adjust the intensity of the glow (lower for subtler, higher for more glow)
+            //   color: 0x2f2f2f,          // Dark, grayish color for the base material
+            // });
+
+            // const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
+            // glowPoint.position.set(0, 0, 0);
+            // enemyGroup.add(glowPoint);
+    
+            const redLight = new THREE.PointLight(0xff0000, 2, 200);  
+            redLight.position.set(0, 0, 0); 
+            enemyGroup.add(redLight);
+    
+            enemyGroup.rotation.y = Math.PI;
+    
             // Use the callback after the enemy is fully loaded
             if (callback) {
               callback(enemyGroup);
@@ -72,7 +75,7 @@ export const enemy = (() => {
             console.error("Error loading enemy model:", error);
           }
         );
-      }
+    }
   
       animateEnemies(playerCurrentPosition) {
         this.enemies.forEach(enemy => {
@@ -86,7 +89,7 @@ export const enemy = (() => {
   
       phaseTowardsPlayer(enemy, playerCurrentPosition) {
         if (enemy) {
-            const phaseSpeed = 0.007;  // Adjust for smoothness
+            const phaseSpeed = 0.004;  // Adjust for smoothness
             
             // Calculate the direction to the player
             const directionToPlayer = new THREE.Vector3();
@@ -106,7 +109,7 @@ export const enemy = (() => {
   
       animateForwardMovement(enemy) {
         if (enemy) {
-            let speed = .4; 
+            let speed = .2; 
             let direction = new THREE.Vector3();  
             enemy.getWorldDirection(direction);  // Get the direction the ship is facing            
             direction.multiplyScalar(speed);
@@ -145,7 +148,7 @@ export const enemy = (() => {
           new THREE.SphereGeometry(0.2, 16, 16),
           new THREE.MeshStandardMaterial({
             emissive: 0xff0000,
-            emissiveIntensity: 10,
+            emissiveIntensity: 20,
             color: 0xff0000,
           })
         );

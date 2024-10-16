@@ -26,7 +26,7 @@ export const gameworld = (() => {
         this.createPlanets(4); //procedural
         this.createStar();
 
-        this.createEnemies(4)
+        this.createEnemies(5)
 
         this.addGround();
 
