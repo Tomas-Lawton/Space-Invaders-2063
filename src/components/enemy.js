@@ -146,10 +146,10 @@ export const enemy = (() => {
         enemy.getWorldDirection(direction);
       
         const laserBeam = new THREE.Mesh(
-          new THREE.SphereGeometry(0.2, 16, 16),
+          new THREE.SphereGeometry(0.3, 20, 20),
           new THREE.MeshStandardMaterial({
             emissive: 0xff0000,
-            emissiveIntensity: 12,
+            emissiveIntensity: 18,
             color: 0xff0000,
           })
         );

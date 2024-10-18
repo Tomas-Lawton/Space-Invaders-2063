@@ -474,9 +474,9 @@ export const spaceship = (() => {
 
       if (enemyLoader.activeLasers) {
         enemyLoader.activeLasers.forEach((laserData) => {
-          const { laserBeam, velocity } = laserData;
+          const { laserBeam, _ } = laserData;
           if (this.checkCollision(this.mesh, laserBeam)) {
-            this.userHit(10);
+            this.userHit(23);
             this.lastCollisionCheck = currentTimestamp;
             return;
           }
