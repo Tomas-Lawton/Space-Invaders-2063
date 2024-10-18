@@ -64,13 +64,15 @@ h1 {
   transition: height 0.3s ease;
 }
 
-.asteroid-health-bar {
+.health-bar {
   position: absolute;
   background-color: green;
   height: 5px;
   transition: width 0.2s;
-  z-index: 10; /* Ensure health bar appears above other elements */
+  z-index: 10; 
 }
+
+
 
 #custom-cursor {
   width: 35px;

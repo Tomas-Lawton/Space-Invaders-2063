@@ -1,11 +1,10 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { third_person_camera } from '../../scene/camera.js';
-import { mapValue } from '../../utils/utils.js'; // Assuming you have a utility function for mapping values
-import { progressContainer, progressText } from "../dom.js"
-import { PHYSICS_CONSTANTS } from "../../utils/constants.js"
+import { third_person_camera } from "../../scene/camera.js";
+import { mapValue } from "../../utils/utils.js"; // Assuming you have a utility function for mapping values
+import { progressContainer, progressText } from "../dom.js";
+import { PHYSICS_CONSTANTS } from "../../utils/constants.js";
 import { cursor, incrementOre } from "../dom.js";
-
 
 export const spaceship = (() => {
   class Spaceship {
@@ -19,33 +18,36 @@ export const spaceship = (() => {
         scale: 0.08,
       };
 
-      this.loader = new GLTFLoader().setPath('public/ships/ship_0/');
-      
+      this.loader = new GLTFLoader().setPath("public/ships/ship_0/");
+
       this.mesh = null; // 3d
       this.thirdPersonCamera = null; // follow cam
 
-      this.velocityRectangle = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), new THREE.MeshStandardMaterial({
-        emissive: 0xc87dff,
-        emissiveIntensity: 3,
-        color: 0x9400ff,
-        side: THREE.DoubleSide,
-      }));
+      this.velocityRectangle = new THREE.Mesh(
+        new THREE.BoxGeometry(3, 3, 3),
+        new THREE.MeshStandardMaterial({
+          emissive: 0xc87dff,
+          emissiveIntensity: 3,
+          color: 0x9400ff,
+          side: THREE.DoubleSide,
+        })
+      );
 
-      this.lightSound = new Audio('public/audio/pew.mp3');
-      this.boomSound = new Audio('public/audio/boom.mp3');
-      this.softBoom = new Audio('public/audio/soft_boom.mp3');
-      this.alarmSound = new Audio('public/audio/alarm.mp3');
-      this.deadSound = new Audio('public/audio/cool1.mp3');
+      this.lightSound = new Audio("public/audio/pew.mp3");
+      this.boomSound = new Audio("public/audio/boom.mp3");
+      this.softBoom = new Audio("public/audio/soft_boom.mp3");
+      this.alarmSound = new Audio("public/audio/alarm.mp3");
+      this.deadSound = new Audio("public/audio/cool1.mp3");
 
-      this.forwardVelocity = 0
-      this.upwardVelocity = 0
+      this.forwardVelocity = 0;
+      this.upwardVelocity = 0;
 
       this.activeLasers = [];
 
-      this.setHealth(health, true)
-      this.damageAmount = 26
+      this.setHealth(health, true);
+      this.damageAmount = 26;
 
-      return this
+      return this;
     }
 
     damageShip(damage) {
@@ -54,23 +56,23 @@ export const spaceship = (() => {
       if (this.health <= 0) {
         if (this.deadSound) {
           this.deadSound.currentTime = 0;
-          this.deadSound.volume = 0.5; 
-          this.deadSound.play(); 
-      }
-        console.log('Youd Died')
+          this.deadSound.volume = 0.5;
+          this.deadSound.play();
+        }
+        console.log("Youd Died");
       }
     }
 
     setHealth(health, init = false) {
-      this.health = health
+      this.health = health;
       if (init) {
-        this.maxHealth = health
+        this.maxHealth = health;
       }
     }
 
     loadSpaceship() {
       this.loader.load(
-        'scene.gltf',
+        "scene.gltf",
         (gltf) => {
           // PLAYER (it's a mesh in a mesh)
           this.mesh = new THREE.Group();
@@ -81,7 +83,8 @@ export const spaceship = (() => {
 
           // Set shadow properties and initial rotation
           loadedModel.traverse(
-            (child) => child.isMesh && (child.castShadow = child.receiveShadow = true)
+            (child) =>
+              child.isMesh && (child.castShadow = child.receiveShadow = true)
           );
           loadedModel.rotation.y = 1.5 * Math.PI;
           loadedModel.position.z += 22;
@@ -97,7 +100,13 @@ export const spaceship = (() => {
           ambientLight.position.set(0, 5, 0);
           tempObjectGroup.add(ambientLight);
 
-          const spotLight = new THREE.SpotLight(0xff6600, 3, 5, Math.PI * 1.1, 0.2);
+          const spotLight = new THREE.SpotLight(
+            0xff6600,
+            3,
+            5,
+            Math.PI * 1.1,
+            0.2
+          );
           spotLight.position.copy(tempObjectGroup.position);
           tempObjectGroup.add(spotLight);
 
@@ -118,11 +127,11 @@ export const spaceship = (() => {
           this.updateSpaceshipPosition();
 
           // Hide loading screen
-          progressContainer.style.display = 'none';
-          return this.mesh
+          progressContainer.style.display = "none";
+          return this.mesh;
         },
         (xhr) => {
-          let progressAmount = (xhr.loaded / xhr.total) * 100
+          let progressAmount = (xhr.loaded / xhr.total) * 100;
           progressText.innerHTML = `LOADING ${progressAmount}/100`;
         },
         (error) => {
@@ -151,11 +160,14 @@ export const spaceship = (() => {
       const direction = new THREE.Vector3();
       this.mesh.children[0].getWorldDirection(direction);
       const laserPosition = this.mesh.position.clone();
-      const laserBeam = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({
-        emissive: 0xc87dff,
-        emissiveIntensity: 3,
-        color: 0x9400ff,
-      }));
+      const laserBeam = new THREE.Mesh(
+        new THREE.SphereGeometry(0.2, 16, 16),
+        new THREE.MeshStandardMaterial({
+          emissive: 0xc87dff,
+          emissiveIntensity: 3,
+          color: 0x9400ff,
+        })
+      );
 
       laserBeam.position.copy(laserPosition);
       laserBeam.lookAt(laserPosition.add(direction));
@@ -171,12 +183,20 @@ export const spaceship = (() => {
       this.activeLasers.push({ laserBeam, velocity, direction });
     }
 
-
-
     updateVelocityRectangle(currentVelocity, maxVelocity) {
-      const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, -150);
+      const rectangleLength = mapValue(
+        currentVelocity,
+        0,
+        maxVelocity,
+        0,
+        -150
+      );
       this.velocityRectangle.geometry.dispose(); // Dispose of the old geometry
-      this.velocityRectangle.geometry = new THREE.BoxGeometry(3, 3, rectangleLength); // Adjust width and height as needed
+      this.velocityRectangle.geometry = new THREE.BoxGeometry(
+        3,
+        3,
+        rectangleLength
+      ); // Adjust width and height as needed
       this.velocityRectangle.position.z = rectangleLength / 2;
     }
 
@@ -184,163 +204,194 @@ export const spaceship = (() => {
       const laserBox = new THREE.Box3().setFromObject(mainObj);
       const asteroidBox = new THREE.Box3().setFromObject(colisionObj);
       if (laserBox.intersectsBox(asteroidBox)) {
-        console.log('Collision');
+        console.log("Collision");
         return true; // Collision detected
       }
       return false; // No collision detected
     }
 
-    handleLaserMovement(asteroidLoader) {
+    handleLaserMovement(asteroidLoader, enemyLoader) {
       if (this.activeLasers) {
-          this.activeLasers.forEach((beam, index) => {
-              const { laserBeam, velocity } = beam;
-              laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
-              if (asteroidLoader.asteroidSystem) {
-                  for (const system of asteroidLoader.asteroidSystem) {
-                      system.children.forEach(asteroid => {
-                        if (asteroid instanceof THREE.Light) {
-                          return
-                        }
-                          if (this.checkCollision(laserBeam, asteroid)) {
-                            // HIT ASTEROID WITH LASER
-                              this.scene.remove(laserBeam);
-                              this.activeLasers.splice(index, 1);
-  
-                              asteroid.health -= this.damageAmount; 
-                              if (this.softBoom) {
-                                this.softBoom.currentTime = 0;
-                                this.softBoom.volume = 0.5; 
-                                this.softBoom.play(); 
-                            }
-                              this.startRumbleEffect(asteroid);
-                              asteroid.velocity.add(velocity.clone().multiplyScalar(0.002)) //smack it away a bit
+        this.activeLasers.forEach((beam, index) => {
+          const { laserBeam, velocity } = beam;
+          laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
 
-                              this.showHealthBar(asteroid); 
-  
-                              if (asteroid.health <= 0) {
-                                  
-                                  this.removeHealthBar(asteroid); 
-                                  asteroid.parent.remove(asteroid);
-                                  this.playSound(); 
-                                  incrementOre(asteroid.type)
-                              }
-  
-                              return; 
-                          }
-                      });
-                  }
-              }
-              if (laserBeam.position.distanceTo(this.mesh.position) > 250) {
+          // first check distance
+          if (laserBeam.position.distanceTo(this.mesh.position) > 250) {
+            this.scene.remove(laserBeam);
+            this.activeLasers.splice(index, 1);
+            return;
+          }
+
+          // check asteroid collisions
+          if (asteroidLoader.asteroidSystem) {
+            for (const system of asteroidLoader.asteroidSystem) {
+              system.children.forEach((asteroid) => {
+                if (asteroid instanceof THREE.Light) {
+                  return;
+                }
+                if (this.checkCollision(laserBeam, asteroid)) {
                   this.scene.remove(laserBeam);
-                  this.activeLasers.splice(index, 1); 
+                  this.activeLasers.splice(index, 1);
+                  asteroid.health -= this.damageAmount;
+                  if (this.softBoom) {
+                    this.softBoom.currentTime = 0;
+                    this.softBoom.volume = 0.5;
+                    this.softBoom.play();
+                  }
+                  this.startRumbleEffect(asteroid);
+                  asteroid.velocity.add(velocity.clone().multiplyScalar(0.002)); //smack it away a bit
+
+                  this.showHealthBar(asteroid);
+
+                  if (asteroid.health <= 0) {
+                    this.removeHealthBar(asteroid);
+                    asteroid.parent.remove(asteroid);
+                    this.playSound();
+                    incrementOre(asteroid.type);
+                  }
+                  return;
+                }
+              });
+            }
+          }
+
+          // check enemy collisions
+          if (enemyLoader.enemies) {
+            enemyLoader.enemies.forEach((enemy) => {
+              if (this.checkCollision(laserBeam, enemy)) {
+                this.scene.remove(laserBeam);
+                this.activeLasers.splice(index, 1);
+                enemy.health -= this.damageAmount;
+                if (this.softBoom) {
+                  this.softBoom.currentTime = 0;
+                  this.softBoom.volume = 0.5;
+                  this.softBoom.play();
+                }
+                this.startRumbleEffect(enemy);
+                this.showHealthBar(enemy);
+
+                if (enemy.health <= 0) {
+                  this.removeHealthBar(enemy);
+                  enemy.parent.remove(enemy);
+                  this.playSound();
+                }
+                return;
               }
-          });
+            });
+          }
+        });
       }
-  }
-  showHealthBar(asteroid) {
-    if (!asteroid.healthBar) {
-        const healthBar = document.createElement('div');
-        healthBar.className = 'asteroid-health-bar';
-        healthBar.style.position = 'absolute';
-        healthBar.style.height = '5px';
-        healthBar.style.width = '100px'; 
+    }
+    showHealthBar(meshObj) {
+      if (!meshObj.healthBar) {
+        const healthBar = document.createElement("div");
+        healthBar.className = "health-bar";
+        healthBar.style.position = "absolute";
+        healthBar.style.height = "5px";
+        healthBar.style.width = "100px";
         document.body.appendChild(healthBar);
-        
-        asteroid.healthBar = { element: healthBar }; 
+
+        meshObj.healthBar = { element: healthBar };
 
         // Start an interval to update the health bar position
-        asteroid.healthBar.interval = setInterval(() => {
-            this.updateHealthBarPosition(asteroid);
+        meshObj.healthBar.interval = setInterval(() => {
+          this.updateHealthBarPosition(meshObj);
         }, 50); // Update every 100 milliseconds
-    }
-
-    const healthPercentage = asteroid.health / 100; 
-    asteroid.healthBar.element.style.width = `${healthPercentage * 100}px`;
-    asteroid.healthBar.element.style.backgroundColor = `rgb(${255 * (1 - healthPercentage)}, ${255 * healthPercentage}, 0)`; 
-}
-
-// updateHealthBarPosition(asteroid) {
-//     const localPosition = asteroid.position.clone();
-//     const groupPosition = asteroid.parent.position.clone();
-//     const actualPosition = localPosition.add(groupPosition);
-//     this.camera.updateMatrixWorld();
-
-// 		// this.camera.updateMatrixWorld();
-// 		// const screenPosition = localPosition.project( this.camera )
-//     // const x = screenPosition.x
-//     // const y = screenPosition.y
-
-//     const screenPosition = actualPosition.project(this.camera);
-//     const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
-//     const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
-//     const distanceToAsteroid = this.camera.position.distanceTo(actualPosition);
-//     const visibilityThreshold = 1000;
-
-//     if (distanceToAsteroid < visibilityThreshold) {
-//         if (screenPosition.z > 0) { // In front of the camera
-//             asteroid.healthBar.element.style.left = `${x}px`;
-//             asteroid.healthBar.element.style.top = `${y - 10}px`;
-//             asteroid.healthBar.element.style.display = 'block';
-//         } else { // Off screen or facing away
-//             asteroid.healthBar.element.style.display = 'none';
-//         }
-//     } else { // Too far
-//         this.removeHealthBar(asteroid);
-//     }
-// }
-
-updateHealthBarPosition(asteroid) {
-  // Use temporary vectors to avoid frequent cloning
-  const actualPosition = new THREE.Vector3();
-  actualPosition.copy(asteroid.position).add(asteroid.parent.position);
-
-  // Early exit if too far
-  const distanceToAsteroid = this.camera.position.distanceTo(actualPosition);
-  const visibilityThreshold = 1000;
-  if (distanceToAsteroid >= visibilityThreshold) {
-      this.removeHealthBar(asteroid);
-      return;
-  }
-
-  // Get the direction from the camera to the asteroid
-  const directionToAsteroid = new THREE.Vector3();
-  directionToAsteroid.subVectors(actualPosition, this.camera.position).normalize();
-
-  // Get the camera's forward direction (already normalized)
-  const cameraForward = new THREE.Vector3();
-  this.camera.getWorldDirection(cameraForward);
-
-  // Check if the asteroid is in front of the camera using the dot product
-  if (directionToAsteroid.dot(cameraForward) > 0) {
-      // Project asteroid position onto screen space
-      const screenPosition = actualPosition.project(this.camera);
-      const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
-      const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
-
-      // Update health bar position
-      asteroid.healthBar.element.style.left = `${x}px`;
-      asteroid.healthBar.element.style.top = `${y - 10}px`;
-      asteroid.healthBar.element.style.display = 'block';
-  } else {
-      // Asteroid is behind the camera, hide the health bar
-      asteroid.healthBar.element.style.display = 'none';
-  }
-}
-
-removeHealthBar(asteroid) {
-    if (asteroid.healthBar) {
-      document.body.removeChild(asteroid.healthBar.element);
-      // delete asteroid.healthBar; 
-      clearInterval(asteroid.healthBar.interval); // Clear the interval
-    }
-}
-  playSound() {
-      if (this.boomSound) {
-          this.boomSound.currentTime = 0;
-          this.boomSound.volume = 0.5; 
-          this.boomSound.play(); 
       }
-  }
+
+      const healthPercentage = meshObj.health / 100;
+      meshObj.healthBar.element.style.width = `${healthPercentage * 100}px`;
+      meshObj.healthBar.element.style.backgroundColor = `rgb(${
+        255 * (1 - healthPercentage)
+      }, ${255 * healthPercentage}, 0)`;
+    }
+
+    // updateHealthBarPosition(asteroid) {
+    //     const localPosition = asteroid.position.clone();
+    //     const groupPosition = asteroid.parent.position.clone();
+    //     const actualPosition = localPosition.add(groupPosition);
+    //     this.camera.updateMatrixWorld();
+
+    // 		// this.camera.updateMatrixWorld();
+    // 		// const screenPosition = localPosition.project( this.camera )
+    //     // const x = screenPosition.x
+    //     // const y = screenPosition.y
+
+    //     const screenPosition = actualPosition.project(this.camera);
+    //     const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
+    //     const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
+    //     const distanceToAsteroid = this.camera.position.distanceTo(actualPosition);
+    //     const visibilityThreshold = 1000;
+
+    //     if (distanceToAsteroid < visibilityThreshold) {
+    //         if (screenPosition.z > 0) { // In front of the camera
+    //             asteroid.healthBar.element.style.left = `${x}px`;
+    //             asteroid.healthBar.element.style.top = `${y - 10}px`;
+    //             asteroid.healthBar.element.style.display = 'block';
+    //         } else { // Off screen or facing away
+    //             asteroid.healthBar.element.style.display = 'none';
+    //         }
+    //     } else { // Too far
+    //         this.removeHealthBar(asteroid);
+    //     }
+    // }
+
+    updateHealthBarPosition(asteroid) {
+      // Use temporary vectors to avoid frequent cloning
+      const actualPosition = new THREE.Vector3();
+      actualPosition.copy(asteroid.position).add(asteroid.parent.position);
+
+      // Early exit if too far
+      const distanceToAsteroid =
+        this.camera.position.distanceTo(actualPosition);
+      const visibilityThreshold = 1000;
+      if (distanceToAsteroid >= visibilityThreshold) {
+        this.removeHealthBar(asteroid);
+        return;
+      }
+
+      // Get the direction from the camera to the asteroid
+      const directionToAsteroid = new THREE.Vector3();
+      directionToAsteroid
+        .subVectors(actualPosition, this.camera.position)
+        .normalize();
+
+      // Get the camera's forward direction (already normalized)
+      const cameraForward = new THREE.Vector3();
+      this.camera.getWorldDirection(cameraForward);
+
+      // Check if the asteroid is in front of the camera using the dot product
+      if (directionToAsteroid.dot(cameraForward) > 0) {
+        // Project asteroid position onto screen space
+        const screenPosition = actualPosition.project(this.camera);
+        const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
+
+        // Update health bar position
+        asteroid.healthBar.element.style.left = `${x}px`;
+        asteroid.healthBar.element.style.top = `${y - 10}px`;
+        asteroid.healthBar.element.style.display = "block";
+      } else {
+        // Asteroid is behind the camera, hide the health bar
+        asteroid.healthBar.element.style.display = "none";
+      }
+    }
+
+    removeHealthBar(asteroid) {
+      if (asteroid.healthBar) {
+        document.body.removeChild(asteroid.healthBar.element);
+        // delete asteroid.healthBar;
+        clearInterval(asteroid.healthBar.interval); // Clear the interval
+      }
+    }
+    playSound() {
+      if (this.boomSound) {
+        this.boomSound.currentTime = 0;
+        this.boomSound.volume = 0.5;
+        this.boomSound.play();
+      }
+    }
 
     startRumbleEffect(obj) {
       const shakeDuration = 1000; // Duration of the shake in milliseconds
@@ -369,25 +420,25 @@ removeHealthBar(asteroid) {
 
     checkAsteroidCollisions(asteroidLoader) {
       const currentTimestamp = performance.now();
-    
+
       if (this.lastCollisionCheck === undefined) {
         this.lastCollisionCheck = currentTimestamp;
       }
-    
+
       if (currentTimestamp - this.lastCollisionCheck < 1000) {
         return;
       }
-    
+
       if (asteroidLoader.asteroidSystem) {
         for (const system of asteroidLoader.asteroidSystem) {
-          system.children.forEach(asteroid => {
+          system.children.forEach((asteroid) => {
             if (asteroid instanceof THREE.Light) {
               return;
             }
             if (this.checkCollision(this.mesh, asteroid)) {
-             this.userHit(40)
-             this.lastCollisionCheck = currentTimestamp;
-             return
+              this.userHit(40);
+              this.lastCollisionCheck = currentTimestamp;
+              return;
             }
           });
         }
@@ -395,7 +446,7 @@ removeHealthBar(asteroid) {
     }
 
     userHit(damage) {
-      console.log('HIT USER');
+      console.log("HIT USER");
       this.damageShip(damage);
       if (this.boomSound) {
         this.boomSound.currentTime = 0;
@@ -412,49 +463,71 @@ removeHealthBar(asteroid) {
 
     checkEnemyLaserCollisions(enemyLoader) {
       const currentTimestamp = performance.now();
-    
+
       if (this.lastCollisionCheck === undefined) {
         this.lastCollisionCheck = currentTimestamp;
       }
-    
+
       if (currentTimestamp - this.lastCollisionCheck < 300) {
         return;
       }
 
       if (enemyLoader.activeLasers) {
-        enemyLoader.activeLasers.forEach(laserData => {
+        enemyLoader.activeLasers.forEach((laserData) => {
           const { laserBeam, velocity } = laserData;
-            if (this.checkCollision(this.mesh, laserBeam)) {
-             this.userHit(10)
-             this.lastCollisionCheck = currentTimestamp;
-             return
-            }
-        })
+          if (this.checkCollision(this.mesh, laserBeam)) {
+            this.userHit(10);
+            this.lastCollisionCheck = currentTimestamp;
+            return;
+          }
+        });
       }
     }
 
-
-
-    Update(forwardAcceleration, upwardAcceleration, timeElapsed, audioManager, asteroidLoader, enemyLoader) {
+    Update(
+      forwardAcceleration,
+      upwardAcceleration,
+      timeElapsed,
+      audioManager,
+      asteroidLoader,
+      enemyLoader
+    ) {
       this.calculateRotation();
-      this.calculateVelocity(forwardAcceleration, upwardAcceleration, timeElapsed);
+      this.calculateVelocity(
+        forwardAcceleration,
+        upwardAcceleration,
+        timeElapsed
+      );
       this.moveSpaceship();
-      this.handleLaserMovement(asteroidLoader);
-      this.updateVelocityRectangle(this.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
-      this.checkAsteroidCollisions(asteroidLoader)
-      this.checkEnemyLaserCollisions(enemyLoader)
+      this.handleLaserMovement(asteroidLoader, enemyLoader);
+      this.updateVelocityRectangle(
+        this.forwardVelocity,
+        PHYSICS_CONSTANTS.maxVelocity
+      );
+      this.checkAsteroidCollisions(asteroidLoader);
+      this.checkEnemyLaserCollisions(enemyLoader);
 
       this.thirdPersonCamera.Update(timeElapsed);
-      audioManager.updateSpaceshipVolume(this.forwardVelocity)
+      audioManager.updateSpaceshipVolume(this.forwardVelocity);
     }
 
     calculateRotation() {
       if (this.forwardVelocity > 0 || this.upwardVelocity > 0) {
         const continuousRotation = -(mouseX * 0.0001);
         this.mesh.rotation.y += continuousRotation;
-        const targetX = this.mesh.children[0].rotation.x + mouseY * 0.0002; 
-        const mappedTargetX = mapValue(targetX, -Math.PI, Math.PI, -Math.PI * 0.93, Math.PI * 0.93);
-        this.mesh.children[0].rotation.x = THREE.MathUtils.lerp(this.mesh.children[0].rotation.x, mappedTargetX, 0.8);
+        const targetX = this.mesh.children[0].rotation.x + mouseY * 0.0002;
+        const mappedTargetX = mapValue(
+          targetX,
+          -Math.PI,
+          Math.PI,
+          -Math.PI * 0.93,
+          Math.PI * 0.93
+        );
+        this.mesh.children[0].rotation.x = THREE.MathUtils.lerp(
+          this.mesh.children[0].rotation.x,
+          mappedTargetX,
+          0.8
+        );
       }
     }
 
@@ -465,20 +538,32 @@ removeHealthBar(asteroid) {
 
     updateUpwardVelocity(upwardAcceleration, timeElapsed) {
       if (upwardAcceleration > 0) {
-        this.upwardVelocity += PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
-        this.upwardVelocity = Math.min(this.upwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
+        this.upwardVelocity +=
+          PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
+        this.upwardVelocity = Math.min(
+          this.upwardVelocity,
+          PHYSICS_CONSTANTS.maxVelocity
+        );
       } else if (upwardAcceleration < 0) {
-        this.upwardVelocity -= PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
-        this.upwardVelocity = Math.max(this.upwardVelocity, -PHYSICS_CONSTANTS.maxVelocity);
+        this.upwardVelocity -=
+          PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
+        this.upwardVelocity = Math.max(
+          this.upwardVelocity,
+          -PHYSICS_CONSTANTS.maxVelocity
+        );
       } else {
         const easingFactor = 0.05; // Increase this value to make the easing more noticeable
-        this.upwardVelocity -= Math.sign(this.upwardVelocity) * easingFactor * timeElapsed; // Ease towards zero
+        this.upwardVelocity -=
+          Math.sign(this.upwardVelocity) * easingFactor * timeElapsed; // Ease towards zero
       }
     }
 
     updateForwardVelocity(forwardAcceleration, timeElapsed) {
       if (forwardAcceleration > 0) {
-        this.forwardVelocity = Math.min(this.forwardVelocity + PHYSICS_CONSTANTS.acceleration * timeElapsed, PHYSICS_CONSTANTS.maxVelocity);
+        this.forwardVelocity = Math.min(
+          this.forwardVelocity + PHYSICS_CONSTANTS.acceleration * timeElapsed,
+          PHYSICS_CONSTANTS.maxVelocity
+        );
       }
       if (forwardAcceleration < 0) {
         this.forwardVelocity -= PHYSICS_CONSTANTS.deceleration * timeElapsed;
@@ -494,15 +579,13 @@ removeHealthBar(asteroid) {
 
       moveVector.set(
         sinY * cosX * this.forwardVelocity, // Horizontal movement based on forward velocity and Y rotation
-        -Math.sin(this.mesh.children[0].rotation.x) * this.forwardVelocity + this.upwardVelocity, // Vertical movement based on upward velocity and pitch
+        -Math.sin(this.mesh.children[0].rotation.x) * this.forwardVelocity +
+          this.upwardVelocity, // Vertical movement based on upward velocity and pitch
         cosY * cosX * this.forwardVelocity // Horizontal movement along the Z axis based on forward velocity and Y rotation
       );
 
       this.mesh.position.add(moveVector); // Update the spaceship's position based on the calculated move vector
     }
-
-
-
   }
 
   return {
@@ -510,18 +593,15 @@ removeHealthBar(asteroid) {
   };
 })();
 
-
-
 const centerX = window.innerWidth / 2;
 const centerY = window.innerHeight / 2;
-let mouseX = 0
-let mouseY = 0
+let mouseX = 0;
+let mouseY = 0;
 function handleMouseMove(event) {
   mouseX = event.clientX - centerX;
   mouseY = event.clientY - centerY;
   cursor.style.left = event.pageX + "px";
   cursor.style.top = event.pageY + "px";
 }
-
 
 window.addEventListener("mousemove", handleMouseMove);

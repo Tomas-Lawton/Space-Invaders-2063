@@ -269,7 +269,7 @@ export const gameworld = (() => {
     createStar() {
       const posZ = 350;
       const col = getRandomDeepColor()
-
+      console.log(col)
       const sphereRadius = 13;
       const sphereSegments = 32;
       const transparentMaterial = new THREE.MeshStandardMaterial({

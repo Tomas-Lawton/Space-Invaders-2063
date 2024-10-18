@@ -3,7 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 export const enemy = (() => {
     class EnemyLoader {
-      constructor(scene, camera, health = 100) {
+      constructor(scene, camera, health = 80) {
         this.scene = scene;
         this.camera = camera;
         this.health = health;
@@ -45,25 +45,26 @@ export const enemy = (() => {
               (child) => child.isMesh && (child.castShadow = child.receiveShadow = true)
             );
             loadedModel.rotation.y = 1.5 * Math.PI;
-            loadedModel.scale.set(.05, .05, .05);
+            loadedModel.scale.set(.1, .1, .1);
             enemyGroup.add(loadedModel);
 
-            // const glowGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-            // const glowMaterial = new THREE.MeshStandardMaterial({
-            //   emissive: 0xff4500,        // Emissive color for a dystopian orange glow
-            //   emissiveIntensity: 4,    // Adjust the intensity of the glow (lower for subtler, higher for more glow)
-            //   color: 0x2f2f2f,          // Dark, grayish color for the base material
-            // });
+            const glowGeometry = new THREE.SphereGeometry(.3, 8, 8);
+            const glowMaterial = new THREE.MeshStandardMaterial({
+              emissive: 0xff4500,
+              emissiveIntensity: 10,
+              color: 0xff4500,
+            });
 
-            // const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
-            // glowPoint.position.set(0, 0, 0);
-            // enemyGroup.add(glowPoint);
+            const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
+            glowPoint.position.set(0, 0, -5);
+            enemyGroup.add(glowPoint);
     
             const redLight = new THREE.PointLight(0xff0000, 15, 200);  
-            redLight.position.set(0, 0, -2.5); 
+            redLight.position.set(0, 1, -1); 
             enemyGroup.add(redLight);
     
             enemyGroup.rotation.y = Math.PI;
+            enemyGroup.health = this.health
     
             // Use the callback after the enemy is fully loaded
             if (callback) {
@@ -89,7 +90,7 @@ export const enemy = (() => {
   
       phaseTowardsPlayer(enemy, playerCurrentPosition) {
         if (enemy) {
-            const phaseSpeed = 0.001;  // Adjust for smoothness
+            const phaseSpeed = 0.002;  // Adjust for smoothness
             
             // Calculate the direction to the player
             const directionToPlayer = new THREE.Vector3();
@@ -109,7 +110,7 @@ export const enemy = (() => {
   
       animateForwardMovement(enemy) {
         if (enemy) {
-            let speed = .3; 
+            let speed = .4; 
             let direction = new THREE.Vector3();  
             enemy.getWorldDirection(direction);  // Get the direction the ship is facing            
             direction.multiplyScalar(speed);
@@ -121,7 +122,7 @@ export const enemy = (() => {
         const currentTime = performance.now();  //laser cooldown
 
         const distanceThreshold = this.firingDistance;  // Distance threshold for firing
-        const angleThreshold = Math.PI / 8;  // 5 degrees in radians      
+        const angleThreshold = Math.PI / 6;  // 5 degrees in radians      
         const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
       
         if (distanceToPlayer < distanceThreshold) {
