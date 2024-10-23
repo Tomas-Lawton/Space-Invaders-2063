@@ -26,11 +26,11 @@ export const gameworld = (() => {
         this.createPlanets(4); //procedural
         this.createStar();
 
-        this.createEnemies(5)
+        this.createEnemies(6)
 
         this.addGround();
 
-        // this.createLoops();
+        this.createLoops();
       }
     }
     Update(playerCurrentPosition, audioManager) {
@@ -270,7 +270,7 @@ export const gameworld = (() => {
       const posZ = 350;
       const col = getRandomDeepColor()
       console.log(col)
-      // 4285816, 4285816, 2838071
+      // 4285816, 4285816, 2838071, 5393519
       // 7563035, 5518369 classic sun
       const sphereRadius = 13;
       const sphereSegments = 32;

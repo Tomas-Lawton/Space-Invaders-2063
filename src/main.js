@@ -7,17 +7,19 @@ import { spaceship } from "./components/player/spaceship.js";
 import { setupGUI } from "./components/gui.js";
 import { entity } from "./utils/entity.js";
 import { initRenderer, initComposer } from "./scene/renderer.js";
-import { updateVelocityBar, updateHealthBar, progressContainer } from "./components/dom.js";
+import { updateVelocityBar, updateHealthBar, progressContainer, toggleHUD } from "./components/dom.js";
 import { player_input } from "./components/player/player-input.js";
 import { PHYSICS_CONSTANTS } from "./utils/constants.js"
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 class Game {
   constructor() {
+    this.isPaused = false;
     this.initScene();
     this.initEntities();
     this.initialize();
     this.previousTime = 0; // animation loop
+    this.setupPauseListener();
   }
 
   initScene() {
@@ -58,9 +60,23 @@ class Game {
       progressContainer.style.display = 'none';
     }
 
-    setupGUI({ audioManager: this.audioManager });
+    // setupGUI({ audioManager: this.audioManager });
     
     this.animate();
+  }
+
+  setupPauseListener() {
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'e' || event.key === 'E') {    
+        this.isPaused = !this.isPaused;  // Toggle the pause state
+        if (this.isPaused) {
+          console.log("Game Paused");
+        } else {
+          console.log("Game Resumed");
+        }
+        toggleHUD();
+      }
+    });
   }
 
   async setupAudio() {
@@ -84,7 +100,10 @@ class Game {
     const timeElapsed = (currentTime - this.previousTime) / 1000;
     this.previousTime = currentTime;
     if (this.playerShip !== undefined && this.playerShip.mesh === null) return; // wait to load
-    this.Update(timeElapsed);
+
+    if (!this.isPaused) {   // Only update if the game is not paused
+      this.Update(timeElapsed);
+    }
   }
 
   Update(timeElapsed) {

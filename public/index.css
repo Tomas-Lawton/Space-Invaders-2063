@@ -10,6 +10,26 @@ body {
   text-transform:uppercase;
 }
 
+#three-canvas {
+  position: absolute;
+}
+
+#hud-ui {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  background: none;
+  position: absolute;
+  /* display: flex; */
+  display: none;
+}
+
+#hud-ui img {
+  display: block;
+  width: 90%;
+  margin: auto;
+}
+
 h1 {
   font-size: 7em;
   margin: 0px;

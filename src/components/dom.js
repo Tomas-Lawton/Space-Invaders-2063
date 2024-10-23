@@ -2,14 +2,18 @@
 import { mapValue } from "../utils/utils.js";
 
 document.body.style.cursor = "none";
+
+
 const velocityBar = document.getElementById("velocity-bar");
 const healthBar = document.getElementById("health-bar")
+const hud = document.getElementById("hud-ui")
 
 const ores = document.getElementById("ores");
 const [ironElem, goldElem, crystalElem] = ores.children; 
 export const cursor = document.getElementById("custom-cursor");
 export const progressContainer = document.getElementById("progress-container")
 export const progressText = document.getElementById("progress")
+export const canvas = document.getElementById('three-canvas');
 
 
 let iron = 0
@@ -46,4 +50,15 @@ export function updateHealthBar(health, maxHealth) {
   const color = `rgb(${red}, ${green}, 0)`;
 
   healthBar.style.backgroundColor = color;
+}
+
+
+export function toggleHUD() {
+  if (hud.style.display === 'none' || hud.style.display === '') {
+    hud.style.display = 'flex';
+    canvas.style.filter = 'blur(10px)';
+  } else {
+    hud.style.display = 'none';
+    canvas.style.filter = 'none';
+  }
 }
