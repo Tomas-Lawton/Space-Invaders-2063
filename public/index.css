@@ -41,11 +41,11 @@ body {
 }
 #hud-container canvas {
   position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 500px;
-    height: 500px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 500px;
 }
 
 /* Positioning each HUD element */
@@ -53,7 +53,7 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 450px;
+  width: 350px;
 }
 
 #top-right {
@@ -67,7 +67,7 @@ body {
   position: absolute;
   top: 50%;
   right: 0;
-  width: 200px;
+  width: 250px;
   transform: translate(0, -50%);
 }
 
@@ -78,6 +78,19 @@ body {
   width: 200px;
 }
 
+#ship-shadow {
+  box-sizing: border-box;
+  position: absolute;
+  width: 65%;
+  left: 50%;
+  bottom: 100px;
+  transform: translateX(-50%);
+  height: 150px;
+  z-index: -1;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 #bottom-center {
   box-sizing: border-box;
   position: absolute;
@@ -86,6 +99,7 @@ body {
   bottom: 0;
   transform: translateX(-50%);
   height: 150px;
+  /* z-index: 100; */
 }
 
 #ships-bar {
@@ -98,7 +112,8 @@ body {
   height: 150px;
   display: flex;
   justify-content: space-around;
-  padding: 2rem 4rem;
+  padding: 3rem 6rem;
+  gap: 1rem;
 }
 
 #ships-stats {
@@ -114,9 +129,10 @@ body {
 }
 
 .ship-option {
-  background-color: rgb(255 255 255 / 5%);
-  width: 100px;
+  background-color: rgb(137 255 247 / 28%);
+  width: 100%;
   height: auto;
+  border-radius: 0.5rem;
 }
 
 #bottom-right {

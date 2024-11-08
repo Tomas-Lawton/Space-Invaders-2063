@@ -12,40 +12,42 @@ export function initHUD() {
   camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
   camera.position.set(0, 10, 100);
 
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setSize(500, 500);
   renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setClearColor(0x87ceeb); // Light blue sky color
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.setClearColor(0x87ceeb, 0); // Make the background transparent
+
+  const ambientLight = new THREE.AmbientLight(0xffffff);
+// // (0, 255, 238, 0.55)
+// const ambientLight = new THREE.AmbientLight(
+//   new THREE.Color(0x00ffec), // RGB (0, 255, 238) as a hex value
+//   0.55 // Intensity (brightness)
+// );
+new THREE.Color(0x00ffec), // RGB (0, 255, 238) as a hex value
+0.55
 
   const light = new THREE.DirectionalLight(0xffffff, 10);
   light.position.set(5, 10, 7.5);
-  light.castShadow = true;
   scene.add(light);
-
-  const ambientLight = new THREE.AmbientLight(0x404040);
   scene.add(ambientLight);
 
-  addGround();
-  addBackground();
+
+  const light2 = new THREE.DirectionalLight(new THREE.Color(0x00ffec), 0.55);
+  light2.position.set(-5, 10, -7.5);
+  scene.add(light2);
+
 
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true; // Smooth orbiting
-  controls.dampingFactor = 0.25;
+  controls.dampingFactor = 0.45;
   controls.screenSpacePanning = false;
   controls.maxPolarAngle = Math.PI / 2; // Restrict vertical camera movement
-
-
-  // controls.enableDamping = true;
-  // controls.enablePan = true;
-  // controls.minDistance = 5;
-  // controls.maxDistance = 20;
-  // controls.minPolarAngle = 0.5;
-  // controls.maxPolarAngle = 1.5;
   controls.autoRotate = true;
 
-  loadModels();
+  loadModels().then(() => {
+    switchModel('ship-1'); // Display the default model (ship_0)
+  });
+
   animate();
 }
 
@@ -62,17 +64,16 @@ async function loadModels() {
     { path: 'public/ships/ship_1/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
     { path: 'public/ships/ship_2/', rotation: { x: 0, y: Math.PI, z: 0 } },
     { path: 'public/ships/ship_3/', rotation: { x: 0, y: -Math.PI / 2, z: 0 } },
+    { path: 'public/ships/ship_4/', rotation: { x: 0, y: 0, z: 0 } },
+    { path: 'public/ships/ship_5/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
+    { path: 'public/ships/ship_6/', rotation: { x: 0, y: Math.PI, z: 0 } },
+    { path: 'public/ships/ship_7/', rotation: { x: 0, y: -Math.PI / 2, z: 0 } },
   ];
 
   try {
     const modelPromises = modelPaths.map(async (modelData, index) => {
       const gltf = await loader.setPath(modelData.path).loadAsync('scene.gltf');
       const model = gltf.scene.clone();
-      model.traverse(
-        (child) =>
-          child.isMesh && (child.castShadow = child.receiveShadow = true)
-      );
-      model.castShadow = true;
       models[`ship-${index + 1}`] = { model, rotation: modelData.rotation };
     });
 
@@ -82,21 +83,42 @@ async function loadModels() {
   }
 }
 
-function switchModel(shipId) {
-  if (!models[shipId]) return;
-  if (currentModel) scene.remove(currentModel.model);
-  currentModel = models[shipId];
-  normalizeModelSize(currentModel.model, 55);
-  currentModel.model.rotation.set(currentModel.rotation.x, currentModel.rotation.y, currentModel.rotation.z);
-  scene.add(currentModel.model);
-}
-
 document.getElementById('ships-bar').addEventListener('click', (e) => {
+  console.log("Click detected on: ", e.target);  // Log the clicked element
   if (e.target.classList.contains('ship-option')) {
     const shipId = e.target.id;
+    console.log("Switching to model: ", shipId);  // Log the shipId being clicked
     switchModel(shipId);
   }
 });
+
+let previousModelId = null;
+
+function switchModel(shipId) {
+  if (!models[shipId]) return;
+
+  // If the same model is clicked again, do nothing
+  if (previousModelId === shipId) return;
+
+  if (currentModel) {
+    scene.remove(currentModel.model);
+  }
+
+  currentModel = models[shipId];
+  
+  // Normalize the model size and position only once
+  if (!currentModel.isNormalized) {
+    normalizeModelSize(currentModel.model, 55);
+    normalizeModelPosition(currentModel.model);
+    currentModel.isNormalized = true; // Mark this model as normalized
+  }
+
+  currentModel.model.rotation.set(currentModel.rotation.x, currentModel.rotation.y, currentModel.rotation.z);
+  scene.add(currentModel.model);
+
+  // Store the current model ID to prevent unnecessary resizing
+  previousModelId = shipId;
+}
 
 function normalizeModelSize(model, targetSize = 1) {
   const bbox = new THREE.Box3().setFromObject(model);
@@ -104,9 +126,19 @@ function normalizeModelSize(model, targetSize = 1) {
   bbox.getSize(size);
   const maxDimension = Math.max(size.x, size.y, size.z);
   const scaleFactor = targetSize / maxDimension;
-  if (model.scale.x !== scaleFactor || model.scale.y !== scaleFactor || model.scale.z !== scaleFactor) {
+
+  // Only scale if the current scale is not already the target scale
+  if (Math.abs(model.scale.x - scaleFactor) > 0.01 || Math.abs(model.scale.y - scaleFactor) > 0.01 || Math.abs(model.scale.z - scaleFactor) > 0.01) {
     model.scale.set(scaleFactor, scaleFactor, scaleFactor);
   }
+}
+
+function normalizeModelPosition(model) {
+  const bbox = new THREE.Box3().setFromObject(model);
+  const center = bbox.getCenter(new THREE.Vector3());
+
+  // Translate the model to ensure its center is at the origin (0, 0, 0)
+  model.position.sub(center);
 }
 
 function addGround() {
@@ -114,8 +146,7 @@ function addGround() {
   const material = new THREE.MeshLambertMaterial({ color: 0x808080 });
   const ground = new THREE.Mesh(geometry, material);
   ground.rotation.x = -Math.PI / 2;
-  ground.position.y = -10;
-  ground.receiveShadow = true; // Ground receives shadow
+  ground.position.y = -15;
   scene.add(ground);
 }
 
