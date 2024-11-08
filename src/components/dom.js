@@ -6,7 +6,9 @@ document.body.style.cursor = "none";
 
 const velocityBar = document.getElementById("velocity-bar");
 const healthBar = document.getElementById("health-bar")
-const hud = document.getElementById("hud-ui")
+const hud = document.getElementById("control-ui")
+const hudElements = document.getElementsByClassName('hud-ui');
+
 
 const ores = document.getElementById("ores");
 const [ironElem, goldElem, crystalElem] = ores.children; 
@@ -57,8 +59,14 @@ export function toggleHUD() {
   if (hud.style.display === 'none' || hud.style.display === '') {
     hud.style.display = 'flex';
     canvas.style.filter = 'blur(10px)';
+    Array.from(hudElements).forEach(element => {
+        element.style.display = 'none';
+    })
   } else {
     hud.style.display = 'none';
     canvas.style.filter = 'none';
+    Array.from(hudElements).forEach(element => {
+      element.style.display = ''; 
+    })
   }
 }

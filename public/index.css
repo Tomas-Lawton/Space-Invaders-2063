@@ -14,7 +14,7 @@ body {
   position: absolute;
 }
 
-#hud-ui {
+#control-ui {
   width: 100vw;
   height: 100vh;
   margin: 0;
@@ -24,7 +24,7 @@ body {
   display: none;
 }
 
-#hud-ui img {
+#control-ui img {
   display: block;
   width: 90%;
   margin: auto;
