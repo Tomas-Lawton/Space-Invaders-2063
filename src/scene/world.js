@@ -271,7 +271,7 @@ export const gameworld = (() => {
       const col = getRandomDeepColor()
       console.log(col)
       // 4285816, 4285816, 2838071, 5393519, 1664338, 4939547
-      // 7563035, 5518369 classic sun
+      // 7563035, 5518369, 7561737 classic sun
       const sphereRadius = 13;
       const sphereSegments = 32;
       const transparentMaterial = new THREE.MeshStandardMaterial({

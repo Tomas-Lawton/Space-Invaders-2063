@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Sixtyfour+Convergence&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Sixtyfour+Convergence&display=swap");
 
 body {
   background-color: black;
@@ -7,7 +7,7 @@ body {
   color: white;
   font-weight: bold;
   font-weight: 100;
-  text-transform:uppercase;
+  text-transform: uppercase;
 }
 
 #three-canvas {
@@ -15,19 +15,115 @@ body {
 }
 
 #control-ui {
-  width: 100vw;
-  height: 100vh;
-  margin: 0;
-  background: none;
   position: absolute;
-  /* display: flex; */
+  top: 5rem;
+  bottom: 5rem;
+  left: 5rem;
+  right: 5rem;
+  background: rgba(0, 179, 255, 0.08);
+  border: 2px solid rgba(0, 255, 238, 0.59);
+  box-shadow: inset 26px 26px 56.3px 26px rgba(91, 255, 192, 0.13);
+  backdrop-filter: blur(42.4px);
+  border-radius: 19px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
   display: none;
+
+  box-shadow: 5px 4px 32px rgba(0, 255, 238, 0.55),
+    inset 26px 26px 56.3px 26px rgba(91, 255, 192, 0.13);
+}
+#hud-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+#hud-container canvas {
+  position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 500px;
 }
 
-#control-ui img {
-  display: block;
-  width: 90%;
-  margin: auto;
+/* Positioning each HUD element */
+#top-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 450px;
+}
+
+#top-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 400px;
+}
+
+#mid-right {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 200px;
+  transform: translate(0, -50%);
+}
+
+#bottom-left {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200px;
+}
+
+#bottom-center {
+  box-sizing: border-box;
+  position: absolute;
+  width: 50%;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  height: 150px;
+}
+
+#ships-bar {
+  box-sizing: border-box;
+  position: absolute;
+  width: 50%;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  height: 150px;
+  display: flex;
+  justify-content: space-around;
+  padding: 2rem 4rem;
+}
+
+#ships-stats {
+  position: absolute;
+  width: 350px;
+  left: 0;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+
+#ships-stats > div {
+  display: flex;
+}
+
+.ship-option {
+  background-color: rgb(255 255 255 / 5%);
+  width: 100px;
+  height: auto;
+}
+
+#bottom-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100px;
 }
 
 h1 {
@@ -55,8 +151,8 @@ h1 {
 }
 
 #velocity-bar {
-  width: 4px; 
-  height: 0px; 
+  width: 4px;
+  height: 0px;
   background: #9500ff;
   position: absolute;
   left: 25px;
@@ -73,7 +169,6 @@ h1 {
   height: calc(100% - 50px);
 }
 
-
 #health-bar {
   background: rgba(0, 255, 42, 0.695);
   position: absolute;
@@ -89,10 +184,8 @@ h1 {
   background-color: green;
   height: 5px;
   transition: width 0.2s;
-  z-index: 10; 
+  z-index: 10;
 }
-
-
 
 #custom-cursor {
   width: 35px;
@@ -100,7 +193,7 @@ h1 {
   position: absolute;
   pointer-events: none;
   border-radius: 50%;
-  background: url('./sprite/target_big.png') no-repeat center center; /* Use absolute URL */
+  background: url("./sprite/target_big.png") no-repeat center center; /* Use absolute URL */
   background-size: contain; /* Ensures the image fits within the element */
 }
 
@@ -131,4 +224,3 @@ h1 {
     "XELA" 0,
     "YELA" 0;
 } */
-

@@ -1,24 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>Space Invaders 2063</title>
-		<link rel="stylesheet" href="public/index.css">
-    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+  <head>
+    <meta charset="utf-8" />
+    <title>Space Invaders 2063</title>
+    <link rel="stylesheet" href="public/index.css" />
+    <script
+      async
+      src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"
+    ></script>
     <script type="importmap">
       {
         "imports": {
           "three": "https://unpkg.com/three@v0.169.0/build/three.module.js",
           "three/addons/": "https://unpkg.com/three@v0.153.0/examples/jsm/",
-					"dat.gui": "https://unpkg.com/dat.gui@0.7.7/build/dat.gui.module.js"
+          "dat.gui": "https://unpkg.com/dat.gui@0.7.7/build/dat.gui.module.js"
         }
       }
     </script>
-	</head>
-	<body>
+  </head>
+  <body>
     <canvas id="three-canvas"></canvas>
     <div id="control-ui">
-      <img src="public/images/hud.png" alt="HUD Image">
+      <div id="hud-container">
+        <div id="ships-stats">
+          <label>Slider Name</label>
+          <div>
+            <input type="slider" class="level" />
+            <h2 class="slider-value">ellooo</h2>
+          </div>
+          <label>Slider Name</label>
+          <div>
+            <input type="slider" class="level" />
+            <h2 class="slider-value">ellooo</h2>
+          </div>
+          <label>Slider Name</label>
+          <div>
+            <input type="slider" class="level" />
+            <h2 class="slider-value">ellooo</h2>
+          </div>
+          <label>Slider Name</label>
+          <div>
+            <input type="slider" class="level" />
+            <h2 class="slider-value">ellooo</h2>
+          </div>
+        </div>
+        <canvas id="ship-hanger"></canvas>
+        <img
+          id="top-left"
+          src="public/images/hud-elements/top-left.png"
+          alt="HUD Image"
+        />
+        <img
+          id="top-right"
+          src="public/images/hud-elements/top-right.png"
+          alt="HUD Image"
+        />
+        <img
+        id="mid-right"
+        src="public/images/hud-elements/mid-right.png"
+        alt="HUD Image"
+      />
+        <img
+          id="bottom-left"
+          src="public/images/hud-elements/bottom-left.png"
+          alt="HUD Image"
+        />
+        <img
+          id="bottom-right"
+          src="public/images/hud-elements/bottom-right.png"
+          alt="HUD Image"
+        />
+      </div>
+      <img
+        id="bottom-center"
+        src="public/images/hud-elements/bottom-center.png"
+        alt="HUD Image"
+      />
+
+      <div id="ships-bar">
+        <div id="ship-1" class="ship-option"></div>
+        <div id="ship-2" class="ship-option"></div>
+        <div id="ship-3" class="ship-option"></div>
+        <div id="ship-4" class="ship-option"></div>
+      </div>
     </div>
     <div id="health-bar-background" class="hud-ui"></div>
     <div id="health-bar" class="hud-ui"></div>
@@ -33,6 +97,6 @@
       <p>Gold 0</p>
       <p>Crystal 0</p>
     </div>
-		<script type="module" src="./src/main.js"></script>
-	</body>
+    <script type="module" src="./src/main.js"></script>
+  </body>
 </html>
