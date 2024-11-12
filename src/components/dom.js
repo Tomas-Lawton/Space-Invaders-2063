@@ -8,7 +8,8 @@ const velocityBar = document.getElementById("velocity-bar");
 const healthBar = document.getElementById("health-bar")
 const hud = document.getElementById("control-ui")
 const hudElements = document.getElementsByClassName('hud-ui');
-
+const userPosition = document.getElementById("user-position")
+const nearestPlanet = document.getElementById("nearest-planet")
 
 const ores = document.getElementById("ores");
 const [ironElem, goldElem, crystalElem] = ores.children; 
@@ -72,3 +73,10 @@ export function toggleHUD() {
 }
 
 
+export function updatePlayerPositionUI (xyz) {
+  userPosition.innerHTML = `POS:\nx:${xyz.x.toFixed(1)}\ny:${xyz.y.toFixed(1)}\nz:${xyz.z.toFixed(1)}`;
+}
+
+export function updateCloestPlanet (xyz) {
+  nearestPlanet.innerHTML = `CLOSEST PLANET:\n------------\nx:${xyz.x.toFixed(1)}\ny:${xyz.y.toFixed(1)}\nz:${xyz.z.toFixed(1)}`;
+}

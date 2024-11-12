@@ -116,6 +116,8 @@ export const spaceship = (() => {
 
           this.mesh.add(tempObjectGroup);
 
+          this.mesh.rotation.y = Math.PI
+
           this.scene.add(this.mesh);
 
           // Initialize third-person camera
@@ -156,7 +158,7 @@ export const spaceship = (() => {
       }
     }
 
-    createAndShootLight() {
+    fireLaser() {
       const direction = new THREE.Vector3();
       this.mesh.children[0].getWorldDirection(direction);
       const laserPosition = this.mesh.position.clone();
@@ -257,7 +259,7 @@ export const spaceship = (() => {
           }
 
           // check enemy collisions
-          if (enemyLoader.enemies) {
+          if (enemyLoader && enemyLoader.enemies) {
             enemyLoader.enemies.forEach((enemy) => {
               if (this.checkCollision(laserBeam, enemy)) {
                 this.scene.remove(laserBeam);
@@ -472,7 +474,7 @@ export const spaceship = (() => {
         return;
       }
 
-      if (enemyLoader.activeLasers) {
+      if (enemyLoader && enemyLoader.activeLasers) {
         enemyLoader.activeLasers.forEach((laserData) => {
           const { laserBeam, _ } = laserData;
           if (this.checkCollision(this.mesh, laserBeam)) {

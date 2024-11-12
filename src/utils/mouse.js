@@ -14,6 +14,6 @@
 
 // function handleMouseClick(event) {
 //   console.log("clicked", playerEntity.Attributes.InputCurrent)
-//   player.createAndShootLight();
+//   player.fireLaser();
 // }
 

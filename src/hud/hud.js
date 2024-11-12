@@ -44,7 +44,7 @@ new THREE.Color(0x00ffec), // RGB (0, 255, 238) as a hex value
   controls.maxPolarAngle = Math.PI / 2; // Restrict vertical camera movement
   controls.autoRotate = true;
 
-  loadModels().then(() => {
+  loadShipModels().then(() => {
     switchModel('ship-1'); // Display the default model (ship_0)
   });
 
@@ -57,18 +57,29 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-async function loadModels() {
+async function loadShipModels() {
   const loader = new GLTFLoader();
   const modelPaths = [
     { path: 'public/ships/ship_0/', rotation: { x: 0, y: 0, z: 0 } },
     { path: 'public/ships/ship_1/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-    { path: 'public/ships/ship_2/', rotation: { x: 0, y: Math.PI, z: 0 } },
+    { path: 'public/ships/ship_2/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
     { path: 'public/ships/ship_3/', rotation: { x: 0, y: -Math.PI / 2, z: 0 } },
     { path: 'public/ships/ship_4/', rotation: { x: 0, y: 0, z: 0 } },
     { path: 'public/ships/ship_5/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-    { path: 'public/ships/ship_6/', rotation: { x: 0, y: Math.PI, z: 0 } },
-    { path: 'public/ships/ship_7/', rotation: { x: 0, y: -Math.PI / 2, z: 0 } },
+    { path: 'public/ships/ship_6/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
+    { path: 'public/ships/ship_7/', rotation: { x: 0, y: 2 * Math.PI, z: 0 } },
   ];
+
+// FACE FORWARD
+// { path: 'public/ships/ship_0/', rotation: { x: 0, y: (0) + 1.5 * Math.PI, z: 0 } },
+// { path: 'public/ships/ship_1/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
+// { path: 'public/ships/ship_2/', rotation: { x: 0, y:( Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
+// { path: 'public/ships/ship_3/', rotation: { x: 0, y: (-Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
+// { path: 'public/ships/ship_4/', rotation: { x: 0, y: (0) + 1.5 * Math.PI, z: 0 } },
+// { path: 'public/ships/ship_5/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
+// { path: 'public/ships/ship_6/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
+// { path: 'public/ships/ship_7/', rotation: { x: 0, y: (2 * Math.PI), z: 0 } },
+
 
   try {
     const modelPromises = modelPaths.map(async (modelData, index) => {
@@ -139,6 +150,7 @@ function normalizeModelPosition(model) {
 
   // Translate the model to ensure its center is at the origin (0, 0, 0)
   model.position.sub(center);
+  model.position.y = -15;
 }
 
 function addGround() {

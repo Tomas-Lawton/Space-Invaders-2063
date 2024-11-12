@@ -7,7 +7,7 @@ import { spaceship } from "./components/player/spaceship.js";
 // import { setupGUI } from "./components/gui.js";
 import { entity } from "./utils/entity.js";
 import { initRenderer, initComposer } from "./scene/renderer.js";
-import { updateVelocityBar, updateHealthBar, progressContainer, toggleHUD } from "./components/dom.js";
+import { updateVelocityBar, updateHealthBar, progressContainer, toggleHUD, updatePlayerPositionUI } from "./components/dom.js";
 import { player_input } from "./components/player/player-input.js";
 import { PHYSICS_CONSTANTS } from "./utils/constants.js"
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -122,6 +122,7 @@ class Game {
           // update hud
           updateVelocityBar(this.playerShip.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
           updateHealthBar(this.playerShip.health, this.playerShip.maxHealth)
+          updatePlayerPositionUI(this.playerShip.mesh.position)
         }
       }
     }
@@ -145,9 +146,9 @@ let shootingInterval;
 
 window.addEventListener("mousedown", () => {
   if (game.playerShip) {
-    game.playerShip.createAndShootLight();
+    game.playerShip.fireLaser();
     shootingInterval = setInterval(() => {
-        game.playerShip.createAndShootLight();
+        game.playerShip.fireLaser();
     }, 150);
   }
 });

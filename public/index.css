@@ -14,6 +14,35 @@ body {
   position: absolute;
 }
 
+#user-position {
+    /* color: white; */
+    color: #00FFEE;
+    position: absolute;
+    right: 2rem;
+    bottom: 2rem;
+    font-size: 1rem;
+    white-space: pre;
+    font-weight: 700;
+    text-align: right;
+    margin: 0;
+}
+
+
+#nearest-planet {
+  /* color: white; */
+  color: #00FFEE;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 1rem;
+  white-space: pre;
+  font-weight: 700;
+  margin: 0;
+  text-align: right;
+
+}
+
+
 #control-ui {
   position: absolute;
   top: 5rem;

@@ -38,7 +38,7 @@ export class Ring {
     const ringGeometry = new THREE.TorusGeometry(this.radius, tubeRadius, radialSegments, tubularSegments);
     const ring = new THREE.Mesh(ringGeometry, glowMaterial);
 
-    ring.position.set(0, Math.random() * 100, Math.random() * 2000 + 100);
+    ring.position.set(0, Math.random() * 100, Math.random() * -2000 -100);
 
     this.scene.add(ring);
     return ring;
