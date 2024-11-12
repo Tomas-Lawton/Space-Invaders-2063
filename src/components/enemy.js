@@ -20,6 +20,7 @@ export const enemy = (() => {
 
     // Initialise enemies without promises, using callback in the loader
     initaliseEnemies(numEnemies, aroundPoint) {
+      this.target = aroundPoint;
       for (let i = 0; i < numEnemies; i++) {
         this.createEnemy(aroundPoint, (enemyObject) => {
           enemyObject.lastShotTime = 0;
@@ -34,22 +35,24 @@ export const enemy = (() => {
         "scene.gltf",
         (gltf) => {
           const enemyObject = new THREE.Group();
-    
+
           const angle = Math.random() * Math.PI * 2;
-          const distance = 600;    
+          const distance = 200;
           const x = aroundPoint.x + Math.cos(angle) * distance;
           const z = aroundPoint.z + Math.sin(angle) * distance;
           const y = aroundPoint.y;
-          console.log(x, y, z)
+          console.log(x, y, z);
           enemyObject.position.set(x, y, z);
-    
+
           // Add variation within the group itself for smaller offsets
-          enemyObject.position.add(new THREE.Vector3(
-            (Math.random() - 0.5) * 50,
-            (Math.random() - 0.5) * 50,
-            (Math.random() - 0.5) * 50
-          ));
-    
+          enemyObject.position.add(
+            new THREE.Vector3(
+              (Math.random() - 0.5) * 50,
+              (Math.random() - 0.5) * 50,
+              (Math.random() - 0.5) * 50
+            )
+          );
+
           const loadedModel = gltf.scene;
           loadedModel.traverse(
             (child) =>
@@ -58,25 +61,25 @@ export const enemy = (() => {
           loadedModel.rotation.y = 1.5 * Math.PI;
           loadedModel.scale.set(0.1, 0.1, 0.1);
           enemyObject.add(loadedModel);
-    
+
           const glowGeometry = new THREE.SphereGeometry(0.3, 8, 8);
           const glowMaterial = new THREE.MeshStandardMaterial({
             emissive: 0xff4500,
             emissiveIntensity: 10,
             color: 0xff4500,
           });
-    
+
           const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
           glowPoint.position.set(0, 0, -5);
           enemyObject.add(glowPoint);
-    
+
           const redLight = new THREE.PointLight(0xff0000, 15, 200);
           redLight.position.set(0, 1, -1);
           enemyObject.add(redLight);
-    
+
           enemyObject.rotation.y = Math.PI;
           enemyObject.health = this.health;
-    
+
           if (callback) {
             callback(enemyObject);
           }
@@ -91,29 +94,69 @@ export const enemy = (() => {
     animateEnemies(playerCurrentPosition) {
       this.enemies.forEach((enemy) => {
         this.animateForwardMovement(enemy);
-        this.phaseTowardsPlayer(enemy, playerCurrentPosition);
+        // this.phaseTowardsPlayer(enemy, playerCurrentPosition);
+        this.phaseTowardsTarget(enemy, playerCurrentPosition);
+
         this.checkFiringPosition(enemy, playerCurrentPosition);
         this.updateLasers(playerCurrentPosition);
       });
     }
 
-    phaseTowardsPlayer(enemy, playerCurrentPosition) {
-      // Add the phasing for toward the planet, how to maintain minimum distance?
+    // phaseTowardsPlayer(enemy, playerCurrentPosition) {
+    // // Update to aim at whichever is closer, player position or this.target
+
+    //   if (enemy) {
+    //     const phaseSpeed = 0.004; // Adjust for smoothness
+
+    //     // Calculate the direction to the player
+    //     const directionToPlayer = new THREE.Vector3();
+    //     directionToPlayer
+    //       .subVectors(playerCurrentPosition, enemy.position)
+    //       .normalize();
+
+    //     // Create a quaternion for the rotation towards the player
+    //     const targetQuaternion = new THREE.Quaternion();
+    //     targetQuaternion.setFromUnitVectors(
+    //       new THREE.Vector3(0, 0, 1), // Default forward direction of the enemy
+    //       directionToPlayer // Target direction to the player
+    //     );
+
+    //     // Spherically interpolate (slerp) towards the target orientation
+    //     enemy.quaternion.slerp(targetQuaternion, phaseSpeed);
+    //   }
+    // }
+
+    phaseTowardsTarget(enemy, playerCurrentPosition, alternateTarget = null) {
 
       if (enemy) {
+        if (this.target) {
+          alternateTarget = this.target
+        } 
         const phaseSpeed = 0.004; // Adjust for smoothness
 
-        // Calculate the direction to the player
-        const directionToPlayer = new THREE.Vector3();
-        directionToPlayer
-          .subVectors(playerCurrentPosition, enemy.position)
+        // Determine which target to aim at (player or alternate target)
+        const playerDistance = enemy.position.distanceTo(playerCurrentPosition);
+        const targetDistance = alternateTarget
+          ? enemy.position.distanceTo(alternateTarget)
+          : Infinity;
+
+        // Choose the closer target
+        const chosenTargetPosition =
+          playerDistance < targetDistance
+            ? playerCurrentPosition
+            : alternateTarget;
+
+        // Calculate the direction to the chosen target
+        const directionToTarget = new THREE.Vector3();
+        directionToTarget
+          .subVectors(chosenTargetPosition, enemy.position)
           .normalize();
 
-        // Create a quaternion for the rotation towards the player
+        // Create a quaternion for the rotation towards the target
         const targetQuaternion = new THREE.Quaternion();
         targetQuaternion.setFromUnitVectors(
           new THREE.Vector3(0, 0, 1), // Default forward direction of the enemy
-          directionToPlayer // Target direction to the player
+          directionToTarget // Target direction
         );
 
         // Spherically interpolate (slerp) towards the target orientation
@@ -131,37 +174,85 @@ export const enemy = (() => {
       }
     }
 
-    checkFiringPosition(enemy, playerCurrentPosition) {
-      const currentTime = performance.now(); //laser cooldown
+    // checkFiringPosition(enemy, playerCurrentPosition) {
+    //   const currentTime = performance.now(); //laser cooldown
+
+    //   const distanceThreshold = this.firingDistance; // Distance threshold for firing
+    //   const angleThreshold = Math.PI / 6; // 5 degrees in radians
+    //   const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
+
+    //   if (distanceToPlayer < distanceThreshold) {
+    //     const enemyDirection = new THREE.Vector3();
+    //     enemy.getWorldDirection(enemyDirection); // Get the direction the enemy is facing
+
+    //     const directionToPlayer = new THREE.Vector3();
+    //     directionToPlayer
+    //       .subVectors(playerCurrentPosition, enemy.position)
+    //       .normalize(); // Calculate direction to the player
+
+    //     const angleToPlayer = enemyDirection.angleTo(directionToPlayer); // Angle between enemy's direction and direction to player
+
+    //     if (
+    //       angleToPlayer < angleThreshold &&
+    //       currentTime - enemy.lastShotTime > this.shootCooldown
+    //     ) {
+    //       this.fireLaser(enemy);
+    //       enemy.lastShotTime = currentTime; // Update last shot time
+    //     }
+    //   }
+    // }
+
+    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null) {
+      if (this.target) {
+        alternateTarget = this.target
+      } 
+
+      const currentTime = performance.now(); // For laser cooldown
 
       const distanceThreshold = this.firingDistance; // Distance threshold for firing
       const angleThreshold = Math.PI / 6; // 5 degrees in radians
+
+      // Get the current facing direction of the enemy
+      const enemyDirection = new THREE.Vector3();
+      enemy.getWorldDirection(enemyDirection);
+
+      // Check firing condition for the player
+      const directionToPlayer = new THREE.Vector3();
+      directionToPlayer
+        .subVectors(playerCurrentPosition, enemy.position)
+        .normalize();
+
       const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
+      const angleToPlayer = enemyDirection.angleTo(directionToPlayer);
 
-      if (distanceToPlayer < distanceThreshold) {
-        const enemyDirection = new THREE.Vector3();
-        enemy.getWorldDirection(enemyDirection); // Get the direction the enemy is facing
+      if (
+        distanceToPlayer < distanceThreshold &&
+        angleToPlayer < angleThreshold &&
+        currentTime - enemy.lastShotTime > this.shootCooldown
+      ) {
+        this.fireLaser(enemy);
+        enemy.lastShotTime = currentTime;
+        return; // Exit after firing at the player to avoid double shots
+      }
 
-        const directionToPlayer = new THREE.Vector3();
-        directionToPlayer
-          .subVectors(playerCurrentPosition, enemy.position)
-          .normalize(); // Calculate direction to the player
+      // Check firing condition for the alternate target (if it exists)
+      if (alternateTarget) {
+        const directionToTarget = new THREE.Vector3();
+        directionToTarget
+          .subVectors(alternateTarget, enemy.position)
+          .normalize();
 
-        const angleToPlayer = enemyDirection.angleTo(directionToPlayer); // Angle between enemy's direction and direction to player
+        const distanceToTarget = enemy.position.distanceTo(alternateTarget);
+        const angleToTarget = enemyDirection.angleTo(directionToTarget);
 
         if (
-          angleToPlayer < angleThreshold &&
+          distanceToTarget < distanceThreshold &&
+          angleToTarget < angleThreshold &&
           currentTime - enemy.lastShotTime > this.shootCooldown
         ) {
           this.fireLaser(enemy);
-          enemy.lastShotTime = currentTime; // Update last shot time
+          enemy.lastShotTime = currentTime;
         }
-
-        // To do add this to shoot the laser at the planet
-        // if (angleToPlayer < angleThreshold && (currentTime - enemy.lastShotTime) > this.shootCooldown) {
-        //   this.fireLaser(enemy);
-        //   enemy.lastShotTime = currentTime;  // Update last shot time
-        // }
       }
     }
 

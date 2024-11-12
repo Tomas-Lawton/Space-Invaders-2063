@@ -59,7 +59,7 @@ export const spaceship = (() => {
           this.deadSound.volume = 0.5;
           this.deadSound.play();
         }
-        console.log("Youd Died");
+        console.log("You Died");
       }
     }
 

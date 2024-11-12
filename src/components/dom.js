@@ -10,6 +10,7 @@ const hud = document.getElementById("control-ui")
 const hudElements = document.getElementsByClassName('hud-ui');
 const userPosition = document.getElementById("user-position")
 const nearestPlanet = document.getElementById("nearest-planet")
+const selectShip = document.getElementById("select-ship")
 
 const ores = document.getElementById("ores");
 const [ironElem, goldElem, crystalElem] = ores.children; 
