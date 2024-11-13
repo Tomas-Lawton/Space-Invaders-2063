@@ -3,7 +3,9 @@ import * as THREE from "three";
 import { Ring } from "../procedural/ring.js";
 import { asteroids } from "../procedural/asteroids.js";
 import { planets } from "../procedural/planets.js";
-import { getRandomDeepColor } from "../utils/utils.js";
+import { enemy } from "../components/enemy.js";
+
+// import { getRandomDeepColor } from "../utils/utils.js";
 
 export const gameworld = (() => {
   class World {
@@ -57,6 +59,13 @@ export const gameworld = (() => {
 
       this.scene.backgroundRotation.y += 0.0001;
     }
+
+    async createEnemies(enemyCount, aroundPoint) {
+      const enemyLoader = new enemy.EnemyLoader(this.scene);
+      enemyLoader.initaliseEnemies(enemyCount, aroundPoint);
+      this.enemyLoader = enemyLoader;
+    }
+
     async createPlanets(planetNum) {
       const planetsLoader = new planets.PlanetLoader(this.scene);
       planetsLoader.initialisePlanets(planetNum);

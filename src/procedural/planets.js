@@ -3,8 +3,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { getRandomDeepColor } from "../utils/utils.js";
 import { updateCloestPlanet } from "../components/dom.js";
 
-import { enemy } from "../components/enemy.js";
-
 export const planets = (() => {
   class PlanetLoader {
     constructor(scene) {
@@ -112,13 +110,9 @@ export const planets = (() => {
       });
     }
 
-    createEnemies(enemyCount, aroundPoint) {
-      const enemyLoader = new enemy.EnemyLoader(this.scene);
-      enemyLoader.initaliseEnemies(enemyCount, aroundPoint);
-      this.enemyLoader = enemyLoader;
-    }
 
-    animatePlanets(playerCurrentPosition, reposition) {
+
+    animatePlanets(playerCurrentPosition, reposition, createEnemies) {
       if (this.enemyLoader) {
         this.enemyLoader.animateEnemies(playerCurrentPosition);
       }
@@ -153,7 +147,7 @@ export const planets = (() => {
           if (playerDistance < 500) { //  closer than 1000: spawn enemy group
             if (!this.enemiesSpawned) { 
                 this.enemiesSpawned = true;
-                this.createEnemies(5, planet.position);
+                createEnemies(5, planet.position);
                 console.log("DOGFIGHT")
             }
           }

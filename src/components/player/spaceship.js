@@ -262,6 +262,7 @@ export const spaceship = (() => {
           if (enemyLoader && enemyLoader.enemies) {
             enemyLoader.enemies.forEach((enemy) => {
               if (this.checkCollision(laserBeam, enemy)) {
+                console.log("hit")
                 this.scene.remove(laserBeam);
                 this.activeLasers.splice(index, 1);
                 enemy.health -= this.damageAmount;
