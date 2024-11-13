@@ -120,6 +120,11 @@ body {
   pointer-events: none;
 }
 
+#select-ship {
+  position: absolute;
+    bottom: 1rem;
+}
+
 #bottom-center {
   box-sizing: border-box;
   position: absolute;

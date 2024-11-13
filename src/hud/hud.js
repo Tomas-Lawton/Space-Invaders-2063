@@ -7,6 +7,18 @@ const models = {};
 
 const canvas = document.getElementById('ship-hanger');
 
+
+export const modelPaths = [
+  { path: 'public/ships/ship_0/', rotation: { x: 0, y: 0, z: 0 } },
+  { path: 'public/ships/ship_1/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
+  { path: 'public/ships/ship_2/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
+  { path: 'public/ships/ship_3/', rotation: { x: 0, y: -Math.PI / 2, z: 0 } },
+  { path: 'public/ships/ship_4/', rotation: { x: 0, y: 0, z: 0 } },
+  { path: 'public/ships/ship_5/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
+  { path: 'public/ships/ship_6/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
+  { path: 'public/ships/ship_7/', rotation: { x: 0, y: 2 * Math.PI, z: 0 } },
+];
+
 export function initHUD() {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
@@ -59,16 +71,6 @@ function animate() {
 
 async function loadShipModels() {
   const loader = new GLTFLoader();
-  const modelPaths = [
-    { path: 'public/ships/ship_0/', rotation: { x: 0, y: 0, z: 0 } },
-    { path: 'public/ships/ship_1/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-    { path: 'public/ships/ship_2/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-    { path: 'public/ships/ship_3/', rotation: { x: 0, y: -Math.PI / 2, z: 0 } },
-    { path: 'public/ships/ship_4/', rotation: { x: 0, y: 0, z: 0 } },
-    { path: 'public/ships/ship_5/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-    { path: 'public/ships/ship_6/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-    { path: 'public/ships/ship_7/', rotation: { x: 0, y: 2 * Math.PI, z: 0 } },
-  ];
 
 // FACE FORWARD
 // { path: 'public/ships/ship_0/', rotation: { x: 0, y: (0) + 1.5 * Math.PI, z: 0 } },
@@ -107,31 +109,25 @@ let previousModelId = null;
 
 function switchModel(shipId) {
   if (!models[shipId]) return;
-
-  // If the same model is clicked again, do nothing
   if (previousModelId === shipId) return;
-
   if (currentModel) {
     scene.remove(currentModel.model);
   }
 
   currentModel = models[shipId];
   
-  // Normalize the model size and position only once
   if (!currentModel.isNormalized) {
     normalizeModelSize(currentModel.model, 55);
     normalizeModelPosition(currentModel.model);
     currentModel.isNormalized = true; // Mark this model as normalized
   }
-
   currentModel.model.rotation.set(currentModel.rotation.x, currentModel.rotation.y, currentModel.rotation.z);
   scene.add(currentModel.model);
 
-  // Store the current model ID to prevent unnecessary resizing
   previousModelId = shipId;
 }
 
-function normalizeModelSize(model, targetSize = 1) {
+export function normalizeModelSize(model, targetSize = 1) {
   const bbox = new THREE.Box3().setFromObject(model);
   const size = new THREE.Vector3();
   bbox.getSize(size);
@@ -144,10 +140,9 @@ function normalizeModelSize(model, targetSize = 1) {
   }
 }
 
-function normalizeModelPosition(model) {
+export function normalizeModelPosition(model) {
   const bbox = new THREE.Box3().setFromObject(model);
   const center = bbox.getCenter(new THREE.Vector3());
-
   // Translate the model to ensure its center is at the origin (0, 0, 0)
   model.position.sub(center);
   model.position.y = -15;

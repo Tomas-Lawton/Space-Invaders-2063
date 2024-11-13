@@ -56,7 +56,7 @@ class Game {
     this.world.addElements();
 
     if (this.playerEntity !== undefined && this.playerShip !== undefined) {
-      this.playerShip.loadSpaceship();
+      this.playerShip.setSpaceshipModel(0); // default ship 'ship-1'
       this.playerEntity.AddComponent(new player_input.PlayerInput());
       this.playerEntity.InitEntity();
     } else {

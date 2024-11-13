@@ -2,9 +2,10 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { third_person_camera } from "../../scene/camera.js";
 import { mapValue } from "../../utils/utils.js"; // Assuming you have a utility function for mapping values
-import { progressContainer, progressText } from "../dom.js";
+import { selectShip, progressContainer, progressText } from "../dom.js";
 import { PHYSICS_CONSTANTS } from "../../utils/constants.js";
 import { cursor, incrementOre } from "../dom.js";
+import { modelPaths, normalizeModelSize, normalizeModelPosition} from "../../hud/hud.js"
 
 export const spaceship = (() => {
   class Spaceship {
@@ -47,6 +48,8 @@ export const spaceship = (() => {
       this.setHealth(health, true);
       this.damageAmount = 26;
 
+      selectShip.addEventListener("click", () => this.setSpaceshipModel(2))
+
       return this;
     }
 
@@ -70,78 +73,164 @@ export const spaceship = (() => {
       }
     }
 
-    loadSpaceship() {
-      this.loader.load(
+    // setSpaceshipModel() {
+    //   this.loader.load(
+    //     "scene.gltf",
+    //     (gltf) => {
+    //       // PLAYER (it's a mesh in a mesh)
+    //       this.mesh = new THREE.Group();
+    //       const tempObjectGroup = new THREE.Group();
+    //       const loadedModel = gltf.scene;
+    //       // console.log(loadedModel)
+    //       //REMOVE THESE LINES TO FIX MOUSE ROTATE CAMERA
+
+    //       // Set shadow properties and initial rotation
+    //       loadedModel.traverse(
+    //         (child) =>
+    //           child.isMesh && (child.castShadow = child.receiveShadow = true)
+    //       );
+    //       loadedModel.rotation.y = 1.5 * Math.PI;
+    //       loadedModel.position.z += 22;
+    //       // loadedModel.scale.set(.3, .3, .3)
+    //       // loadedModel.scale.set(2, 2, 2)
+    //       // loadedModel.scale.set(30, 30, 30)
+
+    //       tempObjectGroup.add(loadedModel);
+
+    //       // Add lights
+    //       const ambientLightColor = 0x660099;
+    //       const ambientLight = new THREE.PointLight(ambientLightColor, 1, 50);
+    //       ambientLight.position.set(0, 5, 0);
+    //       tempObjectGroup.add(ambientLight);
+
+    //       const spotLight = new THREE.SpotLight(
+    //         0xff6600,
+    //         3,
+    //         5,
+    //         Math.PI * 1.1,
+    //         0.2
+    //       );
+    //       spotLight.position.copy(tempObjectGroup.position);
+    //       tempObjectGroup.add(spotLight);
+
+    //       // Add boosters (velocity rectangle)
+    //       this.velocityRectangle.position.copy(tempObjectGroup.position);
+    //       tempObjectGroup.add(this.velocityRectangle);
+
+    //       this.mesh.add(tempObjectGroup);
+
+    //       this.mesh.rotation.y = Math.PI
+
+    //       this.scene.add(this.mesh);
+
+    //       // Initialize third-person camera
+    //       this.thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
+    //         camera: this.camera,
+    //         target: this.mesh,
+    //       });
+
+    //       this.updateSpaceshipPosition();
+
+    //       // Hide loading screen
+    //       progressContainer.style.display = "none";
+    //       return this.mesh;
+    //     },
+    //     (xhr) => {
+    //       let progressAmount = (xhr.loaded / xhr.total) * 100;
+    //       progressText.innerHTML = `LOADING ${progressAmount}/100`;
+    //     },
+    //     (error) => {
+    //       console.error("An error happened", error);
+    //     }
+    //   );
+    // }
+
+    setSpaceshipModel(shipId) {
+      if (!modelPaths[shipId]) return;
+    
+      const selectedModel = modelPaths[shipId];
+    
+      // Remove previous model if it exists
+      if (this.mesh) {
+        this.scene.remove(this.mesh);
+        this.mesh.traverse((child) => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((mat) => mat.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        });
+        this.mesh.clear();
+      }
+    
+      this.loader.setPath(selectedModel.path).load(
         "scene.gltf",
         (gltf) => {
-          // PLAYER (it's a mesh in a mesh)
           this.mesh = new THREE.Group();
           const tempObjectGroup = new THREE.Group();
           const loadedModel = gltf.scene;
-          // console.log(loadedModel)
-          //REMOVE THESE LINES TO FIX MOUSE ROTATE CAMERA
-
-          // Set shadow properties and initial rotation
-          loadedModel.traverse(
-            (child) =>
-              child.isMesh && (child.castShadow = child.receiveShadow = true)
+    
+          loadedModel.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+    
+          loadedModel.rotation.set(
+            selectedModel.rotation.x,
+            selectedModel.rotation.y - Math.PI / 2,
+            selectedModel.rotation.z
           );
-          loadedModel.rotation.y = 1.5 * Math.PI;
-          loadedModel.position.z += 22;
-          // loadedModel.scale.set(.3, .3, .3)
-          // loadedModel.scale.set(2, 2, 2)
-          // loadedModel.scale.set(30, 30, 30)
-
+    
+          // Normalize model if needed
+          if (!selectedModel.isNormalized) {
+            normalizeModelSize(loadedModel, 55);
+            normalizeModelPosition(loadedModel);
+            selectedModel.isNormalized = true;
+          }
+    
           tempObjectGroup.add(loadedModel);
-
+    
           // Add lights
-          const ambientLightColor = 0x660099;
-          const ambientLight = new THREE.PointLight(ambientLightColor, 1, 50);
+          const ambientLight = new THREE.PointLight(0x660099, 1, 50);
           ambientLight.position.set(0, 5, 0);
           tempObjectGroup.add(ambientLight);
-
-          const spotLight = new THREE.SpotLight(
-            0xff6600,
-            3,
-            5,
-            Math.PI * 1.1,
-            0.2
-          );
+    
+          const spotLight = new THREE.SpotLight(0xff6600, 3, 5, Math.PI * 1.1, 0.2);
           spotLight.position.copy(tempObjectGroup.position);
           tempObjectGroup.add(spotLight);
-
+    
           // Add boosters (velocity rectangle)
           this.velocityRectangle.position.copy(tempObjectGroup.position);
           tempObjectGroup.add(this.velocityRectangle);
-
+    
           this.mesh.add(tempObjectGroup);
-
-          this.mesh.rotation.y = Math.PI
-
+          this.mesh.rotation.y = Math.PI;
+    
           this.scene.add(this.mesh);
-
-          // Initialize third-person camera
+    
+          // Set up the third-person camera
           this.thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
             camera: this.camera,
             target: this.mesh,
           });
-
+    
           this.updateSpaceshipPosition();
-
+    
           // Hide loading screen
           progressContainer.style.display = "none";
-          return this.mesh;
         },
         (xhr) => {
           let progressAmount = (xhr.loaded / xhr.total) * 100;
-          progressText.innerHTML = `LOADING ${progressAmount}/100`;
+          progressText.innerHTML = `LOADING ${progressAmount.toFixed(2)}/100`;
         },
-        (error) => {
-          console.error("An error happened", error);
-        }
+        (error) => console.error("Error loading model:", error)
       );
     }
-
     updateSpaceshipPosition() {
       if (this.mesh) {
         this.mesh.position.set(

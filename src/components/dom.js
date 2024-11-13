@@ -10,7 +10,6 @@ const hud = document.getElementById("control-ui")
 const hudElements = document.getElementsByClassName('hud-ui');
 const userPosition = document.getElementById("user-position")
 const nearestPlanet = document.getElementById("nearest-planet")
-const selectShip = document.getElementById("select-ship")
 
 const ores = document.getElementById("ores");
 const [ironElem, goldElem, crystalElem] = ores.children; 
@@ -18,6 +17,7 @@ export const cursor = document.getElementById("custom-cursor");
 export const progressContainer = document.getElementById("progress-container")
 export const progressText = document.getElementById("progress")
 export const canvas = document.getElementById('three-canvas');
+export const selectShip = document.getElementById("select-ship")
 
 
 let iron = 0
